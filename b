@@ -27,6 +27,8 @@ PATH=$XTENSA_DIR/XtDevTools/install/tools/RD-2011.2-linux/XtensaTools/bin/:$PATH
 PATH=$(pwd)/buildroot/output/host/usr/bin:$PATH
 export PATH
 
+export CC=`readlink -f buildroot/output/host/usr/bin/xtensa-linux-gcc`
+
 case $cmd in
 	mkbr)
 		if [ ! -f buildroot/.config ]; then
@@ -57,6 +59,10 @@ case $cmd in
 		fi
 		;;
 	
+	mkapps)
+		make -C apps $*
+		;;
+
 	run)
 		cmds=`mktemp`
 		echo "target sim --turbo --memlimit=128" > $cmds
