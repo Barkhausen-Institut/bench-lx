@@ -34,9 +34,9 @@ case $cmd in
 		if [ ! -f buildroot/.config ]; then
 			cp configs/config-buildroot-iss buildroot/.config
 		fi
-		
+
 		( cd buildroot && make -j$cpus $* )
-		
+
 		# we have to strip the debugging info here, because it's in gwarf-4 format but the xtensa gdb only
 		# supports 2 (and is too stupid to just ignore them)
 		if [ -f $libgcc ]; then
@@ -51,14 +51,14 @@ case $cmd in
 
 		# tell linux our cross-compiler prefix
 		export CROSS_COMPILE=xtensa-linux-
-		
+
 		if [ "$build" = "debug" ]; then
 			( cd linux && make O=../$builddir ARCH=xtensa KBUILD_CFLAGS="-O1 -gdwarf-2 -g" -j$cpus $* )
 		else
 			( cd linux && make O=../$builddir ARCH=xtensa -j$cpus $* )
 		fi
 		;;
-	
+
 	mkapps)
 		make -C apps $*
 		;;
@@ -72,9 +72,9 @@ case $cmd in
 		xt-gdb --xtensa-core=DC_D_233L $builddir/arch/xtensa/boot/Image.elf --command=$cmds
 		rm $cmds
 		;;
-	
+
 	*)
-		echo "Usage: $0 (mkbr|mklx|run)" >&2
+		echo "Usage: $0 (mkbr|mklx|mkapps|run)" >&2
 		echo "  Use LX_BUILD to set the build-type (debug|release)." >&2
 		;;
 esac
