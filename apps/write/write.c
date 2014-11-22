@@ -10,11 +10,11 @@ static unsigned do_get_cycles(void) {
     return val;
 }
 
-static char buffer[1024];
+static char *buffer;
 
 int main(int argc, char **argv) {
-    if(argc < 3) {
-        fprintf(stderr, "Usage: %s <file> <size>\n", argv[0]);
+    if(argc < 4) {
+        fprintf(stderr, "Usage: %s <file> <size> <bufsize>\n", argv[0]);
         exit(1);
     }
 
@@ -27,9 +27,11 @@ int main(int argc, char **argv) {
     unsigned start2 = do_get_cycles();
 
     size_t total = atoi(argv[2]);
+    size_t bufsize = atoi(argv[2]);
+    buffer = malloc(bufsize);
     size_t pos = 0;
-    for(; pos < total; pos += sizeof(buffer)) {
-    	write(fd, buffer, sizeof(buffer));
+    for(; pos < total; pos += bufsize) {
+    	write(fd, buffer, bufsize);
     }
 
     unsigned end1 = do_get_cycles();
