@@ -1,6 +1,6 @@
 [submodule "linux"]
 	path = linux
-	url = https://github.com/torvalds/linux.git
+	url = https://github.com/Nils-TUD/xtensa-linux.git
 [submodule "buildroot"]
 	path = buildroot
 	url = git://git.buildroot.net/buildroot
