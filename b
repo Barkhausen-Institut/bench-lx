@@ -63,9 +63,13 @@ case $cmd in
 		make -C apps $*
 		;;
 
-	run)
+	run|runbench)
 		cmds=`mktemp`
-		echo "target sim --turbo --memlimit=128" > $cmds
+		if [ $cmd = "runbench" ]; then
+			echo "target sim --mem_model --memlimit=128" > $cmds
+		else
+			echo "target sim --turbo --memlimit=128" > $cmds
+		fi
 		echo "symbol-file $builddir/vmlinux" >> $cmds
 		echo "display/i \$pc" >> $cmds
 
@@ -74,7 +78,7 @@ case $cmd in
 		;;
 
 	*)
-		echo "Usage: $0 (mkbr|mklx|mkapps|run)" >&2
+		echo "Usage: $0 (mkbr|mklx|mkapps|run|runbench)" >&2
 		echo "  Use LX_BUILD to set the build-type (debug|release)." >&2
 		;;
 esac
