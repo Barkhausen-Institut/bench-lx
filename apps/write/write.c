@@ -27,8 +27,12 @@ int main(int argc, char **argv) {
     unsigned start2 = do_get_cycles();
 
     size_t total = atoi(argv[2]);
-    size_t bufsize = atoi(argv[2]);
+    size_t bufsize = atoi(argv[3]);
     buffer = malloc(bufsize);
+    if(buffer == NULL) {
+	    perror("malloc");
+	    return 1;
+    }
     size_t pos = 0;
     for(; pos < total; pos += bufsize) {
     	write(fd, buffer, bufsize);
