@@ -60,7 +60,7 @@ case $cmd in
 		;;
 
 	mkapps)
-		make -C apps $*
+		scons -j$cpus
 		;;
 
 	run|runbench)

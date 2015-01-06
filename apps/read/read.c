@@ -1,16 +1,10 @@
-#include <sys/syscall.h>
 #include <sys/fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <cycles.h>
 
-static unsigned do_get_cycles(void) {
-    unsigned val;
-    syscall(336, &val);
-    return val;
-}
-
-static char buffer[1024];
+static char buffer[4096];
 
 int main(int argc, char **argv) {
     if(argc < 2) {
@@ -18,18 +12,18 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    unsigned start1 = do_get_cycles();
+    unsigned start1 = get_cycles();
     int fd = open(argv[1], O_RDONLY);
-    unsigned start2 = do_get_cycles();
+    unsigned start2 = get_cycles();
 
     ssize_t res;
     size_t total = 0;
     while((res = read(fd, buffer, sizeof(buffer))) > 0)
         total += res;
 
-    unsigned end1 = do_get_cycles();
+    unsigned end1 = get_cycles();
     close(fd);
-    unsigned end2 = do_get_cycles();
+    unsigned end2 = get_cycles();
 
     printf("Read %zu bytes\n", total);
     printf("Total time: %u\n", end2 - start1);

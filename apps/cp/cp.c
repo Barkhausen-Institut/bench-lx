@@ -1,14 +1,8 @@
-#include <sys/syscall.h>
 #include <sys/fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-static unsigned do_get_cycles(void) {
-    unsigned val;
-    syscall(336, &val);
-    return val;
-}
+#include <cycles.h>
 
 static char *buffer;
 
@@ -18,7 +12,7 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    unsigned start1 = do_get_cycles();
+    unsigned start1 = get_cycles();
     int infd = open(argv[1], O_RDONLY);
     if(infd == -1) {
 	    perror("open");
@@ -30,7 +24,7 @@ int main(int argc, char **argv) {
 	    perror("open");
 	    return 1;
     }
-    unsigned start2 = do_get_cycles();
+    unsigned start2 = get_cycles();
 
     size_t bufsize = atoi(argv[3]);
     buffer = malloc(bufsize);
@@ -42,10 +36,10 @@ int main(int argc, char **argv) {
     while((count = read(infd, buffer, bufsize)) > 0)
     	write(outfd, buffer, count);
 
-    unsigned end1 = do_get_cycles();
+    unsigned end1 = get_cycles();
     close(outfd);
     close(infd);
-    unsigned end2 = do_get_cycles();
+    unsigned end2 = get_cycles();
 
     printf("Total time: %u\n", end2 - start1);
     printf("Open time: %u\n", start2 - start1);

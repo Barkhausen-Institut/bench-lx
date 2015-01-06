@@ -1,20 +1,14 @@
-#include <sys/syscall.h>
+#include <cycles.h>
 #include <stdio.h>
 
-#define TOTAL	100
-
-static unsigned do_get_cycles(void) {
-	unsigned val;
-	syscall(336, &val);
-	return val;
-}
+#define TOTAL	2000
 
 int main() {
 	unsigned long total = 0;
-	unsigned start = do_get_cycles();
+	unsigned start = get_cycles();
 	int i;
 	for(i = 0; i < TOTAL; ++i) {
-		unsigned cyc = do_get_cycles();
+		unsigned cyc = get_cycles();
 		total += cyc - start;
 		start = cyc;
 	}

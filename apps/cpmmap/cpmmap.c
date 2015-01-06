@@ -1,16 +1,10 @@
-#include <sys/syscall.h>
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-static unsigned do_get_cycles(void) {
-    unsigned val;
-    syscall(336, &val);
-    return val;
-}
+#include <cycles.h>
 
 int main(int argc, char **argv) {
     if(argc < 3) {
@@ -18,13 +12,13 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    unsigned start1 = do_get_cycles();
+    unsigned start1 = get_cycles();
     int infd = open(argv[1], O_RDONLY);
     if(infd == -1) {
 	    perror("open");
 	    return 1;
     }
-    
+
     off_t total = lseek(infd, 0, SEEK_END);
     void *inaddr = mmap(NULL, total, PROT_READ, MAP_PRIVATE, infd, 0);
     if(inaddr == MAP_FAILED) {
@@ -46,16 +40,16 @@ int main(int argc, char **argv) {
     	perror("mmap outfile");
     	return 1;
 	}
-    
-    unsigned start2 = do_get_cycles();
+
+    unsigned start2 = get_cycles();
     memcpy(outaddr, inaddr, total);
 
-    unsigned end1 = do_get_cycles();
+    unsigned end1 = get_cycles();
     munmap(outaddr, total);
     munmap(inaddr, total);
     close(outfd);
     close(infd);
-    unsigned end2 = do_get_cycles();
+    unsigned end2 = get_cycles();
 
     printf("Total time: %u\n", end2 - start1);
     printf("Open time: %u\n", start2 - start1);

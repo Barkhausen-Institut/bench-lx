@@ -1,0 +1,2 @@
+Import('env')
+env.LxProgram(env, target = 'cpmmap', source = 'cpmmap.c')
