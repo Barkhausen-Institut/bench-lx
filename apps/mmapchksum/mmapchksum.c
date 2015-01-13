@@ -20,10 +20,12 @@ int main(int argc, char **argv) {
 
     unsigned end3 = get_cycles();
 
-    unsigned checksum = 0;
-    off_t pos;
-    for(pos = 0; pos < total; ++pos)
-	    checksum += ((char*)addr)[pos];
+    unsigned checksum1 = 0;
+    unsigned *p = (unsigned*)addr;
+    unsigned *end = p + total / sizeof(unsigned);
+    while(p < end) {
+        checksum1 += *p++;
+    }
 
     unsigned end4 = get_cycles();
 

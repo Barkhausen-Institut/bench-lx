@@ -21,10 +21,10 @@ int main(int argc, char **argv) {
     size_t total = 0;
     while((res = read(fd, buffer, sizeof(buffer))) > 0) {
         total += res;
-	char *b = buffer;
-	char *e = buffer + res;
-	for(; b != e; ++b)
-		checksum += *b;
+        unsigned *p = (unsigned*)buffer;
+        unsigned *end = p + res / sizeof(unsigned);
+        while(p < end)
+            checksum += *p++;
     }
 
     unsigned end1 = get_cycles();
