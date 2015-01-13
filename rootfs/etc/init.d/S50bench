@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# check if "RUN_BENCHMARKS" has been written to 0x3000000
+str=`dd if=/dev/mem ibs=1024 skip=$((48*1024)) count=1 2>/dev/null | dd bs=1 count=14 2>/dev/null`
+if [ "$str" != "RUN_BENCHMARKS" ]; then
+    exit 0
+fi
+
+echo ">=== Starting benchmarks ==="
+
+/bench/memcpy 4096
+
+/bench/syscall
+
+/bench/read /starwars.txt 1>/dev/null
+/bench/read /starwars.txt > /tmp/res.txt && grep "Read\|Memcpy" /tmp/res.txt
+
+/bench/readmmap /starwars.txt > /tmp/res.txt && grep Read /tmp/res.txt
+
+/bench/readmmapcpy /starwars.txt > /tmp/res.txt && grep Read /tmp/res.txt
+
+/bench/readchksum /starwars.txt > /tmp/res.txt && grep "Read\|Memcpy" /tmp/res.txt
+
+/bench/mmapchksum /starwars.txt > /tmp/res.txt && grep Read /tmp/res.txt
+
+/bench/write /tmp/write.out $((2*1024*1024)) 4096 > /tmp/res.txt && grep "Write\|Memcpy" /tmp/res.txt
+
+/bench/cp /starwars.txt /tmp/cp.out 4096 > /tmp/res.txt && grep "Write\|Memcpy" /tmp/res.txt
+
+/bench/cpmmap /starwars.txt /tmp/cpmmap.out > /tmp/res.txt && grep Write /tmp/res.txt
+
+/bench/thread
+/bench/fork
+/bench/exec /bench/noop
+
+echo "<=== Benchmarks done ==="
