@@ -40,7 +40,8 @@ baseenv.Append(
 env = baseenv.Clone()
 ccprefix = 'buildroot/output/host/usr/bin/xtensa-linux'
 env.Append(
-    CPPPATH = ['#include']
+    CPPPATH = ['#include'],
+    LINKFLAGS = ' -static'
 )
 env.Replace(
     CXX = ccprefix + '-g++',
