@@ -12,7 +12,6 @@ int main() {
 		total += cyc - start;
 		start = cyc;
 	}
-	printf("avg: %lu\n", total / TOTAL);
+	printf("Time per syscall: %lu\n", total / TOTAL);
 	return 0;
 }
-
