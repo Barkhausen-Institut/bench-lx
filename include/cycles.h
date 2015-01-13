@@ -1,3 +1,5 @@
+#pragma once
+
 #include <sys/syscall.h>
 
 extern void syscall(int, unsigned *);
