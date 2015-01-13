@@ -23,9 +23,9 @@ echo ">=== Starting benchmarks ==="
 
 /bench/mmapchksum /starwars.txt > /tmp/res.txt && grep Read /tmp/res.txt
 
-/bench/write /tmp/write.out $((2*1024*1024)) 4096 > /tmp/res.txt && grep "Write\|Memcpy" /tmp/res.txt
+/bench/write /tmp/write.out $((2*1024*1024)) > /tmp/res.txt && grep "Write\|Memcpy" /tmp/res.txt
 
-/bench/cp /starwars.txt /tmp/cp.out 4096 > /tmp/res.txt && grep "Write\|Memcpy" /tmp/res.txt
+/bench/cp /starwars.txt /tmp/cp.out > /tmp/res.txt && grep "Write\|Memcpy" /tmp/res.txt
 
 /bench/cpmmap /starwars.txt /tmp/cpmmap.out > /tmp/res.txt && grep Write /tmp/res.txt
 

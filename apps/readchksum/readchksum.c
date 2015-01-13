@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <common.h>
 #include <cycles.h>
 #include <smemcpy.h>
 
-static char buffer[4096];
+static char buffer[BUFFER_SIZE];
 
 int main(int argc, char **argv) {
     if(argc < 2) {

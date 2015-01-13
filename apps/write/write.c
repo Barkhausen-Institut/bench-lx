@@ -2,14 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <common.h>
 #include <cycles.h>
 #include <smemcpy.h>
 
-static char *buffer;
+static char buffer[BUFFER_SIZE];
 
 int main(int argc, char **argv) {
-    if(argc < 4) {
-        fprintf(stderr, "Usage: %s <file> <size> <bufsize>\n", argv[0]);
+    if(argc < 3) {
+        fprintf(stderr, "Usage: %s <file> <size>\n", argv[0]);
         exit(1);
     }
 
@@ -22,19 +23,13 @@ int main(int argc, char **argv) {
     unsigned start2 = get_cycles();
 
     size_t total = atoi(argv[2]);
-    size_t bufsize = atoi(argv[3]);
-    buffer = malloc(bufsize);
-    if(buffer == NULL) {
-	    perror("malloc");
-	    return 1;
-    }
 
     /* reset value */
     smemcpy();
 
     size_t pos = 0;
-    for(; pos < total; pos += bufsize)
-    	write(fd, buffer, bufsize);
+    for(; pos < total; pos += sizeof(buffer))
+    	write(fd, buffer, sizeof(buffer));
 
     unsigned memcpy_cycles = smemcpy();
 

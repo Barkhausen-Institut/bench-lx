@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <common.h>
 #include <cycles.h>
 
 static void copy(void *dst, const void *src, size_t size) {
@@ -14,7 +15,7 @@ static void copy(void *dst, const void *src, size_t size) {
         *d++ = *s++;
 }
 
-static char buffer[4096];
+static char buffer[BUFFER_SIZE];
 
 int main(int argc, char **argv) {
     if(argc < 2) {
