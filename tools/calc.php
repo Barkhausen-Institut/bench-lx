@@ -35,8 +35,8 @@ function part($a,$b,$indices) {
     echo $lx . "\n";
 }
 
-$tasks = array(0, 1, 17, 18, 19, 20);
-$fs = array(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
+$tasks = array(0, 17, 18, 19, 20);
+$fs = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
 
 echo "memcpy syscall thread fork exec vfork\n";
 part($a,$b,$tasks);

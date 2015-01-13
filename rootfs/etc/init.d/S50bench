@@ -8,8 +8,6 @@ fi
 
 echo ">=== Starting benchmarks ==="
 
-/bench/memcpy 4096
-
 /bench/syscall
 
 /bench/read /starwars.txt 1>/dev/null
