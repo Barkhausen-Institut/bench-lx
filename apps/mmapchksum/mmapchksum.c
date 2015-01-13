@@ -37,16 +37,27 @@ int main(int argc, char **argv) {
 
     unsigned end4 = get_cycles();
 
+    unsigned checksum2 = 0;
+    p = (unsigned*)addr;
+    end = p + total / sizeof(unsigned);
+    while(p < end) {
+        checksum2 += *p++;
         //prefetch_line((unsigned long)(p + 64));
+    }
+
+    unsigned end5 = get_cycles();
+
     munmap(addr, total);
     close(fd);
     unsigned end2 = get_cycles();
 
-    printf("Read %zu bytes\n", (size_t)pos);
+    printf("Total bytes: %zu\n", (size_t)total);
     printf("Total time: %u\n", end2 - start1);
     printf("Open time: %u\n", start2 - start1);
-    printf("Checksum: %u\n", checksum);
-    printf("Checksum-time: %u\n", end4 - end3);
-    printf("Close time: %u\n", end2 - end4);
+    printf("Checksum1: %u\n", checksum1);
+    printf("Checksum2: %u\n", checksum2);
+    printf("Read time: %u\n", end4 - end3);
+    printf("Read again: %u\n", end5 - end4);
+    printf("Close time: %u\n", end2 - end5);
     return 0;
 }
