@@ -47,7 +47,6 @@ env.Replace(
     CXX = ccprefix + '-g++',
     CC = ccprefix + '-gcc'
 )
-hostenv = baseenv.Clone()
 
 # convenience functions
 def LxProgram(env, target, source, libs = []):
@@ -63,4 +62,3 @@ env.LxProgram = LxProgram
 
 # build everything
 env.SConscript('apps/SConscript', 'env', variant_dir = builddir + '/apps', duplicate = 0)
-hostenv.SConscript('tools/SConscript', 'hostenv', variant_dir = builddir + '/tools', duplicate = 0)
