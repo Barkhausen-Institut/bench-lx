@@ -39,10 +39,25 @@ function calc($a, $b) {
     $ai = preg_replace('/^.*?: /','',trim($a));
     $bi = preg_replace('/^.*?: /','',trim($b));
 
+    // we determine the time for running it without cache misses in the following way:
+    // first, we define the time of an operation as:
+    // T = C + n * M
+    // that is, there are n cache-misses with M cycles each plus the remaining time C.
+    // by running with 2 different times for M, we have 2 equations with 2 unknown variables.
+    // thus, we can solve the linear equation.
+
     ob_start();
+    // we have run it once with 13 cycles for M and once with 30 cycles.
+    // thus, the equations are:
+    // $ai = 1 * C + 13 * n
+    // $bi = 1 * C + 30 * n
+    // the right side is the matrix [1, 13; 1, 30].
+    // we solve it by dividing it by [$ai; $bi] and take the second element to get C (opposite order)
     system("octave -q --eval 'A = [1, 13; 1, 30]; b = [$ai; $bi]; x = A \ b; nth_element(x, 2)'");
     $res = ob_get_contents();
     ob_end_clean();
+
+    // now we have the baseline, i.e. the time without cache misses
     $baseline = preg_replace('/^ans =\s*/','',$res);
     return array($bi, $baseline);
 }
