@@ -10,6 +10,10 @@ echo ">=== Starting benchmarks ==="
 
 /bench/syscall
 
+/bench/thread
+/bench/fork
+/bench/exec /bench/noop
+
 /bench/read /starwars.txt 1>/dev/null
 /bench/read /starwars.txt > /tmp/res.txt && grep "Read\|Memcpy" /tmp/res.txt
 
@@ -26,9 +30,5 @@ echo ">=== Starting benchmarks ==="
 /bench/cp /starwars.txt /tmp/cp.out > /tmp/res.txt && grep "Write\|Memcpy" /tmp/res.txt
 
 /bench/cpmmap /starwars.txt /tmp/cpmmap.out > /tmp/res.txt && grep Write /tmp/res.txt
-
-/bench/thread
-/bench/fork
-/bench/exec /bench/noop
 
 echo "<=== Benchmarks done ==="
