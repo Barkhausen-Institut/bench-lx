@@ -1,0 +1,21 @@
+Time per syscall: 202
+Cycles per thread-start (avg): 4246
+Cycles per fork (avg): 4246
+Cycles per fork+exec+waitpid (avg): 227637
+Cycles per vfork+exec+waitpid (avg): -
+Read time: 360866
+Memcpy time: -
+Read time: -
+Read-again time: -
+Read time: -
+Read-again time: -
+Read time: 3505641
+Memcpy time: -
+Read time: -
+Read again: -
+Write time: 602374
+Memcpy time: -
+Write time: 972318
+Memcpy time: -
+Write time: -
+Write again time: -
