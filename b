@@ -11,6 +11,7 @@ else
 fi
 
 libgcc=buildroot/output/host/usr/lib/gcc/xtensa-buildroot-linux-uclibc/4.8.3/libgcc.a
+core=DC_D_233L
 
 build=$LX_BUILD
 if [ "$build" != "release" ] && [ "$build" != "debug" ]; then
@@ -18,6 +19,15 @@ if [ "$build" != "release" ] && [ "$build" != "debug" ]; then
 fi
 builddir="build/$build"
 mkdir -p $builddir
+
+simflags=""
+# ensure that a cache miss costs 30 cycles, as a global memory read of 32bytes on T3
+if [ "$LX_THCMP" = 1 ]; then
+	simflags=" --write_delay=17 --read_delay=17"
+	echo "Configuring core to require 30 cycles per cache-miss."
+else
+	echo "Configuring core to require 13 cycles per cache-miss."
+fi
 
 cmd=$1
 shift
@@ -55,7 +65,14 @@ case $cmd in
 		if [ "$build" = "debug" ]; then
 			( cd linux && make O=../$builddir ARCH=xtensa KBUILD_CFLAGS="-O1 -gdwarf-2 -g" -j$cpus $* )
 		else
-			( cd linux && make O=../$builddir ARCH=xtensa -j$cpus $* )
+			flags="-Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common"
+			flags="$flags -Werror-implicit-function-declaration -Wno-format-security -fno-delete-null-pointer-checks"
+			flags="$flags -O3 -ffreestanding -D__linux__ -pipe -mlongcalls -mforce-no-pic -Wframe-larger-than=1024"
+			flags="$flags -fno-stack-protector -Wno-unused-but-set-variable -fomit-frame-pointer -g "
+			flags="$flags -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack"
+			flags="$flags -Werror=implicit-int -Werror=strict-prototypes  -DCC_HAVE_ASM_GOTO -gdwarf-2"
+			echo $flags
+			( cd linux && make O=../$builddir KBUILD_CFLAGS="$flags" ARCH=xtensa -j$cpus $* )
 		fi
 		;;
 
@@ -63,23 +80,86 @@ case $cmd in
 		scons -j$cpus
 		;;
 
-	run|runbench)
+	dis=*)
+		xt-objdump --xtensa-core=$core -SC $builddir/bin/${cmd#dis=} | less
+		;;
+
+	disp=*)
+		export XTENSA_CORE=$core
+		xt-objdump -dC $builddir/bin/${cmd#disp=} | \
+			awk -v EXEC=$builddir/bin/${cmd#disp=} -f ./tools/pimpdisasm.awk | less
+		;;
+
+	run)
+		xt-run --xtensa-core=$core --memlimit=128 --mem_model $simflags \
+			$builddir/arch/xtensa/boot/Image.elf
+		;;
+
+	runturbo)
+		xt-run --xtensa-core=$core --memlimit=128 --turbo \
+			$builddir/arch/xtensa/boot/Image.elf
+		;;
+
+	bench)
+		tmp=`mktemp`
+		echo RUN_BENCHMARKS > $tmp
+
+		# we can't run xt-run in background for some reason, which is why we run the loop that
+		# waits for the benchmark to finish in background.
+		res=`mktemp`
+		(
+		    while [ "`grep '<=== Benchmarks done ===' $res 2>/dev/null`" = "" ]; do
+		    	# if the simulator exited for some reason and thus deleted the file, stop here
+		    	if [ ! -f $res ]; then
+		    		exit 1
+		    	fi
+		        sleep 1
+		    done
+		    kill `pgrep -x iss`
+		) &
+
+		xt-run --xtensa-core=$core --memlimit=128 --mem_model $simflags \
+			--loadbin=$tmp@0x3000000 $builddir/arch/xtensa/boot/Image.elf > $res
+
+		# extract benchmark result
+		awk '/>===.*/ {
+			capture = 1
+		}
+		/<===.*/ {
+			capture = 0
+		}
+		/^[^<>].*/ {
+		    if(capture == 1)
+		        print $0
+		}' $res
+
+		rm $res $tmp
+		;;
+
+	trace)
+		args="--mem_model $simflags"
+		xt-run --xtensa-core=$core $args --memlimit=128 \
+			--client_commands="trace --level 6 trace.txt" \
+			$builddir/arch/xtensa/boot/Image.elf
+		;;
+
+	dbg|dbgturbo)
 		cmds=`mktemp`
-		if [ $cmd = "runbench" ]; then
-			echo "target sim --mem_model --memlimit=128" > $cmds
+		if [ $cmd = "dbgturbo" ]; then
+			echo "target sim --turbo $simflags --memlimit=128" > $cmds
 		else
-			echo "target sim --turbo --memlimit=128" > $cmds
+			echo "target sim --mem_model $simflags --memlimit=128" > $cmds
 		fi
 		echo "symbol-file $builddir/vmlinux" >> $cmds
 		echo "display/i \$pc" >> $cmds
 
-		xt-gdb --xtensa-core=DC_D_233L $builddir/arch/xtensa/boot/Image.elf --command=$cmds
+		xt-gdb --xtensa-core=$core $builddir/arch/xtensa/boot/Image.elf --command=$cmds
 		rm $cmds
 		;;
 
 	*)
-		echo "Usage: $0 (mkbr|mklx|mkapps|run|runbench)" >&2
+		echo "Usage: $0 (mkbr|mklx|mkapps|run|runturbo|bench|trace|dbg|dbgturbo)" >&2
 		echo "  Use LX_BUILD to set the build-type (debug|release)." >&2
+		echo "  Set LX_THCMP=1 to configure cache misses comparably." >&2
 		;;
 esac
-
