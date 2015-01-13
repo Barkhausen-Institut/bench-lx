@@ -24,9 +24,9 @@ simflags=""
 # ensure that a cache miss costs 30 cycles, as a global memory read of 32bytes on T3
 if [ "$LX_THCMP" = 1 ]; then
 	simflags=" --write_delay=17 --read_delay=17"
-	echo "Configuring core to require 30 cycles per cache-miss."
+	echo "Configuring core to require 30 cycles per cache-miss." 1>&2
 else
-	echo "Configuring core to require 13 cycles per cache-miss."
+	echo "Configuring core to require 13 cycles per cache-miss." 1>&2
 fi
 
 cmd=$1
