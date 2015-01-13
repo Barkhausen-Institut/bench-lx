@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cycles.h>
+#include <smemcpy.h>
 
 static char buffer[4096];
 
@@ -16,19 +17,25 @@ int main(int argc, char **argv) {
     int fd = open(argv[1], O_RDONLY);
     unsigned start2 = get_cycles();
 
+    /* reset value */
+    smemcpy();
+
     ssize_t res;
     size_t total = 0;
     while((res = read(fd, buffer, sizeof(buffer))) > 0)
         total += res;
 
+    unsigned memcpy_cycles = smemcpy();
+
     unsigned end1 = get_cycles();
     close(fd);
     unsigned end2 = get_cycles();
 
-    printf("Read %zu bytes\n", total);
+    printf("Total bytes: %zu\n", total);
     printf("Total time: %u\n", end2 - start1);
     printf("Open time: %u\n", start2 - start1);
     printf("Read time: %u\n", end1 - start2);
+    printf("Memcpy time: %u\n", memcpy_cycles);
     printf("Close time: %u\n", end2 - end1);
     return 0;
 }

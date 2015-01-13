@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cycles.h>
+#include <smemcpy.h>
 
 static char *buffer;
 
@@ -27,10 +28,15 @@ int main(int argc, char **argv) {
 	    perror("malloc");
 	    return 1;
     }
+
+    /* reset value */
+    smemcpy();
+
     size_t pos = 0;
-    for(; pos < total; pos += bufsize) {
+    for(; pos < total; pos += bufsize)
     	write(fd, buffer, bufsize);
-    }
+
+    unsigned memcpy_cycles = smemcpy();
 
     unsigned end1 = get_cycles();
     close(fd);
@@ -40,6 +46,7 @@ int main(int argc, char **argv) {
     printf("Total time: %u\n", end2 - start1);
     printf("Open time: %u\n", start2 - start1);
     printf("Write time: %u\n", end1 - start2);
+    printf("Memcpy time: %u\n", memcpy_cycles);
     printf("Close time: %u\n", end2 - end1);
     return 0;
 }
