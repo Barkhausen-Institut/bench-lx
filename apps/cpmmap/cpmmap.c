@@ -45,15 +45,21 @@ int main(int argc, char **argv) {
     memcpy(outaddr, inaddr, total);
 
     unsigned end1 = get_cycles();
+
+    memcpy(outaddr, inaddr, total);
+
+    unsigned end2 = get_cycles();
+
     munmap(outaddr, total);
     munmap(inaddr, total);
     close(outfd);
     close(infd);
-    unsigned end2 = get_cycles();
+    unsigned end3 = get_cycles();
 
     printf("Total time: %u\n", end2 - start1);
     printf("Open time: %u\n", start2 - start1);
     printf("Write time: %u\n", end1 - start2);
-    printf("Close time: %u\n", end2 - end1);
+    printf("Write again time: %u\n", end2 - end1);
+    printf("Close time: %u\n", end3 - end2);
     return 0;
 }
