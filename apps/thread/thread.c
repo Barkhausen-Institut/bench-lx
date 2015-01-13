@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <cycles.h>
 
-#define COUNT 16
+#define COUNT 32
 
 static unsigned start;
 static unsigned times[COUNT];

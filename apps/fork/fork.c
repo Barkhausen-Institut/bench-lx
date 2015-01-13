@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include <cycles.h>
 
-#define COUNT 16
+#define COUNT 32
 
 int main() {
     size_t i;
