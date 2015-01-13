@@ -6,6 +6,13 @@
 #include <unistd.h>
 #include <cycles.h>
 
+static void prefetch_line(unsigned long addr) {
+    __asm__ volatile (
+        "dpfr   %0, 0;"
+        : : "a"(addr)
+    );
+}
+
 int main(int argc, char **argv) {
     if(argc < 2) {
         fprintf(stderr, "Usage: %s <file>\n", argv[0]);
@@ -25,10 +32,12 @@ int main(int argc, char **argv) {
     unsigned *end = p + total / sizeof(unsigned);
     while(p < end) {
         checksum1 += *p++;
+        //prefetch_line((unsigned long)(p + 64));
     }
 
     unsigned end4 = get_cycles();
 
+        //prefetch_line((unsigned long)(p + 64));
     munmap(addr, total);
     close(fd);
     unsigned end2 = get_cycles();
