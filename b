@@ -80,6 +80,10 @@ case $cmd in
 		scons -j$cpus
 		;;
 
+	elf=*)
+		xt-readelf -aW $builddir/bin/${cmd#elf=} | less
+		;;
+
 	dis=*)
 		xt-objdump --xtensa-core=$core -SC $builddir/bin/${cmd#dis=} | less
 		;;
