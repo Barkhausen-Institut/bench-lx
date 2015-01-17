@@ -112,14 +112,17 @@ case $cmd in
 		# waits for the benchmark to finish in background.
 		res=`mktemp`
 		(
-		    while [ "`grep '<=== Benchmarks done ===' $res 2>/dev/null`" = "" ]; do
-		    	# if the simulator exited for some reason and thus deleted the file, stop here
-		    	if [ ! -f $res ]; then
-		    		exit 1
-		    	fi
-		        sleep 1
-		    done
-		    kill `pgrep -x iss`
+			while [ "`grep '<=== Benchmarks done ===' $res 2>/dev/null`" = "" ]; do
+				# if the simulator exited for some reason and thus deleted the file, stop here
+				if [ ! -f $res ]; then
+					exit 1
+				fi
+				sleep 1
+			done
+
+			# kill the process that uses the temp-file. should be just the iss started here
+			# not killing all 'iss' instances allows us to run multiple benchmarks in parallel
+			kill `lsof $res | grep '^iss' -m 1 | awk -e '{ print $2 }'`
 		) &
 
 		xt-run --xtensa-core=$core --memlimit=128 --mem_model $simflags \
