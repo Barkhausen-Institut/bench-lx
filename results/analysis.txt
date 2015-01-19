@@ -1,0 +1,11 @@
+clone:
+    takes about 37000 cycles.
+    18000 cycles is the clone itself.
+    then it takes another 1000 cycles to get to waitpid
+    until we arrive at the entry-point, it takes another 13000 cycles
+
+read:
+    each 4K read costs about 12000 cycles. 3000 cycles are Linux overhead, 9000 cycles
+    are for the data-copy.
+    12000 * (2M / 4K) = 12000 * 512 = 6144000
+
