@@ -3,7 +3,8 @@
 
 $i = 0;
 define('IDX_SYSCALL',            $i++);
-define('IDX_THREAD',             $i++);
+define('IDX_PTHREAD',            $i++);
+define('IDX_CLONE',              $i++);
 define('IDX_FORK',               $i++);
 define('IDX_EXEC',               $i++);
 define('IDX_VEXEC',              $i++);
@@ -84,7 +85,8 @@ echo "\t\\hline\n";
 echo "\t& \\textbf{M3} & \\textbf{Linux} & \\textbf{Linux (no \\$-misses)}\\\\\n";
 echo "\t\\hline\n";
 print_task_row("Syscall (noop)", IDX_SYSCALL);
-print_task_row("\\texttt{pthread\\_create}", IDX_THREAD);
+print_task_row("\\texttt{pthread\\_create}", IDX_PTHREAD);
+print_task_row("\\texttt{clone}", IDX_CLONE);
 print_task_row("\\texttt{fork}", IDX_FORK);
 print_task_row("\\texttt{fork}+\\texttt{exec}+\\texttt{waitpid}", IDX_EXEC);
 print_task_row("\\texttt{vfork}+\\texttt{exec}+\\texttt{waitpid}", IDX_VEXEC);

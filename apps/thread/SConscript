@@ -1,2 +1,8 @@
 Import('env')
-env.LxProgram(env, target = 'thread', source = 'thread.c', libs = ['pthread'])
+myenv = env.Clone()
+myenv.Append(
+    CPPPATH = [
+        '#buildroot/output/build/uclibc-7bf35c8b7d4a1f97174eb49f47f33946b282114c/libc/sysdeps/linux/xtensa/'
+    ]
+)
+myenv.LxProgram(myenv, target = 'thread', source = ['clone.S', 'thread.c'], libs = ['pthread'])
