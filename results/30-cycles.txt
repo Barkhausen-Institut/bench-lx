@@ -1,21 +1,22 @@
-Time per syscall: 463
-Cycles per thread-start (avg): 173840
-Cycles per fork (avg): 99500
-Cycles per fork+exec+waitpid (avg): 401596
-Cycles per vfork+exec+waitpid (avg): 301447
-Read time: 6361071
-Memcpy time: 4783283
-Read time: 314588
-Read-again time: 26637
-Read time: 7186648
-Read-again time: 6767916
-Read time: 9537430
-Memcpy time: 4135091
-Read time: 5991843
-Read again: 5609184
-Write time: 9195123
-Memcpy time: 4874093
-Write time: 17621962
-Memcpy time: 9792927
-Write time: 10976139
-Write again time: 5994680
+Time per syscall: 468
+Cycles per pthread_start (avg): 169227
+Cycles per clone (avg): 37223
+Cycles per fork (avg): 169156
+Cycles per fork+exec+waitpid (avg): 405731
+Cycles per vfork+exec+waitpid (avg): 301428
+Read time: 6393548
+Memcpy time: 4803109
+Read time: 312075
+Read-again time: 26456
+Read time: 7159184
+Read-again time: 6732472
+Read time: 9730711
+Memcpy time: 4188343
+Read time: 5972375
+Read again: 5594616
+Write time: 9288368
+Memcpy time: 4925953
+Write time: 17732409
+Memcpy time: 9985787
+Write time: 10930253
+Write again time: 5968366
