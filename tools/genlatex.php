@@ -87,7 +87,7 @@ echo "\t\\hline\n";
 print_task_row("Syscall (noop)", IDX_SYSCALL);
 print_task_row("\\texttt{pthread\\_create}", IDX_PTHREAD);
 print_task_row("\\texttt{clone}", IDX_CLONE);
-print_task_row("\\texttt{fork}", IDX_FORK);
+print_task_row("\\texttt{fork}+\\texttt{waitpid}", IDX_FORK);
 print_task_row("\\texttt{fork}+\\texttt{exec}+\\texttt{waitpid}", IDX_EXEC);
 print_task_row("\\texttt{vfork}+\\texttt{exec}+\\texttt{waitpid}", IDX_VEXEC);
 echo "\\end{tabular}\n";

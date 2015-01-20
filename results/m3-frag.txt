@@ -1,7 +1,7 @@
 Time per syscall: 202
-Cycles per pthread_start (avg): 4246
-Cycles per clone (avg): 4246
-Cycles per fork (avg): 4246
+Cycles per pthread_start (avg): 4949
+Cycles per clone (avg): -
+Cycles per fork (avg): 5608
 Cycles per fork+exec+waitpid (avg): 227637
 Cycles per vfork+exec+waitpid (avg): -
 Read time: 562907
