@@ -1,0 +1,23 @@
+Time per syscall: 463
+Cycles per task-create (avg): 0
+Cycles per pthread_start (avg): 164387
+Cycles per clone (avg): 38043
+Cycles per fork (avg): 101281
+Cycles per fork+exec+waitpid (avg): 403717
+Cycles per vfork+exec+waitpid (avg): 299137
+Read time: 6675317
+Memcpy time: 4364525
+Read time: 311412
+Read-again time: 26519
+Read time: 6893379
+Read-again time: 6500396
+Read time: 9943380
+Memcpy time: 4148258
+Read time: 5986312
+Read again: 5639248
+Write time: 10597059
+Memcpy time: 3241340
+Write time: 20108989
+Memcpy time: 8218860
+Write time: 10918077
+Write again time: 5995889
