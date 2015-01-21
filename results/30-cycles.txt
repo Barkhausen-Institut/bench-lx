@@ -1,4 +1,5 @@
 Time per syscall: 468
+Cycles per task-create (avg): 0
 Cycles per pthread_start (avg): 169227
 Cycles per clone (avg): 37223
 Cycles per fork (avg): 169156

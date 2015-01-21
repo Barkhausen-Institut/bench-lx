@@ -10,6 +10,8 @@ echo ">=== Starting benchmarks ==="
 
 /bench/syscall
 
+echo "Cycles per task-create (avg): -"
+
 /bench/thread
 /bench/fork
 /bench/exec /bench/noop
