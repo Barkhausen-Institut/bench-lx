@@ -10,7 +10,7 @@ else
 	cpus=1
 fi
 
-libgcc=buildroot/output/host/usr/lib/gcc/xtensa-buildroot-linux-uclibc/4.8.3/libgcc.a
+libgcc=buildroot/output/host/usr/lib/gcc/xtensa-buildroot-linux-uclibc/4.8.4/libgcc.a
 core=DC_D_233L
 
 build=$LX_BUILD
