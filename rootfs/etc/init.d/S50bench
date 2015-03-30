@@ -33,4 +33,6 @@ echo "Cycles per task-create (avg): 0"
 
 /bench/cpmmap /starwars.txt /tmp/cpmmap.out > /tmp/res.txt && grep Write /tmp/res.txt
 
+/bench/pipe $((2*1024*1024)) > /tmp/res.txt && grep "Read\|Memcpy" /tmp/res.txt
+
 echo "<=== Benchmarks done ==="

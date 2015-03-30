@@ -25,6 +25,8 @@ define('IDX_COPY_RDWR',          $i++);
 define('IDX_COPY_RDWR_MEMCPY',   $i++);
 define('IDX_COPY_MMAP',          $i++);
 define('IDX_COPY_MMAP_AGAIN',    $i++);
+define('IDX_PIPE',               $i++);
+define('IDX_PIPE_MEMCPY',        $i++);
 
 if($argc != 5)
     exit("Usage: {$argv[0]} <13-cycles-res> <30-cycles-res> <m3-res> <m3-frag-res>\n");
@@ -134,5 +136,6 @@ print_fs_row("Write (\\texttt{write})", IDX_WRITE, IDX_WRITE_MEMCPY);
 print_fs_row("Copy (\\texttt{rd}+\\texttt{wr})", IDX_COPY_RDWR, IDX_COPY_RDWR_MEMCPY);
 print_fs_row("Copy (\\texttt{mmap})", IDX_COPY_MMAP, -1);
 print_fs_row("Copy ag. (\\texttt{mmap})", IDX_COPY_MMAP_AGAIN, -1);
+print_fs_row("Pipe", IDX_PIPE, IDX_PIPE_MEMCPY);
 echo "\\end{tabular}\n";
 ?>

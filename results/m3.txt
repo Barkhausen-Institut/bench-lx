@@ -21,3 +21,5 @@ Write time: 914064
 Memcpy time: -
 Write time: -
 Write again time: -
+Read time: -
+Memcpy time: -
