@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Buildroot 2014.08-git-00381-g27a1f09 Configuration
+# Buildroot 2015.02 Configuration
 #
 BR2_HAVE_DOT_CONFIG=y
 
@@ -12,7 +12,6 @@ BR2_HAVE_DOT_CONFIG=y
 # BR2_arm is not set
 # BR2_armeb is not set
 # BR2_aarch64 is not set
-# BR2_avr32 is not set
 # BR2_bfin is not set
 # BR2_i386 is not set
 # BR2_microblazeel is not set
@@ -31,6 +30,9 @@ BR2_HAVE_DOT_CONFIG=y
 # BR2_x86_64 is not set
 BR2_xtensa=y
 BR2_ARCH="xtensa"
+BR2_ARCH_HAS_ATOMICS=y
+BR2_BINFMT_SUPPORTS_SHARED=y
+BR2_BINFMT_ELF=y
 BR2_XTENSA_CUSTOM=y
 # BR2_xtensa_fsf is not set
 BR2_XTENSA_CUSTOM_NAME="dc233c"
@@ -68,7 +70,6 @@ BR2_PRIMARY_SITE=""
 BR2_BACKUP_SITE="http://sources.buildroot.net"
 BR2_KERNEL_MIRROR="https://www.kernel.org/pub"
 BR2_GNU_MIRROR="http://ftp.gnu.org/pub/gnu"
-BR2_DEBIAN_MIRROR="http://ftp.debian.org"
 BR2_LUAROCKS_MIRROR="http://luarocks.org/repositories/rocks"
 BR2_CPAN_MIRROR="http://search.cpan.org/CPAN"
 BR2_JLEVEL=0
@@ -88,9 +89,16 @@ BR2_OPTIMIZE_S=y
 #
 # enabling Stack Smashing Protection requires support in the toolchain
 #
-# BR2_PREFER_STATIC_LIB is not set
+# BR2_STATIC_LIBS is not set
+BR2_SHARED_LIBS=y
+# BR2_SHARED_STATIC_LIBS is not set
 BR2_PACKAGE_OVERRIDE_FILE="$(CONFIG_DIR)/local.mk"
 BR2_GLOBAL_PATCH_DIR=""
+
+#
+# Advanced
+#
+# BR2_COMPILER_PARANOID_UNSAFE_PATH is not set
 
 #
 # Toolchain
@@ -104,19 +112,18 @@ BR2_TOOLCHAIN_BUILDROOT_VENDOR="buildroot"
 #
 # Kernel Header Options
 #
-# BR2_KERNEL_HEADERS_3_0 is not set
 # BR2_KERNEL_HEADERS_3_2 is not set
 # BR2_KERNEL_HEADERS_3_4 is not set
 # BR2_KERNEL_HEADERS_3_10 is not set
-# BR2_KERNEL_HEADERS_3_11 is not set
 # BR2_KERNEL_HEADERS_3_12 is not set
-# BR2_KERNEL_HEADERS_3_13 is not set
 # BR2_KERNEL_HEADERS_3_14 is not set
-BR2_KERNEL_HEADERS_3_15=y
+# BR2_KERNEL_HEADERS_3_17 is not set
+BR2_KERNEL_HEADERS_3_18=y
 # BR2_KERNEL_HEADERS_VERSION is not set
-BR2_DEFAULT_KERNEL_HEADERS="3.15.1"
+BR2_DEFAULT_KERNEL_HEADERS="3.18.6"
 BR2_TOOLCHAIN_BUILDROOT_UCLIBC=y
 BR2_TOOLCHAIN_BUILDROOT_LIBC="uclibc"
+BR2_PACKAGE_UCLIBC=y
 
 #
 # uClibc Options
@@ -141,14 +148,11 @@ BR2_UCLIBC_TARGET_ARCH="xtensa"
 #
 # Binutils Options
 #
-# BR2_BINUTILS_VERSION_2_20_1 is not set
-# BR2_BINUTILS_VERSION_2_21 is not set
-# BR2_BINUTILS_VERSION_2_21_1 is not set
-BR2_BINUTILS_VERSION_2_22=y
-# BR2_BINUTILS_VERSION_2_23_1 is not set
+# BR2_BINUTILS_VERSION_2_22 is not set
 # BR2_BINUTILS_VERSION_2_23_2 is not set
 # BR2_BINUTILS_VERSION_2_24 is not set
-BR2_BINUTILS_VERSION="2.22"
+BR2_BINUTILS_VERSION_2_25=y
+BR2_BINUTILS_VERSION="2.25"
 BR2_BINUTILS_EXTRA_CONFIG_OPTIONS=""
 
 #
@@ -156,26 +160,22 @@ BR2_BINUTILS_EXTRA_CONFIG_OPTIONS=""
 #
 BR2_GCC_NEEDS_MPC=y
 BR2_GCC_SUPPORTS_GRAPHITE=y
-# BR2_GCC_VERSION_4_3_X is not set
-# BR2_GCC_VERSION_4_4_X is not set
 # BR2_GCC_VERSION_4_5_X is not set
-# BR2_GCC_VERSION_4_6_X is not set
 # BR2_GCC_VERSION_4_7_X is not set
 BR2_GCC_VERSION_4_8_X=y
 # BR2_GCC_VERSION_4_9_X is not set
-# BR2_GCC_VERSION_SNAP is not set
 BR2_GCC_SUPPORTS_FINEGRAINEDMTUNE=y
-BR2_GCC_VERSION="4.8.3"
+BR2_GCC_VERSION="4.8.4"
 BR2_EXTRA_GCC_CONFIG_OPTIONS=""
-# BR2_TOOLCHAIN_BUILDROOT_CXX is not set
+BR2_TOOLCHAIN_BUILDROOT_CXX=y
 # BR2_GCC_ENABLE_OPENMP is not set
 # BR2_GCC_ENABLE_LIBMUDFLAP is not set
 # BR2_GCC_ENABLE_GRAPHITE is not set
 # BR2_PACKAGE_HOST_GDB is not set
+BR2_INSTALL_LIBSTDCPP=y
 BR2_TOOLCHAIN_HAS_THREADS=y
 BR2_TOOLCHAIN_HAS_SHADOW_PASSWORDS=y
 # BR2_ENABLE_LOCALE_PURGE is not set
-BR2_GENERATE_LOCALE=""
 BR2_NEEDS_GETTEXT=y
 BR2_USE_MMU=y
 BR2_TARGET_OPTIMIZATION="-pipe"
@@ -197,7 +197,10 @@ BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_12=y
 BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_13=y
 BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_14=y
 BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_15=y
-BR2_TOOLCHAIN_HEADERS_AT_LEAST="3.15"
+BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_16=y
+BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_17=y
+BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_18=y
+BR2_TOOLCHAIN_HEADERS_AT_LEAST="3.18"
 
 #
 # System configuration
@@ -213,7 +216,7 @@ BR2_INIT_BUSYBOX=y
 # BR2_INIT_SYSV is not set
 
 #
-# systemd needs an (e)glibc toolchain, headers >= 3.10
+# systemd needs an (e)glibc toolchain, headers >= 3.7
 #
 # BR2_INIT_NONE is not set
 BR2_ROOTFS_DEVICE_CREATION_STATIC=y
@@ -221,13 +224,20 @@ BR2_ROOTFS_DEVICE_CREATION_STATIC=y
 # BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_MDEV is not set
 
 #
-# eudev needs a toolchain w/ largefile, wchar, dynamic library
+# eudev needs a toolchain w/ largefile, wchar, dynamic library, headers >= 3.9
 #
 BR2_ROOTFS_DEVICE_TABLE="system/device_table.txt"
 BR2_ROOTFS_STATIC_DEVICE_TABLE="system/device_table_dev.txt"
 BR2_ROOTFS_SKELETON_DEFAULT=y
 # BR2_ROOTFS_SKELETON_CUSTOM is not set
 BR2_TARGET_GENERIC_ROOT_PASSWD=""
+BR2_SYSTEM_BIN_SH_BUSYBOX=y
+
+#
+# bash, dash, zsh need BR2_PACKAGE_BUSYBOX_SHOW_OTHERS
+#
+# BR2_SYSTEM_BIN_SH_NONE is not set
+BR2_SYSTEM_BIN_SH="/bin/busybox"
 BR2_TARGET_GENERIC_GETTY=y
 
 #
@@ -243,8 +253,9 @@ BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200=y
 BR2_TARGET_GENERIC_GETTY_BAUDRATE="115200"
 BR2_TARGET_GENERIC_GETTY_TERM="vt100"
 BR2_TARGET_GENERIC_GETTY_OPTIONS=""
-# BR2_TARGET_TZ_INFO is not set
 BR2_TARGET_GENERIC_REMOUNT_ROOTFS_RW=y
+BR2_SYSTEM_DHCP=""
+# BR2_TARGET_TZ_INFO is not set
 BR2_ROOTFS_USERS_TABLES=""
 BR2_ROOTFS_OVERLAY="../rootfs"
 BR2_ROOTFS_POST_BUILD_SCRIPT=""
@@ -259,12 +270,7 @@ BR2_ROOTFS_POST_IMAGE_SCRIPT=""
 # Target packages
 #
 BR2_PACKAGE_BUSYBOX=y
-# BR2_BUSYBOX_VERSION_1_20_X is not set
-# BR2_BUSYBOX_VERSION_1_21_X is not set
-BR2_BUSYBOX_VERSION_1_22_X=y
-# BR2_PACKAGE_BUSYBOX_SNAPSHOT is not set
-BR2_BUSYBOX_VERSION="1.22.1"
-BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
+BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox.config"
 # BR2_PACKAGE_BUSYBOX_SHOW_OTHERS is not set
 # BR2_PACKAGE_BUSYBOX_WATCHDOG is not set
 
@@ -276,9 +282,11 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # alsa-utils needs a toolchain w/ largefile, threads
 #
 # BR2_PACKAGE_AUMIX is not set
+# BR2_PACKAGE_BELLAGIO is not set
+# BR2_PACKAGE_DVDAUTHOR is not set
 
 #
-# bellagio needs a toolchain w/ C++, threads, dynamic library
+# espeak needs a toolchain w/ C++, wchar, threads
 #
 # BR2_PACKAGE_FAAD2 is not set
 
@@ -308,24 +316,40 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LAME is not set
 # BR2_PACKAGE_LIBVPX is not set
 # BR2_PACKAGE_MADPLAY is not set
+# BR2_PACKAGE_MJPEGTOOLS is not set
+# BR2_PACKAGE_MODPLUGTOOLS is not set
 
 #
 # mpd needs a toolchain w/ C++, threads, wchar
 #
+# BR2_PACKAGE_MPD_MPC is not set
 # BR2_PACKAGE_MPG123 is not set
 
 #
 # mplayer needs a toolchain w/ largefile
 #
 # BR2_PACKAGE_MUSEPACK is not set
+
+#
+# ncmpc needs a toolchain w/ wchar, threads
+#
 # BR2_PACKAGE_OPUS_TOOLS is not set
 
 #
 # pulseaudio needs a toolchain w/ wchar, largefile, threads
 #
+# BR2_PACKAGE_SOX is not set
 
 #
 # tstools needs a toolchain w/ largefile
+#
+
+#
+# twolame needs a toolchain w/ largefile
+#
+
+#
+# upmpdcli needs a toolchain w/ C++, largefile, threads
 #
 
 #
@@ -333,11 +357,11 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # BR2_PACKAGE_VORBIS_TOOLS is not set
 # BR2_PACKAGE_WAVPACK is not set
+# BR2_PACKAGE_YAVTA is not set
 
 #
-# xbmc needs an (e)glibc toolchain w/ C++, threads
+# ympd needs a toolchain w/ threads, largefile
 #
-# BR2_PACKAGE_YAVTA is not set
 
 #
 # Compressors and decompressors
@@ -360,20 +384,21 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 
 #
-# bonnie++ needs a toolchain w/ C++
+# blktrace needs a (e)glibc or musl toolchain
 #
+# BR2_PACKAGE_BONNIE is not set
 # BR2_PACKAGE_CACHE_CALIBRATOR is not set
 # BR2_PACKAGE_DHRYSTONE is not set
 # BR2_PACKAGE_DMALLOC is not set
-# BR2_PACKAGE_DROPWATCH is not set
 
 #
-# dstat needs a toolchain w/ wchar
+# dropwatch needs a toolchain w/ threads, wchar
 #
 
 #
-# duma needs a toolchain w/ C++, threads
+# dstat needs a toolchain w/ wchar, threads
 #
+# BR2_PACKAGE_DUMA is not set
 
 #
 # fio needs a toolchain w/ largefile, threads
@@ -398,6 +423,14 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 
 #
+# ltrace needs toolchain w/ largefile, wchar, dynamic library
+#
+
+#
+# lttng-babeltrace needs a uclibc snapshot or (e)glib toolchain w/ wchar, threads, largefile
+#
+
+#
 # lttng-modules needs a Linux kernel to be built
 #
 # BR2_PACKAGE_MEMSTAT is not set
@@ -413,24 +446,29 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_PV is not set
 # BR2_PACKAGE_RAMSMP is not set
 # BR2_PACKAGE_RAMSPEED is not set
+# BR2_PACKAGE_RT_TESTS is not set
+# BR2_PACKAGE_SPIDEV_TEST is not set
 
 #
-# rt-tests needs a toolchain w/ NPTL
+# strace needs a toolchain w/ largefile
 #
-# BR2_PACKAGE_STRACE is not set
 # BR2_PACKAGE_STRESS is not set
 # BR2_PACKAGE_TINYMEMBENCH is not set
 
 #
-# trace-cmd needs a toolchain w/ largefile, threads
+# trace-cmd needs a toolchain w/ largefile, threads, dynamic library
 #
 # BR2_PACKAGE_WHETSTONE is not set
 
 #
 # Development tools
 #
-# BR2_PACKAGE_BINUTILS is not set
+
+#
+# binutils needs a toolchain w/ wchar
+#
 # BR2_PACKAGE_BSDIFF is not set
+# BR2_PACKAGE_CPPUNIT is not set
 
 #
 # cvs needs a toolchain w/ wchar
@@ -444,10 +482,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # git needs a toolchain w/ largefile
 #
-
-#
-# gperf needs a toolchain w/ C++
-#
+# BR2_PACKAGE_GPERF is not set
 # BR2_PACKAGE_JQ is not set
 # BR2_PACKAGE_LIBTOOL is not set
 # BR2_PACKAGE_MAKE is not set
@@ -482,6 +517,10 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 
 #
+# e2tools needs a toolchain w/ threads, largefile and wchar
+#
+
+#
 # exfat needs a toolchain w/ largefile, wchar, threads, dynamic library
 #
 
@@ -500,6 +539,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # genext2fs needs a toolchain w/ largefile
 #
+# BR2_PACKAGE_GENPART is not set
 # BR2_PACKAGE_GENROMFS is not set
 # BR2_PACKAGE_MAKEDEVS is not set
 
@@ -557,6 +597,10 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # Graphic applications
 #
 # BR2_PACKAGE_FSWEBCAM is not set
+
+#
+# glmark2 needs udev /dev management and a toolchain w/ C++, largefile, NPTL
+#
 # BR2_PACKAGE_GNUPLOT is not set
 
 #
@@ -570,14 +614,8 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # Graphic libraries
 #
-
-#
-# cegui06 needs a toolchain w/ C++, threads, dynamic library
-#
-
-#
-# directfb needs a toolchain w/ C++, threads
-#
+# BR2_PACKAGE_CEGUI06 is not set
+# BR2_PACKAGE_DIRECTFB is not set
 # BR2_PACKAGE_FBDUMP is not set
 # BR2_PACKAGE_FBGRAB is not set
 # BR2_PACKAGE_FB_TEST_APP is not set
@@ -595,10 +633,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # mesa3d needs udev /dev management and a toolchain w/ C++, largefile, NPTL
 #
-
-#
-# ocrad needs a toolchain w/ C++
-#
+# BR2_PACKAGE_OCRAD is not set
 
 #
 # psplash needs a toolchain w/ wchar
@@ -612,17 +647,14 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # EFL needs a toolchain w/ wchar
 #
-
-#
-# qt needs a toolchain w/ C++, threads
-#
+# BR2_PACKAGE_QT is not set
 
 #
 # Qt5 needs a toolchain w/ wchar, IPv6, NPTL, C++
 #
 
 #
-# weston needs udev and a toolchain w/ threads, headers >= 3.0
+# weston needs udev and a toolchain w/ threads, dynamic library, headers >= 3.0
 #
 
 #
@@ -636,6 +668,8 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # X libraries and helper libraries
 #
+# BR2_PACKAGE_DEJAVU is not set
+# BR2_PACKAGE_GHOSTSCRIPT_FONTS is not set
 # BR2_PACKAGE_LIBERATION is not set
 # BR2_PACKAGE_XKEYBOARD_CONFIG is not set
 
@@ -654,10 +688,17 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LINUX_FIRMWARE is not set
 # BR2_PACKAGE_UX500_FIRMWARE is not set
 # BR2_PACKAGE_ZD1211_FIRMWARE is not set
-# BR2_PACKAGE_AVRDUDE is not set
 
 #
-# cdrkit needs a toolchain w/ largefile
+# avrdude needs a toolchain w/ threads, largefile, wchar, dynamic library
+#
+
+#
+# bcache-tools needs udev /dev management and a toolchain w/ largefile, wchar
+#
+
+#
+# cdrkit needs a toolchain w/ largefile, headers >= 3.0
 #
 
 #
@@ -668,6 +709,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # dmraid needs a toolchain w/ largefile, threads, dynamic library
 #
+# BR2_PACKAGE_DTV_SCAN_TABLES is not set
 
 #
 # dvb-apps utils needs a toolchain w/ largefile, threads, headers >= 3.3
@@ -676,7 +718,6 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # dvbsnoop needs a toolchain w/ largefile
 #
-# BR2_PACKAGE_DTV_SCAN_TABLES is not set
 # BR2_PACKAGE_EEPROG is not set
 
 #
@@ -709,6 +750,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_INPUT_EVENT_DAEMON is not set
 # BR2_PACKAGE_INPUT_TOOLS is not set
 # BR2_PACKAGE_IOSTAT is not set
+# BR2_PACKAGE_IPMITOOL is not set
 # BR2_PACKAGE_IRDA_UTILS is not set
 # BR2_PACKAGE_KBD is not set
 # BR2_PACKAGE_LCDPROC is not set
@@ -749,6 +791,8 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # BR2_PACKAGE_PCIUTILS is not set
 # BR2_PACKAGE_PICOCOM is not set
+# BR2_PACKAGE_PPS_TOOLS is not set
+# BR2_PACKAGE_READ_EDID is not set
 # BR2_PACKAGE_RNG_TOOLS is not set
 # BR2_PACKAGE_SANE_BACKENDS is not set
 # BR2_PACKAGE_SDPARM is not set
@@ -759,12 +803,13 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 
 #
-# sispmctl needs a toolchain w/ threads, wchar
+# sigrok-cli needs a toolchain w/ wchar, threads
 #
 
 #
-# smartmontools needs a toolchain w/ C++
+# sispmctl needs a toolchain w/ threads, wchar
 #
+# BR2_PACKAGE_SMARTMONTOOLS is not set
 
 #
 # smstools3 needs a toolchain w/ wchar, threads
@@ -773,8 +818,13 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_SREDIRD is not set
 # BR2_PACKAGE_STATSERIAL is not set
 # BR2_PACKAGE_SYSSTAT is not set
+
+#
+# targetcli-fb depends on Python
+#
 # BR2_PACKAGE_TI_UIM is not set
 # BR2_PACKAGE_TI_UTILS is not set
+# BR2_PACKAGE_TRIGGERHAPPY is not set
 # BR2_PACKAGE_UBOOT_TOOLS is not set
 
 #
@@ -790,31 +840,45 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # usbmount requires udev to be enabled
 #
-# BR2_PACKAGE_USBUTILS is not set
+
+#
+# usbutils needs udev /dev management and toolchain w/ threads
+#
 # BR2_PACKAGE_W_SCAN is not set
 # BR2_PACKAGE_WIPE is not set
+
+#
+# xorriso needs a toolchain w/ wchar, largefile, threads
+#
 
 #
 # Interpreter languages and scripting
 #
 # BR2_PACKAGE_ENSCRIPT is not set
-# BR2_PACKAGE_ERLANG is not set
+
+#
+# guile needs a toolchain w/ threads, wchar
+#
 # BR2_PACKAGE_HASERL is not set
 # BR2_PACKAGE_JIMTCL is not set
 # BR2_PACKAGE_LUA is not set
+
+#
+# mono needs a toolchain w/ IPv6, threads
+#
 # BR2_PACKAGE_PERL is not set
 # BR2_PACKAGE_PHP is not set
 
 #
-# python needs a toolchain w/ wchar
+# python needs a toolchain w/ wchar, threads
 #
 
 #
-# python3 needs a toolchain w/ wchar
+# python3 needs a toolchain w/ wchar, threads
 #
 
 #
-# ruby needs a toolchain w/ wchar, threads
+# ruby needs a toolchain w/ wchar, threads, dynamic library
 #
 
 #
@@ -829,10 +893,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # Audio/Sound
 #
 # BR2_PACKAGE_ALSA_LIB is not set
-
-#
-# audiofile needs a toolchain w/ C++
-#
+# BR2_PACKAGE_AUDIOFILE is not set
 # BR2_PACKAGE_CELT051 is not set
 # BR2_PACKAGE_LIBAO is not set
 # BR2_PACKAGE_LIBCDAUDIO is not set
@@ -842,14 +903,12 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LIBID3TAG is not set
 # BR2_PACKAGE_LIBLO is not set
 # BR2_PACKAGE_LIBMAD is not set
-
-#
-# libmodplug needs a toolchain w/ C++
-#
+# BR2_PACKAGE_LIBMODPLUG is not set
 
 #
 # libmpd needs a toolchain w/ wchar, threads
 #
+# BR2_PACKAGE_LIBMPDCLIENT is not set
 # BR2_PACKAGE_LIBREPLAYGAIN is not set
 # BR2_PACKAGE_LIBSAMPLERATE is not set
 
@@ -858,6 +917,8 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # BR2_PACKAGE_LIBSOXR is not set
 # BR2_PACKAGE_LIBVORBIS is not set
+# BR2_PACKAGE_MP4V2 is not set
+# BR2_PACKAGE_OPENCORE_AMR is not set
 # BR2_PACKAGE_OPUS is not set
 # BR2_PACKAGE_PORTAUDIO is not set
 # BR2_PACKAGE_SPEEX is not set
@@ -865,6 +926,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # taglib needs a toolchain w/ C++, wchar
 #
+# BR2_PACKAGE_TINYALSA is not set
 # BR2_PACKAGE_TREMOR is not set
 # BR2_PACKAGE_VO_AACENC is not set
 
@@ -875,11 +937,10 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # libarchive needs a toolchain w/ wchar
 #
+# BR2_PACKAGE_LIBZIP is not set
 # BR2_PACKAGE_LZO is not set
-
-#
-# snappy needs a toolchain w/ C++
-#
+# BR2_PACKAGE_SNAPPY is not set
+# BR2_PACKAGE_SZIP is not set
 # BR2_PACKAGE_ZLIB is not set
 
 #
@@ -917,17 +978,14 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # BR2_PACKAGE_BERKELEYDB is not set
 # BR2_PACKAGE_GDBM is not set
-
-#
-# MySQL needs a toolchain w/ C++, threads
-#
+# BR2_PACKAGE_MYSQL is not set
 
 #
 # postgresql needs a toolchain w/ glibc
 #
 
 #
-# redis needs a toolchain w/ largefile, threads
+# redis needs a toolchain w/ IPv6, largefile, threads
 #
 # BR2_PACKAGE_SQLCIPHER is not set
 # BR2_PACKAGE_SQLITE is not set
@@ -961,6 +1019,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # atk needs a toolchain w/ wchar, threads
 #
 # BR2_PACKAGE_CAIRO is not set
+# BR2_PACKAGE_EXIV2 is not set
 # BR2_PACKAGE_FONTCONFIG is not set
 # BR2_PACKAGE_FREETYPE is not set
 # BR2_PACKAGE_GD is not set
@@ -968,10 +1027,9 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # gdk-pixbuf needs a toolchain w/ wchar, threads
 #
-
-#
-# harfbuzz needs a toolchain w/ C++
-#
+# BR2_PACKAGE_GIFLIB is not set
+# BR2_PACKAGE_HARFBUZZ is not set
+# BR2_PACKAGE_HICOLOR_ICON_THEME is not set
 # BR2_PACKAGE_IMLIB2 is not set
 # BR2_PACKAGE_JASPER is not set
 # BR2_PACKAGE_JPEG is not set
@@ -984,12 +1042,21 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # BR2_PACKAGE_LIBEXIF is not set
 # BR2_PACKAGE_LIBGEOTIFF is not set
-# BR2_PACKAGE_LIBPNG is not set
-# BR2_PACKAGE_LIBQRENCODE is not set
 
 #
-# libraw needs a toolchain w/ C++
+# libglew depends on X.org and needs an OpenGL backend
 #
+
+#
+# libglu needs an OpenGL backend
+#
+
+#
+# libgtk3 needs a toolchain w/ wchar, threads, C++
+#
+# BR2_PACKAGE_LIBPNG is not set
+# BR2_PACKAGE_LIBQRENCODE is not set
+# BR2_PACKAGE_LIBRAW is not set
 
 #
 # librsvg needs a toolchain w/ wchar, threads, C++
@@ -1000,34 +1067,33 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LIBUNGIF is not set
 
 #
-# opencv needs a toolchain w/ C++, threads, wchar
+# libva needs a toolchain w/ largefile, threads, dynamic library
+#
+
+#
+# libvips needs a toolchain w/ wchar, threads, C++
+#
+
+#
+# opencv needs a toolchain w/ C++, NPTL, wchar
 #
 
 #
 # pango needs a toolchain w/ wchar, threads, C++
 #
 # BR2_PACKAGE_PIXMAN is not set
-
-#
-# poppler needs a toolchain w/ C++, threads
-#
+# BR2_PACKAGE_POPPLER is not set
 # BR2_PACKAGE_TIFF is not set
 # BR2_PACKAGE_WAYLAND is not set
 # BR2_PACKAGE_WEBP is not set
-
-#
-# zxing needs a toolchain w/ C++
-#
+# BR2_PACKAGE_ZXING is not set
 
 #
 # Hardware handling
 #
 # BR2_PACKAGE_CCID is not set
 # BR2_PACKAGE_DTC is not set
-
-#
-# lcdapi needs a toolchain w/ C++, threads
-#
+# BR2_PACKAGE_LCDAPI is not set
 
 #
 # libatasmart requires udev to be enabled
@@ -1039,6 +1105,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LIBFREEFARE is not set
 # BR2_PACKAGE_LIBFTDI is not set
 # BR2_PACKAGE_LIBHID is not set
+# BR2_PACKAGE_LIBIIO is not set
 
 #
 # libinput needs udev /dev management
@@ -1052,18 +1119,30 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LIBNFC is not set
 
 #
+# libpciaccess needs a toolchain w/ largefile
+#
+# BR2_PACKAGE_LIBPHIDGET is not set
+
+#
 # libqmi needs a toolchain w/ wchar, threads
 #
 # BR2_PACKAGE_LIBRAW1394 is not set
+# BR2_PACKAGE_LIBRTLSDR is not set
+# BR2_PACKAGE_LIBSERIAL is not set
+# BR2_PACKAGE_LIBSERIALPORT is not set
 
 #
-# libserial needs a toolchain w/ C++
+# libsigrok needs a toolchain w/ wchar, threads
+#
+
+#
+# libsigrokecode needs a toolchain w/ wchar, threads
 #
 # BR2_PACKAGE_LIBSOC is not set
 # BR2_PACKAGE_LIBUSB is not set
 
 #
-# libv4l needs a toolchain w/ largefile, threads
+# libv4l needs a toolchain w/ largefile, threads and C++, headers >= 3.0
 #
 # BR2_PACKAGE_LIBXKBCOMMON is not set
 # BR2_PACKAGE_MTDEV is not set
@@ -1073,14 +1152,12 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # BR2_PACKAGE_PCSC_LITE is not set
 # BR2_PACKAGE_TSLIB is not set
-
-#
-# urg needs a toolchain w/ C++
-#
+# BR2_PACKAGE_URG is not set
 
 #
 # Javascript
 #
+# BR2_PACKAGE_BOOTSTRAP is not set
 # BR2_PACKAGE_EXPLORERCANVAS is not set
 # BR2_PACKAGE_FLOT is not set
 # BR2_PACKAGE_JQUERY is not set
@@ -1095,6 +1172,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # JSON/XML
 #
+# BR2_PACKAGE_BENEJSON is not set
 # BR2_PACKAGE_CJSON is not set
 # BR2_PACKAGE_EXPAT is not set
 # BR2_PACKAGE_EZXML is not set
@@ -1104,10 +1182,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # json-glib needs a toolchain w/ wchar, threads
 #
-
-#
-# libjson needs a toolchain w/ C++
-#
+# BR2_PACKAGE_LIBJSON is not set
 # BR2_PACKAGE_LIBROXML is not set
 # BR2_PACKAGE_LIBXML2 is not set
 
@@ -1119,15 +1194,16 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LIBYAML is not set
 # BR2_PACKAGE_MXML is not set
 # BR2_PACKAGE_RAPIDJSON is not set
-
-#
-# tinyxml needs a toolchain w/ C++
-#
+# BR2_PACKAGE_TINYXML is not set
 
 #
 # xerces-c++ needs a toolchain w/ C++, wchar
 #
 # BR2_PACKAGE_YAJL is not set
+
+#
+# yaml-cpp needs a toolchain w/ C++, largefile, threads
+#
 
 #
 # Logging
@@ -1138,10 +1214,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # log4cplus needs a toolchain w/ C++, wchar, threads
 #
-
-#
-# log4cxx needs a toolchain w/ C++, threads, dynamic library
-#
+# BR2_PACKAGE_LOG4CXX is not set
 
 #
 # zlog needs a toolchain w/ threads, largefile, dynamic library
@@ -1152,6 +1225,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # BR2_PACKAGE_LIBASS is not set
 # BR2_PACKAGE_LIBBLURAY is not set
+# BR2_PACKAGE_LIBDVBCSA is not set
 
 #
 # libdvbsi++ needs a toolchain w/ C++, wchar, threads
@@ -1164,14 +1238,8 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # libdvdread needs a toolchain w/ dynamic library, largefile
 #
-
-#
-# libebml needs a toolchain w/ C++
-#
-
-#
-# libmatroska needs a toolchain w/ C++
-#
+# BR2_PACKAGE_LIBEBML is not set
+# BR2_PACKAGE_LIBMATROSKA is not set
 
 #
 # libmms needs a toolchain w/ wchar, threads
@@ -1183,23 +1251,22 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # libplayer needs a toolchain w/ largefile, threads
 #
 # BR2_PACKAGE_LIBTHEORA is not set
-
-#
-# live555 needs a toolchain w/ C++
-#
+# BR2_PACKAGE_LIVE555 is not set
 
 #
 # mediastreamer needs a toolchain w/ threads, C++, IPv6
 #
 
 #
-# Networking
+# x264 needs a toolchain w/ largefile
 #
 
 #
-# agent++ needs a toolchain w/ threads, C++, dynamic library
+# Networking
 #
+# BR2_PACKAGE_AGENTPP is not set
 # BR2_PACKAGE_C_ARES is not set
+# BR2_PACKAGE_CGIC is not set
 
 #
 # cppzmq needs a toolchain w/ C++, IPv6, largefile, wchar, threads
@@ -1212,15 +1279,15 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # filemq needs a toolchain w/ C++, IPv6, largefile, wchar, threads
 #
+# BR2_PACKAGE_FLICKCURL is not set
+# BR2_PACKAGE_FREERADIUS_CLIENT is not set
+# BR2_PACKAGE_GEOIP is not set
 
 #
 # glib-networking needs a toolchain w/ wchar, threads
 #
 # BR2_PACKAGE_LIBCGI is not set
-
-#
-# libcgicc needs a toolchain w/ C++
-#
+# BR2_PACKAGE_LIBCGICC is not set
 # BR2_PACKAGE_LIBCURL is not set
 # BR2_PACKAGE_LIBDNET is not set
 # BR2_PACKAGE_LIBEXOSIP2 is not set
@@ -1229,6 +1296,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LIBIDN is not set
 # BR2_PACKAGE_LIBISCSI is not set
 # BR2_PACKAGE_LIBMBUS is not set
+# BR2_PACKAGE_LIBMEMCACHED is not set
 # BR2_PACKAGE_LIBMICROHTTPD is not set
 
 #
@@ -1238,6 +1306,10 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 
 #
 # libndp needs a toolchain w/ IPv6
+#
+
+#
+# libnice needs a toolchain w/ wchar, threads
 #
 
 #
@@ -1263,7 +1335,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LIBNFNETLINK is not set
 
 #
-# libnftnl needs a toolchain w/ threads, IPv6, largefile
+# libnftnl needs a toolchain w/ IPv6, largefile
 #
 # BR2_PACKAGE_LIBNL is not set
 # BR2_PACKAGE_LIBOAUTH is not set
@@ -1274,31 +1346,37 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LIBOSIP2 is not set
 # BR2_PACKAGE_LIBPCAP is not set
 # BR2_PACKAGE_LIBRSYNC is not set
-# BR2_PACKAGE_LIBSOCKETCAN is not set
 
 #
-# libshairplay needs a toolchain w/ IPv6, threads
+# libshairplay needs a toolchain w/ IPv6, threads, dynamic library
 #
+# BR2_PACKAGE_LIBSHOUT is not set
+# BR2_PACKAGE_LIBSOCKETCAN is not set
 
 #
 # libsoup needs a toolchain w/ wchar, threads
 #
+# BR2_PACKAGE_LIBSRTP is not set
 # BR2_PACKAGE_LIBSTROPHE is not set
 # BR2_PACKAGE_LIBTIRPC is not set
-
-#
-# libtorrent needs a toolchain w/ C++, threads
-#
+# BR2_PACKAGE_LIBTORRENT is not set
 
 #
 # libupnp needs a toolchain w/ largefile, threads
 #
-# BR2_PACKAGE_LIBVNCSERVER is not set
-# BR2_PACKAGE_LIBWEBSOCKETS is not set
-# BR2_PACKAGE_NEON is not set
 
 #
-# omniORB needs a toolchain w/ C++, threads
+# libupnpp needs a toolchain w/ C++, largefile, threads
+#
+# BR2_PACKAGE_LIBURIPARSER is not set
+# BR2_PACKAGE_LIBVNCSERVER is not set
+# BR2_PACKAGE_LIBWEBSOCK is not set
+# BR2_PACKAGE_LIBWEBSOCKETS is not set
+# BR2_PACKAGE_NEON is not set
+# BR2_PACKAGE_OMNIORB is not set
+
+#
+# openldap needs a toolchain w/ wchar
 #
 
 #
@@ -1308,10 +1386,8 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_QDECODER is not set
 # BR2_PACKAGE_RTMPDUMP is not set
 # BR2_PACKAGE_SLIRP is not set
-
-#
-# snmp++ needs a toolchain w/ threads, C++, dynamic library
-#
+# BR2_PACKAGE_SNMPPP is not set
+# BR2_PACKAGE_SOFIA_SIP is not set
 
 #
 # thrift needs a toolchain w/ C++, largefile, wchar, threads
@@ -1354,25 +1430,24 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 
 #
-# cppcms needs a toolchain w/ C++, NPTL, dynamic library
+# cppcms needs a toolchain w/ C++, NPTL, wchar, dynamic library
 #
 
 #
-# eigen needs a toolchain w/ C++
+# ding-libs needs a toolchain w/ wchar
 #
+# BR2_PACKAGE_EIGEN is not set
 
 #
-# elfutils needs a toolchain w/ largefile, wchar
+# elfutils needs a toolchain w/ largefile, wchar, dynamic library
 #
 # BR2_PACKAGE_FFTW is not set
-
-#
-# flann needs a toolchain w/ C++, dynamic library
-#
+# BR2_PACKAGE_FLANN is not set
 
 #
 # glibmm needs a toolchain w/ C++, wchar, threads
 #
+# BR2_PACKAGE_GLM is not set
 # BR2_PACKAGE_GMP is not set
 # BR2_PACKAGE_GSL is not set
 
@@ -1388,7 +1463,6 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # BR2_PACKAGE_LIBDAEMON is not set
 # BR2_PACKAGE_LIBEE is not set
-# BR2_PACKAGE_LIBELF is not set
 # BR2_PACKAGE_LIBEV is not set
 # BR2_PACKAGE_LIBEVDEV is not set
 # BR2_PACKAGE_LIBEVENT is not set
@@ -1401,44 +1475,51 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # libical needs a toolchain w/ wchar
 #
+# BR2_PACKAGE_LIBLINEAR is not set
 
 #
-# libplist needs a toolchain w/ C++
+# libpfm4 needs a toolchain w/ NPTL
 #
+# BR2_PACKAGE_LIBPLIST is not set
 # BR2_PACKAGE_LIBPTHREAD_STUBS is not set
 # BR2_PACKAGE_LIBPTHSEM is not set
-
-#
-# libsigc++ needs a toolchain w/ C++
-#
+# BR2_PACKAGE_LIBSIGC is not set
 # BR2_PACKAGE_LIBTASN1 is not set
 # BR2_PACKAGE_LIBTPL is not set
 # BR2_PACKAGE_LIBUBOX is not set
 # BR2_PACKAGE_LIBUCI is not set
 
 #
-# linux-pam needs a toolchain w/ wchar, locale
+# libuv needs a toolchain w/ IPv6, threads
 #
-# BR2_PACKAGE_MPC is not set
-# BR2_PACKAGE_MPFR is not set
 
 #
-# msgpack needs a toolchain w/ C++
+# linux-pam needs a toolchain w/ wchar, locale, dynamic library
 #
+# BR2_PACKAGE_MPC is not set
+# BR2_PACKAGE_MPDECIMAL is not set
+# BR2_PACKAGE_MPFR is not set
+# BR2_PACKAGE_MSGPACK is not set
 # BR2_PACKAGE_MTDEV2TUIO is not set
 # BR2_PACKAGE_ORC is not set
 # BR2_PACKAGE_P11_KIT is not set
+# BR2_PACKAGE_PROTOBUF_C is not set
+# BR2_PACKAGE_QHULL is not set
 
 #
-# protobuf-c needs a toolchain w/ C++, threads
-#
-
-#
-# schifra needs a toolchain w/ C++
+# qlibc needs a toolchain w/ threads, wchar, dynamic library
 #
 
 #
 # Security
+#
+
+#
+# libselinux needs a toolchain w/ largefile, threads, dynamic library
+#
+
+#
+# libsemanage needs a toolchain w/ largefile, threads, dynamic library
 #
 # BR2_PACKAGE_LIBSEPOL is not set
 
@@ -1453,6 +1534,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # icu needs a toolchain w/ C++, wchar, threads
 #
+# BR2_PACKAGE_LIBCLI is not set
 
 #
 # libedit needs a toolchain w/ wchar
@@ -1461,6 +1543,10 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LIBESTR is not set
 # BR2_PACKAGE_LIBFRIBIDI is not set
 # BR2_PACKAGE_LIBICONV is not set
+
+#
+# libunistring needs a toolchain w/ wchar
+#
 # BR2_PACKAGE_LINENOISE is not set
 # BR2_PACKAGE_NCURSES is not set
 
@@ -1471,9 +1557,27 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_POPT is not set
 # BR2_PACKAGE_READLINE is not set
 # BR2_PACKAGE_SLANG is not set
+# BR2_PACKAGE_TCLAP is not set
 
 #
-# tclap needs a toolchain w/ C++
+# ustr requires a toolchain w/ largefile
+#
+
+#
+# Mail
+#
+
+#
+# dovecot needs a toolchain w/ IPv6
+#
+# BR2_PACKAGE_EXIM is not set
+# BR2_PACKAGE_FETCHMAIL is not set
+# BR2_PACKAGE_HEIRLOOM_MAILX is not set
+# BR2_PACKAGE_LIBESMTP is not set
+# BR2_PACKAGE_MSMTP is not set
+
+#
+# mutt needs a toolchain w/ wchar
 #
 
 #
@@ -1481,9 +1585,10 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 # BR2_PACKAGE_AESPIPE is not set
 # BR2_PACKAGE_BC is not set
+# BR2_PACKAGE_CLAMAV is not set
 
 #
-# collectd needs a toolchain w/ IPv6, threads
+# collectd needs a toolchain w/ IPv6, threads, dynamic library
 #
 # BR2_PACKAGE_EMPTY is not set
 # BR2_PACKAGE_GOOGLEFONTDIRECTORY is not set
@@ -1502,19 +1607,6 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_SOUND_THEME_FREEDESKTOP is not set
 
 #
-# Mail
-#
-# BR2_PACKAGE_EXIM is not set
-# BR2_PACKAGE_FETCHMAIL is not set
-# BR2_PACKAGE_HEIRLOOM_MAILX is not set
-# BR2_PACKAGE_LIBESMTP is not set
-# BR2_PACKAGE_MSMTP is not set
-
-#
-# mutt needs a toolchain w/ wchar
-#
-
-#
 # Networking applications
 #
 
@@ -1530,15 +1622,17 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # argus needs a toolchain w/ threads, IPv6
 #
 # BR2_PACKAGE_ARPTABLES is not set
+
+#
+# atftp needs a toolchain w/ threads, IPv6
+#
 # BR2_PACKAGE_AVAHI is not set
 # BR2_PACKAGE_AXEL is not set
+# BR2_PACKAGE_BANDWIDTHD is not set
+# BR2_PACKAGE_BCUSDK is not set
 
 #
-# bcusdk needs a toolchain w/ C++
-#
-
-#
-# bind needs a toolchain w/ largefile, IPv6
+# bind needs a toolchain w/ largefile, IPv6, dynamic library
 #
 
 #
@@ -1546,8 +1640,9 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 
 #
-# bmon needs a toolchain w/ IPv6
+# bluez5-utils needs a toolchain w/ wchar, threads, IPv6, headers >= 3.4, dynamic library
 #
+# BR2_PACKAGE_BMON is not set
 # BR2_PACKAGE_BOA is not set
 # BR2_PACKAGE_BRIDGE_UTILS is not set
 # BR2_PACKAGE_BWM_NG is not set
@@ -1556,17 +1651,14 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_CIVETWEB is not set
 
 #
-# connman needs a toolchain w/ IPv6, wchar, threads, resolver
+# connman needs a toolchain w/ IPv6, wchar, threads, resolver, dynamic library
 #
 
 #
 # conntrack-tools needs a toolchain w/ IPv6, largefile, threads
 #
 # BR2_PACKAGE_CRDA is not set
-
-#
-# ctorrent needs a toolchain w/ C++
-#
+# BR2_PACKAGE_CTORRENT is not set
 # BR2_PACKAGE_CUPS is not set
 # BR2_PACKAGE_DHCPCD is not set
 # BR2_PACKAGE_DHCPDUMP is not set
@@ -1575,6 +1667,10 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 
 #
 # ebtables needs a toolchain w/ IPv6
+#
+
+#
+# ejabberd needs erlang
 #
 # BR2_PACKAGE_ETHTOOL is not set
 # BR2_PACKAGE_FAIFA is not set
@@ -1602,10 +1698,8 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # igmpproxy needs a toolchain w/ wchar
 #
 # BR2_PACKAGE_INADYN is not set
-
-#
-# iperf needs a toolchain w/ C++
-#
+# BR2_PACKAGE_IPERF is not set
+# BR2_PACKAGE_IPERF3 is not set
 # BR2_PACKAGE_IPROUTE2 is not set
 # BR2_PACKAGE_IPSEC_TOOLS is not set
 
@@ -1621,18 +1715,17 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_IW is not set
 
 #
-# kismet needs a toolchain w/ threads, C++
+# janus-gateway needs a toolchain w/ threads, wchar
 #
+# BR2_PACKAGE_KISMET is not set
 # BR2_PACKAGE_KNOCK is not set
+# BR2_PACKAGE_LEAFNODE2 is not set
 
 #
 # lftp requires a toolchain w/ C++, wchar
 #
 # BR2_PACKAGE_LIGHTTPD is not set
-
-#
-# linknx needs a toolchain w/ C++
-#
+# BR2_PACKAGE_LINKNX is not set
 # BR2_PACKAGE_LINKS is not set
 
 #
@@ -1641,11 +1734,13 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_LINUX_ZIGBEE is not set
 # BR2_PACKAGE_LRZSZ is not set
 # BR2_PACKAGE_MACCHANGER is not set
+# BR2_PACKAGE_MEMCACHED is not set
 # BR2_PACKAGE_MII_DIAG is not set
 
 #
 # minidlna needs a toolchain w/ largefile, IPv6, threads, wchar
 #
+# BR2_PACKAGE_MJPG_STREAMER is not set
 
 #
 # modemmanager needs udev /dev management and a toolchain w/ largefile, wchar, threads, IPv6
@@ -1671,7 +1766,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_NETSTAT_NAT is not set
 
 #
-# NetworkManager needs udev /dev management and a toolchain w/ IPv6, largefile, wchar, threads
+# NetworkManager needs udev /dev management and a toolchain w/ IPv6, largefile, wchar, threads, headers >= 3.7
 #
 
 #
@@ -1679,7 +1774,11 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 
 #
-# nftables needs a toolchain w/ IPv6, largefile, threads, wchar, headers >= 3.4
+# nftables needs a toolchain w/ IPv6, largefile, wchar, headers >= 3.4
+#
+
+#
+# nginx needs a toolchain w/ largefile
 #
 # BR2_PACKAGE_NGIRCD is not set
 # BR2_PACKAGE_NGREP is not set
@@ -1692,9 +1791,17 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_NUTTCP is not set
 
 #
+# odhcp6c needs a toolchain w/ IPv6
+#
+# BR2_PACKAGE_ODHCPLOC is not set
+
+#
 # olsr needs a toolchain w/ IPv6, threads
 #
-# BR2_PACKAGE_OPENNTPD is not set
+
+#
+# openntpd needs a toolchain w/ NPTL, IPv6
+#
 
 #
 # openobex needs a toolchain w/ IPv6
@@ -1706,6 +1813,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # openvpn needs a toolchain w/ IPv6
 #
 # BR2_PACKAGE_P910ND is not set
+# BR2_PACKAGE_PHIDGETWEBSERVICE is not set
 
 #
 # portmap needs a toolchain w/ RPC
@@ -1716,6 +1824,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_PROXYCHAINS_NG is not set
 # BR2_PACKAGE_PTPD is not set
 # BR2_PACKAGE_PTPD2 is not set
+# BR2_PACKAGE_PURE_FTPD is not set
 # BR2_PACKAGE_QUAGGA is not set
 
 #
@@ -1744,6 +1853,10 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 
 #
+# shairport-sync needs a toolchain w/ NPTL
+#
+
+#
 # smcroute needs a toolchain w/ IPv6
 #
 # BR2_PACKAGE_SOCAT is not set
@@ -1756,7 +1869,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_SPICE_PROTOCOL is not set
 
 #
-# squid needs a toolchain w/ C++, IPv6
+# squid needs a toolchain w/ C++, IPv6, headers >= 3.0
 #
 # BR2_PACKAGE_SSHPASS is not set
 # BR2_PACKAGE_STRONGSWAN is not set
@@ -1765,6 +1878,7 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_TCPING is not set
 # BR2_PACKAGE_TCPREPLAY is not set
 # BR2_PACKAGE_THTTPD is not set
+# BR2_PACKAGE_TINC is not set
 # BR2_PACKAGE_TINYHTTPD is not set
 # BR2_PACKAGE_TN5250 is not set
 
@@ -1781,17 +1895,14 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 #
 
 #
-# ulogd needs a toolchain w/ IPv6, largefile, dynamic library
-#
-
-#
-# ushare needs a toolchain w/ largefile, threads
+# ushare needs a toolchain w/ largefile, threads, dynamic library
 #
 
 #
 # ussp-push needs a toolchain w/ wchar, IPv6, threads, dynamic library
 #
 # BR2_PACKAGE_VDE2 is not set
+# BR2_PACKAGE_VNSTAT is not set
 # BR2_PACKAGE_VPNC is not set
 # BR2_PACKAGE_VSFTPD is not set
 # BR2_PACKAGE_VTUN is not set
@@ -1810,8 +1921,13 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # BR2_PACKAGE_XL2TP is not set
 
 #
-# znc needs a toolchain w/ C++
+# xtables-addons needs a Linux kernel to be built
 #
+
+#
+# xtables-addons needs a toolchain w/ dynamic library, largefile, threads
+#
+# BR2_PACKAGE_ZNC is not set
 
 #
 # Package managers
@@ -1835,10 +1951,12 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # Utilities
 #
 # BR2_PACKAGE_AT is not set
+# BR2_PACKAGE_CCRYPT is not set
 # BR2_PACKAGE_DIALOG is not set
 # BR2_PACKAGE_DTACH is not set
 # BR2_PACKAGE_FILE is not set
 # BR2_PACKAGE_GNUPG is not set
+# BR2_PACKAGE_GNUPG2 is not set
 
 #
 # inotify-tools needs a toolchain w/ largefile
@@ -1867,24 +1985,28 @@ BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.22.x.config"
 # attr needs a toolchain w/ largefile
 #
 # BR2_PACKAGE_CPULOAD is not set
+
+#
+# ftop needs a toolchain w/ largefile
+#
+# BR2_PACKAGE_GETENT is not set
 # BR2_PACKAGE_HTOP is not set
 # BR2_PACKAGE_IPRUTILS is not set
+# BR2_PACKAGE_IRQBALANCE is not set
 # BR2_PACKAGE_KEYUTILS is not set
 # BR2_PACKAGE_KMOD is not set
 
 #
-# lxc needs a toolchain w/ IPv6, threads, largefile
+# lxc needs a toolchain w/ IPv6, threads, largefile, headers >= 3.0
 #
 # BR2_PACKAGE_MONIT is not set
 # BR2_PACKAGE_NCDU is not set
-
-#
-# nut needs a toolchain w/ C++
-#
+# BR2_PACKAGE_NUT is not set
 
 #
 # polkit needs a toolchain w/ wchar, threads
 #
+# BR2_PACKAGE_PWGEN is not set
 
 #
 # quota needs a toolchain w/ largefile, wchar, threads
@@ -1924,6 +2046,7 @@ BR2_TARGET_ROOTFS_EXT2_2r0=y
 # BR2_TARGET_ROOTFS_EXT2_4 is not set
 BR2_TARGET_ROOTFS_EXT2_GEN=2
 BR2_TARGET_ROOTFS_EXT2_REV=0
+BR2_TARGET_ROOTFS_EXT2_LABEL=""
 BR2_TARGET_ROOTFS_EXT2_BLOCKS=0
 BR2_TARGET_ROOTFS_EXT2_INODES=0
 BR2_TARGET_ROOTFS_EXT2_RESBLKS=0
@@ -1957,7 +2080,10 @@ BR2_TARGET_ROOTFS_EXT2_NONE=y
 #
 # Host utilities
 #
+# BR2_PACKAGE_HOST_CHECKPOLICY is not set
+# BR2_PACKAGE_HOST_CRAMFS is not set
 # BR2_PACKAGE_HOST_DFU_UTIL is not set
+# BR2_PACKAGE_HOST_DOS2UNIX is not set
 # BR2_PACKAGE_HOST_DOSFSTOOLS is not set
 BR2_PACKAGE_HOST_E2FSPROGS=y
 # BR2_PACKAGE_HOST_E2TOOLS is not set
@@ -1965,10 +2091,13 @@ BR2_PACKAGE_HOST_GENEXT2FS=y
 # BR2_PACKAGE_HOST_GENIMAGE is not set
 # BR2_PACKAGE_HOST_GENPART is not set
 # BR2_PACKAGE_HOST_LPC3250LOADER is not set
+BR2_PACKAGE_HOST_MKE2IMG=y
 # BR2_PACKAGE_HOST_MTD is not set
 # BR2_PACKAGE_HOST_MTOOLS is not set
 # BR2_PACKAGE_HOST_OPENOCD is not set
 # BR2_PACKAGE_HOST_PARTED is not set
+# BR2_PACKAGE_HOST_PATCHELF is not set
+# BR2_PACKAGE_HOST_PWGEN is not set
 # BR2_PACKAGE_HOST_SAM_BA is not set
 # BR2_PACKAGE_HOST_SQUASHFS is not set
 # BR2_PACKAGE_HOST_UBOOT_TOOLS is not set
@@ -1979,11 +2108,77 @@ BR2_PACKAGE_HOST_GENEXT2FS=y
 #
 
 #
+# Legacy options removed in 2015.02
+#
+# BR2_PACKAGE_LIBGC is not set
+# BR2_PACKAGE_WDCTL is not set
+# BR2_PACKAGE_RPM_BZIP2_PAYLOADS is not set
+# BR2_PACKAGE_RPM_XZ_PAYLOADS is not set
+# BR2_PACKAGE_M4 is not set
+# BR2_PACKAGE_FLEX_BINARY is not set
+# BR2_PACKAGE_BISON is not set
+# BR2_PACKAGE_GOB2 is not set
+# BR2_PACKAGE_DISTCC is not set
+# BR2_PACKAGE_HASERL_VERSION_0_8_X is not set
+# BR2_PACKAGE_STRONGSWAN_TOOLS is not set
+# BR2_PACKAGE_XBMC_ADDON_XVDR is not set
+# BR2_PACKAGE_XBMC_PVR_ADDONS is not set
+# BR2_PACKAGE_XBMC is not set
+# BR2_PACKAGE_XBMC_ALSA_LIB is not set
+# BR2_PACKAGE_XBMC_AVAHI is not set
+# BR2_PACKAGE_XBMC_DBUS is not set
+# BR2_PACKAGE_XBMC_LIBBLURAY is not set
+# BR2_PACKAGE_XBMC_GOOM is not set
+# BR2_PACKAGE_XBMC_RSXS is not set
+# BR2_PACKAGE_XBMC_LIBCEC is not set
+# BR2_PACKAGE_XBMC_LIBMICROHTTPD is not set
+# BR2_PACKAGE_XBMC_LIBNFS is not set
+# BR2_PACKAGE_XBMC_RTMPDUMP is not set
+# BR2_PACKAGE_XBMC_LIBSHAIRPLAY is not set
+# BR2_PACKAGE_XBMC_LIBSMBCLIENT is not set
+# BR2_PACKAGE_XBMC_LIBTHEORA is not set
+# BR2_PACKAGE_XBMC_LIBUSB is not set
+# BR2_PACKAGE_XBMC_LIBVA is not set
+# BR2_PACKAGE_XBMC_WAVPACK is not set
+# BR2_PREFER_STATIC_LIB is not set
+
+#
+# Legacy options removed in 2014.11
+#
+# BR2_x86_generic is not set
+# BR2_GCC_VERSION_4_4_X is not set
+# BR2_sparc_sparchfleon is not set
+# BR2_sparc_sparchfleonv8 is not set
+# BR2_sparc_sparcsfleon is not set
+# BR2_sparc_sparcsfleonv8 is not set
+# BR2_PACKAGE_LINUX_FIRMWARE_XC5000 is not set
+# BR2_PACKAGE_LINUX_FIRMWARE_CXGB4 is not set
+# BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_3160_7260_7 is not set
+# BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_3160_7260_8 is not set
+
+#
 # Legacy options removed in 2014.08
 #
+# BR2_PACKAGE_LIBELF is not set
 # BR2_KERNEL_HEADERS_3_8 is not set
 # BR2_PACKAGE_GETTEXT_TOOLS is not set
 # BR2_PACKAGE_PROCPS is not set
+# BR2_BINUTILS_VERSION_2_20_1 is not set
+# BR2_BINUTILS_VERSION_2_21 is not set
+# BR2_BINUTILS_VERSION_2_23_1 is not set
+# BR2_UCLIBC_VERSION_0_9_32 is not set
+# BR2_GCC_VERSION_4_3_X is not set
+# BR2_GCC_VERSION_4_6_X is not set
+# BR2_GDB_VERSION_7_4 is not set
+# BR2_GDB_VERSION_7_5 is not set
+# BR2_BUSYBOX_VERSION_1_19_X is not set
+# BR2_BUSYBOX_VERSION_1_20_X is not set
+# BR2_BUSYBOX_VERSION_1_21_X is not set
+# BR2_PACKAGE_LIBV4L_DECODE_TM6000 is not set
+# BR2_PACKAGE_LIBV4L_IR_KEYTABLE is not set
+# BR2_PACKAGE_LIBV4L_V4L2_COMPLIANCE is not set
+# BR2_PACKAGE_LIBV4L_V4L2_CTL is not set
+# BR2_PACKAGE_LIBV4L_V4L2_DBG is not set
 
 #
 # Legacy options removed in 2014.05
