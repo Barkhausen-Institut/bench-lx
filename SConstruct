@@ -18,8 +18,8 @@ if btype == 'debug':
     baseenv.Append(CXXFLAGS = ' -O0 -g')
     baseenv.Append(CFLAGS = ' -O0 -g')
 else:
-    baseenv.Append(CXXFLAGS = ' -O3 -DNDEBUG')
-    baseenv.Append(CFLAGS = ' -O3 -DNDEBUG')
+    baseenv.Append(CXXFLAGS = ' -O2 -DNDEBUG')
+    baseenv.Append(CFLAGS = ' -O2 -DNDEBUG')
     btype = 'release'
 builddir = 'build/' + btype
 

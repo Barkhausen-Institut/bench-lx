@@ -67,7 +67,7 @@ case $cmd in
 		else
 			flags="-Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common"
 			flags="$flags -Werror-implicit-function-declaration -Wno-format-security -fno-delete-null-pointer-checks"
-			flags="$flags -O3 -ffreestanding -D__linux__ -pipe -mlongcalls -mforce-no-pic -Wframe-larger-than=1024"
+			flags="$flags -O2 -ffreestanding -D__linux__ -pipe -mlongcalls -mforce-no-pic -Wframe-larger-than=1024"
 			flags="$flags -fno-stack-protector -Wno-unused-but-set-variable -fomit-frame-pointer -g "
 			flags="$flags -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack"
 			flags="$flags -Werror=implicit-int -Werror=strict-prototypes  -DCC_HAVE_ASM_GOTO -gdwarf-2"
