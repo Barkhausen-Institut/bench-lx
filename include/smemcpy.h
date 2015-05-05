@@ -6,6 +6,6 @@ extern void syscall(int, unsigned *);
 
 static inline unsigned smemcpy(void) {
     unsigned val;
-    syscall(337, &val);
+    syscall(341, &val);
     return val;
 }
