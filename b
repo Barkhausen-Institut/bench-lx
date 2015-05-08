@@ -11,7 +11,7 @@ else
 fi
 
 libgcc=buildroot/output/host/usr/lib/gcc/xtensa-buildroot-linux-uclibc/4.8.4/libgcc.a
-core=DC_D_233L
+core=DE_233L
 
 build=$LX_BUILD
 if [ "$build" != "release" ] && [ "$build" != "debug" ]; then
@@ -28,12 +28,13 @@ if [ "$LX_THCMP" = 1 ]; then
 else
 	echo "Configuring core to require 13 cycles per cache-miss." 1>&2
 fi
+simflags="$simflags --dcsize=$((64*1024)) --dcline=32 --icsize=$((64*1024)) --icline=32"
 
 cmd=$1
 shift
 
 # add PATH to xtensa tools and buildroot-toolchain
-PATH=$XTENSA_DIR/XtDevTools/install/tools/RD-2011.2-linux/XtensaTools/bin/:$PATH
+PATH=$XTENSA_DIR/XtDevTools/install/tools/RE-2014.5-linux/XtensaTools/bin/:$PATH
 PATH=$(pwd)/buildroot/output/host/usr/bin:$PATH
 export PATH
 
@@ -100,7 +101,7 @@ case $cmd in
 		;;
 
 	runturbo)
-		xt-run --xtensa-core=$core --memlimit=128 --turbo \
+		xt-run --xtensa-core=$core --memlimit=128 --mem_model $simflags --turbo \
 			$builddir/arch/xtensa/boot/Image.elf
 		;;
 
@@ -153,7 +154,7 @@ case $cmd in
 	dbg|dbgturbo)
 		cmds=`mktemp`
 		if [ $cmd = "dbgturbo" ]; then
-			echo "target sim --turbo $simflags --memlimit=128" > $cmds
+			echo "target sim --mem_model $simflags --memlimit=128 --turbo" > $cmds
 		else
 			echo "target sim --mem_model $simflags --memlimit=128" > $cmds
 		fi
