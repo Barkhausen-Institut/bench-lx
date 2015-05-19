@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <cycles.h>
+#include <common.h>
 
 /* Cloning flags.  */
 # define CSIGNAL       0x000000ff /* Signal mask to be sent at exit.  */
@@ -38,7 +39,7 @@
 # define CLONE_NEWNET   0x40000000  /* New network namespace.  */
 # define CLONE_IO   0x80000000  /* Clone I/O context.  */
 
-#define COUNT 100
+#define COUNT 32
 
 extern int __my_clone (int (*fn)(void *arg), void *child_stack, int flags, void *arg, ...);
 
@@ -82,10 +83,8 @@ static void do_bench(const char *name, start_func func) {
     for(i = 0; i < COUNT; ++i)
         func();
 
-    unsigned total = 0;
-    for(i = 0; i < COUNT; ++i)
-        total += times[i];
-    printf("Cycles per %s (avg): %u\n", name, total / COUNT);
+    unsigned average = avg(times, COUNT);
+    printf("Cycles per %s (avg): %u (%u)\n", name, average, stddev(times, COUNT, average));
 }
 
 int main() {

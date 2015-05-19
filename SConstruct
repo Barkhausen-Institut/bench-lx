@@ -52,7 +52,7 @@ env.Replace(
 def LxProgram(env, target, source, libs = []):
     prog = env.Program(
         target, source,
-        LIBS = libs
+        LIBS = libs + ['m']
     )
     env.Install(env['BINDIR'], prog)
     env.Install(env['FSDIR'].abspath + '/bench', prog)

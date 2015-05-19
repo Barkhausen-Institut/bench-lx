@@ -9,14 +9,16 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <cycles.h>
+#include <common.h>
 
 #define COUNT 32
+
+static unsigned times[COUNT];
 
 typedef int (*fork_func)(void);
 
 static void do_exec(const char *name, char **argv, fork_func func) {
     size_t i;
-    unsigned total = 0;
     for(i = 0; i < COUNT; ++i) {
         int pid;
         unsigned start = get_cycles();
@@ -32,13 +34,14 @@ static void do_exec(const char *name, char **argv, fork_func func) {
             default: {
                 waitpid(pid, NULL, 0);
                 unsigned end = get_cycles();
-                total += end - start;
+                times[i] = end - start;
                 break;
             }
         }
     }
 
-    printf("Cycles per %s+exec+waitpid (avg): %u\n", name, total / COUNT);
+    unsigned average = avg(times, COUNT);
+    printf("Cycles per %s+exec+waitpid (avg): %u (%u)\n", name, average, stddev(times, COUNT, average));
 }
 
 int main(int argc, char **argv) {

@@ -6,12 +6,14 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <cycles.h>
+#include <common.h>
 
 #define COUNT 32
 
+static unsigned times[COUNT];
+
 int main() {
     size_t i;
-    unsigned total = 0;
     for(i = 0; i < COUNT; ++i) {
         int pid;
         unsigned start = get_cycles();
@@ -26,12 +28,13 @@ int main() {
             default: {
                 int status;
                 waitpid(pid, &status, 0);
-                total += WEXITSTATUS(status) * 1000;
+                times[i] = WEXITSTATUS(status) * 1000;
                 break;
             }
         }
     }
 
-    printf("Cycles per fork (avg): %u\n", total / COUNT);
+    unsigned average = avg(times, COUNT);
+    printf("Cycles per fork (avg): %u (%u)\n", average, stddev(times, COUNT, average));
     return 0;
 }
