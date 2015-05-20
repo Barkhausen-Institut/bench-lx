@@ -1,17 +1,21 @@
 #include <cycles.h>
+#include <common.h>
 #include <stdio.h>
 
-#define TOTAL	2000
+#define COUNT	2000
+
+static unsigned times[COUNT];
 
 int main() {
-	unsigned long total = 0;
 	unsigned start = get_cycles();
 	int i;
-	for(i = 0; i < TOTAL; ++i) {
+	for(i = 0; i < COUNT; ++i) {
 		unsigned cyc = get_cycles();
-		total += cyc - start;
+		times[i] = cyc - start;
 		start = cyc;
 	}
-	printf("Time per syscall: %lu\n", total / TOTAL);
+
+    unsigned average = avg(times, COUNT);
+    printf("Time per syscall (avg): %u (%u)\n", average, stddev(times, COUNT, average));
 	return 0;
 }
