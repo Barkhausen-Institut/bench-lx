@@ -8,7 +8,7 @@
 #include <cycles.h>
 #include <common.h>
 
-#define COUNT 32
+#define COUNT MICROBENCH_REPEAT
 
 static unsigned times[COUNT];
 
@@ -35,6 +35,6 @@ int main() {
     }
 
     unsigned average = avg(times, COUNT);
-    printf("Cycles per fork (avg): %u (%u)\n", average, stddev(times, COUNT, average));
+    printf("[fork] Cycles per fork (avg): %u (%u)\n", average, stddev(times, COUNT, average));
     return 0;
 }

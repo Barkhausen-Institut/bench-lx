@@ -2,7 +2,7 @@
 #include <common.h>
 #include <stdio.h>
 
-#define COUNT	2000
+#define COUNT	SYSCALL_REPEAT
 
 static unsigned times[COUNT];
 
@@ -16,6 +16,6 @@ int main() {
 	}
 
     unsigned average = avg(times, COUNT);
-    printf("Time per syscall (avg): %u (%u)\n", average, stddev(times, COUNT, average));
+    printf("[syscall] Time per syscall (avg): %u (%u)\n", average, stddev(times, COUNT, average));
 	return 0;
 }

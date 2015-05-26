@@ -38,6 +38,6 @@ int main(int argc, char **argv) {
         close(fd);
 
     printf("%7ld %7ld %7ld\n", lines, words, bytes);
-    printf("wc time: %u\n", end - start);
+    printf("[wc] wc time: %u\n", end - start);
     return 0;
 }

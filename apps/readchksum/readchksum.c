@@ -6,7 +6,13 @@
 #include <cycles.h>
 #include <smemcpy.h>
 
+#define COUNT    APPBENCH_REPEAT
+
 static char buffer[BUFFER_SIZE];
+static unsigned optimes[COUNT];
+static unsigned rdtimes[COUNT];
+static unsigned memtimes[COUNT];
+static unsigned cltimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 2) {
@@ -14,36 +20,47 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    unsigned start1 = get_cycles();
-    int fd = open(argv[1], O_RDONLY);
-    unsigned start2 = get_cycles();
+    int i;
+    size_t total;
+    unsigned checksum;
+    for(i = 0; i < COUNT; ++i) {
+        unsigned start1 = get_cycles();
+        int fd = open(argv[1], O_RDONLY);
+        if(fd == -1) {
+            perror("open");
+            return 1;
+        }
+        unsigned start2 = get_cycles();
 
-    /* reset value */
-    smemcpy();
+        /* reset value */
+        smemcpy();
 
-    ssize_t res;
-    unsigned checksum = 0;
-    size_t total = 0;
-    while((res = read(fd, buffer, sizeof(buffer))) > 0) {
-        total += res;
-        unsigned *p = (unsigned*)buffer;
-        unsigned *end = p + res / sizeof(unsigned);
-        while(p < end)
-            checksum += *p++;
+        checksum = 0;
+        total = 0;
+        ssize_t res;
+        while((res = read(fd, buffer, sizeof(buffer))) > 0) {
+            total += res;
+            unsigned *p = (unsigned*)buffer;
+            unsigned *end = p + res / sizeof(unsigned);
+            while(p < end)
+                checksum += *p++;
+        }
+
+        unsigned end1 = get_cycles();
+        close(fd);
+        unsigned end2 = get_cycles();
+
+        optimes[i] = start2 - start1;
+        rdtimes[i] = end1 - start2;
+        memtimes[i] = smemcpy();
+        cltimes[i] = end2 - end1;
     }
 
-    unsigned memcpy_cycles = smemcpy();
-
-    unsigned end1 = get_cycles();
-    close(fd);
-    unsigned end2 = get_cycles();
-
-    printf("Total bytes: %zu\n", total);
-    printf("Total time: %u\n", end2 - start1);
-    printf("Open time: %u\n", start2 - start1);
-    printf("Checksum: %u\n", checksum);
-    printf("Read time: %u\n", end1 - start2);
-    printf("Memcpy time: %u\n", memcpy_cycles);
-    printf("Close time: %u\n", end2 - end1);
+    printf("[readchksum] Total bytes: %zu\n", total);
+    printf("[readchksum] Checksum: %u\n", checksum);
+    printf("[readchksum] Open time: %u (%u)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
+    printf("[readchksum] Read time: %u (%u)\n", avg(rdtimes, COUNT), stddev(rdtimes, COUNT, avg(rdtimes, COUNT)));
+    printf("[readchksum] Memcpy time: %u (%u)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
+    printf("[readchksum] Close time: %u (%u)\n", avg(cltimes, COUNT), stddev(cltimes, COUNT, avg(cltimes, COUNT)));
     return 0;
 }

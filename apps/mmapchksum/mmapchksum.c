@@ -4,8 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <common.h>
 #include <cycles.h>
 
+#define COUNT   APPBENCH_REPEAT
+
+// is ignored by the simulator :(
 static void prefetch_line(unsigned long addr) {
     __asm__ volatile (
         "dpfr   %0, 0;"
@@ -13,51 +17,73 @@ static void prefetch_line(unsigned long addr) {
     );
 }
 
+static unsigned optimes[COUNT];
+static unsigned rdtimes[COUNT];
+static unsigned rdagtimes[COUNT];
+static unsigned cltimes[COUNT];
+
 int main(int argc, char **argv) {
     if(argc < 2) {
         fprintf(stderr, "Usage: %s <file>\n", argv[0]);
         exit(1);
     }
 
-    unsigned start1 = get_cycles();
-    int fd = open(argv[1], O_RDONLY);
-    off_t total = lseek(fd, 0, SEEK_END);
-    void *addr = mmap(NULL, total, PROT_READ, MAP_PRIVATE, fd, 0);
-    unsigned start2 = get_cycles();
+    int i;
+    off_t total;
+    unsigned checksum1,checksum2;
+    for(i = 0; i < COUNT; ++i) {
+        unsigned start1 = get_cycles();
+        int fd = open(argv[1], O_RDONLY);
+        if(fd == -1) {
+            perror("open");
+            return 1;
+        }
+        total = lseek(fd, 0, SEEK_END);
+        void *addr = mmap(NULL, total, PROT_READ, MAP_PRIVATE, fd, 0);
+        if(addr == MAP_FAILED) {
+            perror("mmap");
+            return 1;
+        }
+        unsigned start2 = get_cycles();
 
-    unsigned end3 = get_cycles();
+        unsigned end3 = get_cycles();
 
-    unsigned checksum1 = 0;
-    unsigned *p = (unsigned*)addr;
-    unsigned *end = p + total / sizeof(unsigned);
-    while(p < end) {
-        checksum1 += *p++;
-        //prefetch_line((unsigned long)(p + 64));
+        checksum1 = 0;
+        unsigned *p = (unsigned*)addr;
+        unsigned *end = p + total / sizeof(unsigned);
+        while(p < end) {
+            checksum1 += *p++;
+            //prefetch_line((unsigned long)(p + 64));
+        }
+
+        unsigned end4 = get_cycles();
+
+        checksum2 = 0;
+        p = (unsigned*)addr;
+        end = p + total / sizeof(unsigned);
+        while(p < end) {
+            checksum2 += *p++;
+            //prefetch_line((unsigned long)(p + 64));
+        }
+
+        unsigned end5 = get_cycles();
+
+        munmap(addr, total);
+        close(fd);
+        unsigned end2 = get_cycles();
+
+        optimes[i] = start2 - start1;
+        rdtimes[i] = end4 - end3;
+        rdagtimes[i] = end5 - end4;
+        cltimes[i] = end2 - end5;
     }
 
-    unsigned end4 = get_cycles();
-
-    unsigned checksum2 = 0;
-    p = (unsigned*)addr;
-    end = p + total / sizeof(unsigned);
-    while(p < end) {
-        checksum2 += *p++;
-        //prefetch_line((unsigned long)(p + 64));
-    }
-
-    unsigned end5 = get_cycles();
-
-    munmap(addr, total);
-    close(fd);
-    unsigned end2 = get_cycles();
-
-    printf("Total bytes: %zu\n", (size_t)total);
-    printf("Total time: %u\n", end2 - start1);
-    printf("Open time: %u\n", start2 - start1);
-    printf("Checksum1: %u\n", checksum1);
-    printf("Checksum2: %u\n", checksum2);
-    printf("Read time: %u\n", end4 - end3);
-    printf("Read again: %u\n", end5 - end4);
-    printf("Close time: %u\n", end2 - end5);
+    printf("[mmapchksum] Total bytes: %zu\n", (size_t)total);
+    printf("[mmapchksum] Checksum1: %u\n", checksum1);
+    printf("[mmapchksum] Checksum2: %u\n", checksum2);
+    printf("[mmapchksum] Open time: %u (%u)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
+    printf("[mmapchksum] Read time: %u (%u)\n", avg(rdtimes, COUNT), stddev(rdtimes, COUNT, avg(rdtimes, COUNT)));
+    printf("[mmapchksum] Read again time: %u (%u)\n", avg(rdagtimes, COUNT), stddev(rdagtimes, COUNT, avg(rdagtimes, COUNT)));
+    printf("[mmapchksum] Close time: %u (%u)\n", avg(cltimes, COUNT), stddev(cltimes, COUNT, avg(cltimes, COUNT)));
     return 0;
 }

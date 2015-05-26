@@ -52,11 +52,11 @@ int main(int argc, char **argv) {
     close(fd);
     unsigned end2 = get_cycles();
 
-    printf("Total bytes: %zu\n", (size_t)pos);
-    printf("Total time: %u\n", end2 - start1);
-    printf("Open time: %u\n", start2 - start1);
-    printf("Read time: %u\n", end1 - start2);
-    printf("Read-again time: %u\n", end3 - start3);
-    printf("Close time: %u\n", end2 - end3);
+    printf("[readmmapcpy] Total bytes: %zu\n", (size_t)pos);
+    printf("[readmmapcpy] Total time: %u\n", end2 - start1);
+    printf("[readmmapcpy] Open time: %u\n", start2 - start1);
+    printf("[readmmapcpy] Read time: %u\n", end1 - start2);
+    printf("[readmmapcpy] Read-again time: %u\n", end3 - start3);
+    printf("[readmmapcpy] Close time: %u\n", end2 - end3);
     return 0;
 }

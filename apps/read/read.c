@@ -6,7 +6,13 @@
 #include <cycles.h>
 #include <smemcpy.h>
 
+#define COUNT   FSBENCH_REPEAT
+
 static char buffer[BUFFER_SIZE];
+static unsigned optimes[COUNT];
+static unsigned rdtimes[COUNT];
+static unsigned memtimes[COUNT];
+static unsigned cltimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 2) {
@@ -14,29 +20,39 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    unsigned start1 = get_cycles();
-    int fd = open(argv[1], O_RDONLY);
-    unsigned start2 = get_cycles();
+    int i;
+    size_t total;
+    for(i = 0; i < COUNT; ++i) {
+        unsigned start1 = get_cycles();
+        int fd = open(argv[1], O_RDONLY);
+        if(fd == -1) {
+            perror("open");
+            return 1;
+        }
+        unsigned start2 = get_cycles();
 
-    /* reset value */
-    smemcpy();
+        /* reset value */
+        smemcpy();
 
-    ssize_t res;
-    size_t total = 0;
-    while((res = read(fd, buffer, sizeof(buffer))) > 0)
-        total += res;
+        ssize_t res;
+        total = 0;
+        while((res = read(fd, buffer, sizeof(buffer))) > 0)
+            total += res;
 
-    unsigned memcpy_cycles = smemcpy();
+        memtimes[i] = smemcpy();
 
-    unsigned end1 = get_cycles();
-    close(fd);
-    unsigned end2 = get_cycles();
+        unsigned end1 = get_cycles();
+        close(fd);
+        unsigned end2 = get_cycles();
+        optimes[i] = start2 - start1;
+        rdtimes[i] = end1 - start2;
+        cltimes[i] = end2 - end1;
+    }
 
-    printf("Total bytes: %zu\n", total);
-    printf("Total time: %u\n", end2 - start1);
-    printf("Open time: %u\n", start2 - start1);
-    printf("Read time: %u\n", end1 - start2);
-    printf("Memcpy time: %u\n", memcpy_cycles);
-    printf("Close time: %u\n", end2 - end1);
+    printf("[read] Total bytes: %zu\n", total);
+    printf("[read] Open time: %u (%u)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
+    printf("[read] Read time: %u (%u)\n", avg(rdtimes, COUNT), stddev(rdtimes, COUNT, avg(rdtimes, COUNT)));
+    printf("[read] Memcpy time: %u (%u)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
+    printf("[read] Close time: %u (%u)\n", avg(cltimes, COUNT), stddev(cltimes, COUNT, avg(cltimes, COUNT)));
     return 0;
 }

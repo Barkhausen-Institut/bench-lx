@@ -39,7 +39,7 @@
 # define CLONE_NEWNET   0x40000000  /* New network namespace.  */
 # define CLONE_IO   0x80000000  /* Clone I/O context.  */
 
-#define COUNT 32
+#define COUNT MICROBENCH_REPEAT
 
 extern int __my_clone (int (*fn)(void *arg), void *child_stack, int flags, void *arg, ...);
 
@@ -84,7 +84,7 @@ static void do_bench(const char *name, start_func func) {
         func();
 
     unsigned average = avg(times, COUNT);
-    printf("Cycles per %s (avg): %u (%u)\n", name, average, stddev(times, COUNT, average));
+    printf("[thread] Cycles per %s (avg): %u (%u)\n", name, average, stddev(times, COUNT, average));
 }
 
 int main() {

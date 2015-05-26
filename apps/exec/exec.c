@@ -11,7 +11,7 @@
 #include <cycles.h>
 #include <common.h>
 
-#define COUNT 32
+#define COUNT MICROBENCH_REPEAT
 
 static unsigned times[COUNT];
 
@@ -41,7 +41,7 @@ static void do_exec(const char *name, char **argv, fork_func func) {
     }
 
     unsigned average = avg(times, COUNT);
-    printf("Cycles per %s+exec+waitpid (avg): %u (%u)\n", name, average, stddev(times, COUNT, average));
+    printf("[exec] Cycles per %s+exec+waitpid (avg): %u (%u)\n", name, average, stddev(times, COUNT, average));
 }
 
 int main(int argc, char **argv) {

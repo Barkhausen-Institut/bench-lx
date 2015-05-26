@@ -2,7 +2,11 @@
 
 #include <math.h>
 
-#define BUFFER_SIZE     4096
+#define BUFFER_SIZE         4096
+#define SYSCALL_REPEAT      2000
+#define MICROBENCH_REPEAT   32
+#define FSBENCH_REPEAT      1   // low variation
+#define APPBENCH_REPEAT     1
 
 static inline unsigned avg(unsigned *vals, unsigned long count) {
     unsigned sum = 0;

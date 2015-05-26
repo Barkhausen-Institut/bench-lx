@@ -4,7 +4,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <common.h>
 #include <cycles.h>
+
+#define COUNT   FSBENCH_REPEAT
+
+static unsigned optimes[COUNT];
+static unsigned wrtimes[COUNT];
+static unsigned wragtimes[COUNT];
+static unsigned cltimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 3) {
@@ -12,54 +20,61 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    unsigned start1 = get_cycles();
-    int infd = open(argv[1], O_RDONLY);
-    if(infd == -1) {
-	    perror("open");
-	    return 1;
+    int i;
+    for(i = 0; i < COUNT; ++i) {
+        unsigned start1 = get_cycles();
+        int infd = open(argv[1], O_RDONLY);
+        if(infd == -1) {
+    	    perror("open");
+    	    return 1;
+        }
+
+        off_t total = lseek(infd, 0, SEEK_END);
+        void *inaddr = mmap(NULL, total, PROT_READ, MAP_PRIVATE, infd, 0);
+        if(inaddr == MAP_FAILED) {
+        	perror("mmap infile");
+        	return 1;
+    	}
+
+        int outfd = open(argv[2], O_RDWR | O_TRUNC | O_CREAT, 0644);
+        if(outfd == -1) {
+    	    perror("open");
+    	    return 1;
+        }
+        if(ftruncate(outfd, total)) {
+        	perror("ftruncate");
+        	return 1;
+    	}
+        void *outaddr = mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_SHARED, outfd, 0);
+        if(outaddr == MAP_FAILED) {
+        	perror("mmap outfile");
+        	return 1;
+    	}
+
+        unsigned start2 = get_cycles();
+        memcpy(outaddr, inaddr, total);
+
+        unsigned end1 = get_cycles();
+
+        memcpy(outaddr, inaddr, total);
+
+        unsigned end2 = get_cycles();
+
+        munmap(outaddr, total);
+        munmap(inaddr, total);
+        close(outfd);
+        close(infd);
+        unsigned end3 = get_cycles();
+
+        optimes[i] = start2 - start1;
+        wrtimes[i] = end1 - start2;
+        wragtimes[i] = end2 - end1;
+        cltimes[i] = end3 - end2;
     }
 
-    off_t total = lseek(infd, 0, SEEK_END);
-    void *inaddr = mmap(NULL, total, PROT_READ, MAP_PRIVATE, infd, 0);
-    if(inaddr == MAP_FAILED) {
-    	perror("mmap infile");
-    	return 1;
-	}
-
-    int outfd = open(argv[2], O_RDWR | O_TRUNC | O_CREAT, 0644);
-    if(outfd == -1) {
-	    perror("open");
-	    return 1;
-    }
-    if(ftruncate(outfd, total)) {
-    	perror("ftruncate");
-    	return 1;
-	}
-    void *outaddr = mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_SHARED, outfd, 0);
-    if(outaddr == MAP_FAILED) {
-    	perror("mmap outfile");
-    	return 1;
-	}
-
-    unsigned start2 = get_cycles();
-    memcpy(outaddr, inaddr, total);
-
-    unsigned end1 = get_cycles();
-
-    memcpy(outaddr, inaddr, total);
-
-    unsigned end2 = get_cycles();
-
-    munmap(outaddr, total);
-    munmap(inaddr, total);
-    close(outfd);
-    close(infd);
-    unsigned end3 = get_cycles();
-
-    printf("Total time: %u\n", end2 - start1);
-    printf("Open time: %u\n", start2 - start1);
-    printf("Write time: %u\n", end1 - start2);
-    printf("Write again time: %u\n", end2 - end1);
-    printf("Close time: %u\n", end3 - end2);
+    printf("[cpmmap] Open time: %u (%u)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
+    printf("[cpmmap] Write time: %u (%u)\n", avg(wrtimes, COUNT), stddev(wrtimes, COUNT, avg(wrtimes, COUNT)));
+    printf("[cpmmap] Write again time: %u (%u)\n", avg(wragtimes, COUNT), stddev(wragtimes, COUNT, avg(wragtimes, COUNT)));
+    printf("[cpmmap] Close time: %u (%u)\n", avg(cltimes, COUNT), stddev(cltimes, COUNT, avg(cltimes, COUNT)));
     return 0;
 }
