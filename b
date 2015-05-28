@@ -66,14 +66,7 @@ case $cmd in
 		if [ "$build" = "debug" ]; then
 			( cd linux && make O=../$builddir ARCH=xtensa KBUILD_CFLAGS="-O1 -gdwarf-2 -g" -j$cpus $* )
 		else
-			flags="-Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common"
-			flags="$flags -Werror-implicit-function-declaration -Wno-format-security -fno-delete-null-pointer-checks"
-			flags="$flags -O2 -ffreestanding -D__linux__ -pipe -mlongcalls -mforce-no-pic -Wframe-larger-than=1024"
-			flags="$flags -fno-stack-protector -Wno-unused-but-set-variable -fomit-frame-pointer -g "
-			flags="$flags -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack"
-			flags="$flags -Werror=implicit-int -Werror=strict-prototypes  -DCC_HAVE_ASM_GOTO -gdwarf-2"
-			echo $flags
-			( cd linux && make O=../$builddir KBUILD_CFLAGS="$flags" ARCH=xtensa -j$cpus $* )
+			( cd linux && make O=../$builddir ARCH=xtensa -j$cpus $* )
 		fi
 		;;
 
