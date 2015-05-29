@@ -8,10 +8,10 @@ fi
 
 echo ">=== Starting benchmarks ==="
 
-strace /bench/write /tmp/test $((1024 * 16)) 1>/dev/null
+strace tar xf /test.tar -C /tmp
 
 echo "===="
 
-/bench/stracetime /bench/write /tmp/test $((1024 * 16)) 1>/dev/null
+/bench/stracetime tar xf /test.tar -C /tmp
 
 echo "<=== Benchmarks done ==="
