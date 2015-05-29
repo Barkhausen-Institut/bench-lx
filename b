@@ -98,9 +98,13 @@ case $cmd in
 			$builddir/arch/xtensa/boot/Image.elf
 		;;
 
-	bench)
+	bench|fsbench)
 		tmp=`mktemp`
-		echo RUN_BENCHMARKS > $tmp
+		if [ "$cmd" = "bench" ]; then
+			echo RUN_BENCH > $tmp
+		else
+			echo RUN_FSBENCH > $tmp
+		fi
 
 		# we can't run xt-run in background for some reason, which is why we run the loop that
 		# waits for the benchmark to finish in background.
@@ -159,7 +163,7 @@ case $cmd in
 		;;
 
 	*)
-		echo "Usage: $0 (mkbr|mklx|mkapps|run|runturbo|bench|trace|dbg|dbgturbo)" >&2
+		echo "Usage: $0 (mkbr|mklx|mkapps|run|runturbo|bench|fsbench|trace|dbg|dbgturbo)" >&2
 		echo "  Use LX_BUILD to set the build-type (debug|release)." >&2
 		echo "  Set LX_THCMP=1 to configure cache misses comparably." >&2
 		;;
