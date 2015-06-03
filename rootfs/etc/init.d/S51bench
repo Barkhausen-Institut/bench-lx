@@ -8,10 +8,12 @@ fi
 
 echo ">=== Starting benchmarks ==="
 
-strace tar xf /test.tar -C /tmp
+#strace tar xf /test.tar -C /tmp
+strace find /default -name ls
 
 echo "===="
 
-/bench/stracetime tar xf /test.tar -C /tmp
+#/bench/stracetime tar xf /test.tar -C /tmp
+/bench/stracetime find /default -name ls
 
 echo "<=== Benchmarks done ==="
