@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
     size_t total = atoi(argv[2]);
 
     int i;
+    unsigned copied;
     for(i = 0; i < COUNT; ++i) {
         unsigned start1 = get_cycles();
         int fd = open(argv[1], O_WRONLY | O_TRUNC | O_CREAT);
@@ -33,13 +34,13 @@ int main(int argc, char **argv) {
         unsigned start2 = get_cycles();
 
         /* reset value */
-        smemcpy();
+        smemcpy(0);
 
         size_t pos = 0;
         for(; pos < total; pos += sizeof(buffer))
         	write(fd, buffer, sizeof(buffer));
 
-        memtimes[i] = smemcpy();
+        memtimes[i] = smemcpy(&copied);
 
         unsigned end1 = get_cycles();
         close(fd);
@@ -51,6 +52,7 @@ int main(int argc, char **argv) {
     }
 
     printf("[write] Total bytes: %zu\n", total);
+    printf("[write] copied %u bytes\n", copied);
     printf("[write] Open time: %u (%u)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
     printf("[write] Write time: %u (%u)\n", avg(rdtimes, COUNT), stddev(rdtimes, COUNT, avg(rdtimes, COUNT)));
     printf("[write] Memcpy time: %u (%u)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));

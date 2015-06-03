@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
     }
 
     int i;
+    unsigned copied;
     for(i = 0; i < COUNT; ++i) {
         unsigned start1 = get_cycles();
         int infd = open(argv[1], O_RDONLY);
@@ -37,7 +38,7 @@ int main(int argc, char **argv) {
         unsigned start2 = get_cycles();
 
         /* reset value */
-        smemcpy();
+        smemcpy(0);
 
         ssize_t count;
         while((count = read(infd, buffer, sizeof(buffer))) > 0)
@@ -50,10 +51,11 @@ int main(int argc, char **argv) {
 
         optimes[i] = start2 - start1;
         wrtimes[i] = end1 - start2;
-        memtimes[i] = smemcpy();
+        memtimes[i] = smemcpy(&copied);
         cltimes[i] = end2 - end1;
     }
 
+    printf("[cp] copied %u bytes\n", copied);
     printf("[cp] Open time: %u (%u)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
     printf("[cp] Write time: %u (%u)\n", avg(wrtimes, COUNT), stddev(wrtimes, COUNT, avg(wrtimes, COUNT)));
     printf("[cp] Memcpy time: %u (%u)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));

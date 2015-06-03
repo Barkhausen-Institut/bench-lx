@@ -22,9 +22,10 @@ int main(int argc, char **argv) {
     }
 
     int i;
+    unsigned copied;
     for(i = 0; i < COUNT; ++i) {
         /* reset value */
-        smemcpy();
+        smemcpy(0);
 
         unsigned start = get_cycles();
         int fds[2];
@@ -79,9 +80,10 @@ int main(int argc, char **argv) {
 
         unsigned end = get_cycles();
         tottimes[i] = end - start;
-        memtimes[i] = smemcpy();
+        memtimes[i] = smemcpy(&copied);
     }
 
+    printf("[execpipe] copied %u bytes\n", copied);
     printf("[execpipe] Total time: %u (%u)\n", avg(tottimes, COUNT), stddev(tottimes, COUNT, avg(tottimes, COUNT)));
     printf("[execpipe] Memcpy time: %u (%u)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
     return 0;

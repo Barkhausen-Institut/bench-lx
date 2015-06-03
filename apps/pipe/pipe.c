@@ -23,10 +23,11 @@ int main(int argc, char **argv) {
     }
 
     size_t total;
+    unsigned copied;
     int i;
     for(i = 0; i < COUNT; ++i) {
         /* reset value */
-        smemcpy();
+        smemcpy(0);
 
         unsigned start3 = 0, end1 = 0;
 
@@ -69,11 +70,12 @@ int main(int argc, char **argv) {
 
         optimes[i] = start2 - start1;
         rdtimes[i] = end1 - start3;
-        memtimes[i] = smemcpy();
+        memtimes[i] = smemcpy(&copied);
         frdtimes[i] = end2 - start2;
     }
 
     printf("[pipe] Total bytes: %zu\n", total);
+    printf("[pipe] copied %u bytes\n", copied);
     printf("[pipe] Open time: %u (%u)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
     printf("[pipe] Read time: %u (%u)\n", avg(rdtimes, COUNT), stddev(rdtimes, COUNT, avg(rdtimes, COUNT)));
     printf("[pipe] Fork+read time: %u (%u)\n", avg(frdtimes, COUNT), stddev(frdtimes, COUNT, avg(frdtimes, COUNT)));
