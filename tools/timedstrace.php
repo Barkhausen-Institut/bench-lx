@@ -15,7 +15,9 @@ $names = array(
     39 => "rmdir",
     40 => "mkdir",
     46 => "stat",
+    50 => "lstat64",
     54 => "fstat",
+    60 => "getdents64",
     113 => "sendfile",
     114 => "sendfile64",
 );
