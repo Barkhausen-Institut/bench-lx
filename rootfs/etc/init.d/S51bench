@@ -1,19 +1,18 @@
 #!/bin/sh
 
-# check if "RUN_FSBENCH" has been written to 0x3000000
-str=`dd if=/dev/mem ibs=1024 skip=$((48*1024)) count=1 2>/dev/null | dd bs=1 count=11 2>/dev/null`
-if [ "$str" != "RUN_FSBENCH" ]; then
+# check if a command has been written to 0x3000000
+str=`dd if=/dev/mem ibs=1024 skip=$((48*1024)) count=1 2>/dev/null`
+cmd=${str#CMD=}
+if [ $cmd = $str ]; then
     exit 0
 fi
 
 echo ">=== Starting benchmarks ==="
 
-#strace tar xf /test.tar -C /tmp
-strace find /default -name ls
+strace $cmd
 
 echo "===="
 
-#/bench/stracetime tar xf /test.tar -C /tmp
-/bench/stracetime find /default -name ls
+/bench/stracetime $cmd
 
 echo "<=== Benchmarks done ==="
