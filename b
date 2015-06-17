@@ -103,7 +103,7 @@ case $cmd in
 		if [ "$cmd" = "bench" ]; then
 			echo RUN_BENCH > $tmp
 		else
-			echo -n "CMD=$FSBENCH_CMD\0" > $tmp
+			echo -e -n "CMD=$FSBENCH_CMD\0" > $tmp
 		fi
 
 		# we can't run xt-run in background for some reason, which is why we run the loop that
