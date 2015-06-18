@@ -9,10 +9,11 @@ fi
 
 echo ">=== Starting benchmarks ==="
 
-strace $cmd
+strace -o /tmp/res.txt $cmd 2>/dev/null
+cat /tmp/res.txt
 
 echo "===="
 
-/bench/stracetime $cmd
+/bench/stracetime $cmd 2>/dev/null
 
 echo "<=== Benchmarks done ==="
