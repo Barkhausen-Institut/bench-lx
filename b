@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ ! -d "$XTENSA_DIR" ]; then
 	echo "Please set XTENSA_DIR to the path of the xtensa directory" >&2
 	exit 1
