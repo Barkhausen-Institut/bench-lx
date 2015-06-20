@@ -9,3 +9,15 @@ read:
     are for the data-copy.
     12000 * (2M / 4K) = 12000 * 512 = 6144000
 
+copy:
+    the mmap'ed input file causes 32 pagefaults, because Linux maps 16 pages at once
+    the mmap'ed output file causes 512 pagefaults, 1 page at once
+    I would guess that Linux maps just 1 page at once when writing, because it costs time to
+    allocate a page, etc., and thus, it doesn't want to allocate more than necessary.
+    For reading, this is of course cheaper, so that it makes sense to map a few at once.
+    In total, about 8M cycles are spent for pagefaults, so that we have about 15000 cycles per
+    pagefault. Although I would assume that the write-pagefaults are more expensive.
+    For M3, it is different because at first, we can "map" the whole file in constant time. Thus,
+    there is no point in mapping it in pieces, but we always map at much as possible.
+    For writing, it's not that expensive to allocate space, so that we can easily allocate a few
+    blocks at once and free them on close again, if we didn't need them.
