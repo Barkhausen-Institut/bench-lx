@@ -35,6 +35,6 @@ echo "Cycles per task-create (avg): 0"
 
 /bench/pipe $((2*1024*1024)) > /tmp/res.txt && grep "Read\|Memcpy" /tmp/res.txt
 
-/bench/execpipe /bench/cat /bench/wc /starwars.txt > /tmp/res.txt && grep "Total\|Memcpy" /tmp/res.txt
+/bench/execpipe /bench/cat /bench/wc /largetext.txt > /tmp/res.txt && grep "Total\|Memcpy" /tmp/res.txt
 
 echo "<=== Benchmarks done ==="
