@@ -103,6 +103,12 @@ case $cmd in
 			arch/xtensa/boot/Image.elf
 		;;
 
+	runqemu)
+		qemu-system-x86_64 -enable-kvm -kernel $builddir/arch/x86/boot/bzImage \
+			-initrd $builddir/buildroot/images/rootfs.cpio.gz -append "console=ttyS0" \
+			-serial stdio
+		;;
+
 	runturbo)
 		cd $builddir && xt-run --memlimit=128 --mem_model $simflags --turbo \
 			arch/xtensa/boot/Image.elf
