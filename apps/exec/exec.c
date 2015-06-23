@@ -13,7 +13,7 @@
 
 #define COUNT MICROBENCH_REPEAT
 
-static unsigned times[COUNT];
+static cycle_t times[COUNT];
 
 typedef int (*fork_func)(void);
 
@@ -21,7 +21,7 @@ static void do_exec(const char *name, char **argv, fork_func func) {
     size_t i;
     for(i = 0; i < COUNT; ++i) {
         int pid;
-        unsigned start = get_cycles();
+        cycle_t start = get_cycles();
         switch((pid = func())) {
             case 0: {
                 char *args[] = {argv[1], NULL};
@@ -33,15 +33,15 @@ static void do_exec(const char *name, char **argv, fork_func func) {
                 break;
             default: {
                 waitpid(pid, NULL, 0);
-                unsigned end = get_cycles();
+                cycle_t end = get_cycles();
                 times[i] = end - start;
                 break;
             }
         }
     }
 
-    unsigned average = avg(times, COUNT);
-    printf("[exec] Cycles per %s+exec+waitpid (avg): %u (%u)\n", name, average, stddev(times, COUNT, average));
+    cycle_t average = avg(times, COUNT);
+    printf("[exec] Cycles per %s+exec+waitpid (avg): %lu (%lu)\n", name, average, stddev(times, COUNT, average));
 }
 
 int main(int argc, char **argv) {

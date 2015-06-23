@@ -11,10 +11,10 @@
 #define COUNT   FSBENCH_REPEAT
 
 static char buffer[BUFFER_SIZE];
-static unsigned optimes[COUNT];
-static unsigned rdtimes[COUNT];
-static unsigned frdtimes[COUNT];
-static unsigned memtimes[COUNT];
+static cycle_t optimes[COUNT];
+static cycle_t rdtimes[COUNT];
+static cycle_t frdtimes[COUNT];
+static cycle_t memtimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 2) {
@@ -23,21 +23,21 @@ int main(int argc, char **argv) {
     }
 
     size_t total;
-    unsigned copied;
+    unsigned long copied;
     int i;
     for(i = 0; i < COUNT; ++i) {
         /* reset value */
         smemcpy(0);
 
-        unsigned start3 = 0, end1 = 0;
+        cycle_t start3 = 0, end1 = 0;
 
-        unsigned start1 = get_cycles();
+        cycle_t start1 = get_cycles();
         int fds[2];
         if(pipe(fds) == -1) {
             perror("pipe");
             return 1;
         }
-        unsigned start2 = get_cycles();
+        cycle_t start2 = get_cycles();
 
         const size_t count = atoi(argv[1]) / BUFFER_SIZE;
         total = 0;
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
                 break;
         }
 
-        unsigned end2 = get_cycles();
+        cycle_t end2 = get_cycles();
 
         optimes[i] = start2 - start1;
         rdtimes[i] = end1 - start3;
@@ -75,10 +75,10 @@ int main(int argc, char **argv) {
     }
 
     printf("[pipe] Total bytes: %zu\n", total);
-    printf("[pipe] copied %u bytes\n", copied);
-    printf("[pipe] Open time: %u (%u)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
-    printf("[pipe] Read time: %u (%u)\n", avg(rdtimes, COUNT), stddev(rdtimes, COUNT, avg(rdtimes, COUNT)));
-    printf("[pipe] Fork+read time: %u (%u)\n", avg(frdtimes, COUNT), stddev(frdtimes, COUNT, avg(frdtimes, COUNT)));
-    printf("[pipe] Memcpy time: %u (%u)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
+    printf("[pipe] copied %lu bytes\n", copied);
+    printf("[pipe] Open time: %lu (%lu)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
+    printf("[pipe] Read time: %lu (%lu)\n", avg(rdtimes, COUNT), stddev(rdtimes, COUNT, avg(rdtimes, COUNT)));
+    printf("[pipe] Fork+read time: %lu (%lu)\n", avg(frdtimes, COUNT), stddev(frdtimes, COUNT, avg(frdtimes, COUNT)));
+    printf("[pipe] Memcpy time: %lu (%lu)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
     return 0;
 }

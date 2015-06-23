@@ -10,16 +10,16 @@
 
 #define COUNT MICROBENCH_REPEAT
 
-static unsigned times[COUNT];
+static cycle_t times[COUNT];
 
 int main() {
     size_t i;
     for(i = 0; i < COUNT; ++i) {
         int pid;
-        unsigned start = get_cycles();
+        cycle_t start = get_cycles();
         switch((pid = fork())) {
             case 0: {
-                unsigned end = get_cycles();
+                cycle_t end = get_cycles();
                 exit((end - start) / 1000);
             }
             case -1:
@@ -34,7 +34,7 @@ int main() {
         }
     }
 
-    unsigned average = avg(times, COUNT);
-    printf("[fork] Cycles per fork (avg): %u (%u)\n", average, stddev(times, COUNT, average));
+    cycle_t average = avg(times, COUNT);
+    printf("[fork] Cycles per fork (avg): %lu (%lu)\n", average, stddev(times, COUNT, average));
     return 0;
 }

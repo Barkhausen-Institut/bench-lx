@@ -9,10 +9,10 @@
 
 #define COUNT   FSBENCH_REPEAT
 
-static unsigned optimes[COUNT];
-static unsigned wrtimes[COUNT];
-static unsigned wragtimes[COUNT];
-static unsigned cltimes[COUNT];
+static cycle_t optimes[COUNT];
+static cycle_t wrtimes[COUNT];
+static cycle_t wragtimes[COUNT];
+static cycle_t cltimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 3) {
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
     int i;
     for(i = 0; i < COUNT; ++i) {
-        unsigned start1 = get_cycles();
+        cycle_t start1 = get_cycles();
         int infd = open(argv[1], O_RDONLY);
         if(infd == -1) {
     	    perror("open");
@@ -51,20 +51,20 @@ int main(int argc, char **argv) {
         	return 1;
     	}
 
-        unsigned start2 = get_cycles();
+        cycle_t start2 = get_cycles();
         memcpy(outaddr, inaddr, total);
 
-        unsigned end1 = get_cycles();
+        cycle_t end1 = get_cycles();
 
         memcpy(outaddr, inaddr, total);
 
-        unsigned end2 = get_cycles();
+        cycle_t end2 = get_cycles();
 
         munmap(outaddr, total);
         munmap(inaddr, total);
         close(outfd);
         close(infd);
-        unsigned end3 = get_cycles();
+        cycle_t end3 = get_cycles();
 
         optimes[i] = start2 - start1;
         wrtimes[i] = end1 - start2;
@@ -72,9 +72,9 @@ int main(int argc, char **argv) {
         cltimes[i] = end3 - end2;
     }
 
-    printf("[cpmmap] Open time: %u (%u)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
-    printf("[cpmmap] Write time: %u (%u)\n", avg(wrtimes, COUNT), stddev(wrtimes, COUNT, avg(wrtimes, COUNT)));
-    printf("[cpmmap] Write again time: %u (%u)\n", avg(wragtimes, COUNT), stddev(wragtimes, COUNT, avg(wragtimes, COUNT)));
-    printf("[cpmmap] Close time: %u (%u)\n", avg(cltimes, COUNT), stddev(cltimes, COUNT, avg(cltimes, COUNT)));
+    printf("[cpmmap] Open time: %lu (%lu)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
+    printf("[cpmmap] Write time: %lu (%lu)\n", avg(wrtimes, COUNT), stddev(wrtimes, COUNT, avg(wrtimes, COUNT)));
+    printf("[cpmmap] Write again time: %lu (%lu)\n", avg(wragtimes, COUNT), stddev(wragtimes, COUNT, avg(wragtimes, COUNT)));
+    printf("[cpmmap] Close time: %lu (%lu)\n", avg(cltimes, COUNT), stddev(cltimes, COUNT, avg(cltimes, COUNT)));
     return 0;
 }

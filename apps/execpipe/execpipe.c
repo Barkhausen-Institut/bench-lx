@@ -12,8 +12,8 @@
 
 #define COUNT   APPBENCH_REPEAT
 
-static unsigned tottimes[COUNT];
-static unsigned memtimes[COUNT];
+static cycle_t tottimes[COUNT];
+static cycle_t memtimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 4) {
@@ -22,12 +22,12 @@ int main(int argc, char **argv) {
     }
 
     int i;
-    unsigned copied;
+    unsigned long copied;
     for(i = 0; i < COUNT; ++i) {
         /* reset value */
         smemcpy(0);
 
-        unsigned start = get_cycles();
+        cycle_t start = get_cycles();
         int fds[2];
         pipe(fds);
 
@@ -78,13 +78,13 @@ int main(int argc, char **argv) {
         waitpid(pid1, NULL, 0);
         waitpid(pid2, NULL, 0);
 
-        unsigned end = get_cycles();
+        cycle_t end = get_cycles();
         tottimes[i] = end - start;
         memtimes[i] = smemcpy(&copied);
     }
 
-    printf("[execpipe] copied %u bytes\n", copied);
-    printf("[execpipe] Total time: %u (%u)\n", avg(tottimes, COUNT), stddev(tottimes, COUNT, avg(tottimes, COUNT)));
-    printf("[execpipe] Memcpy time: %u (%u)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
+    printf("[execpipe] copied %lu bytes\n", copied);
+    printf("[execpipe] Total time: %lu (%lu)\n", avg(tottimes, COUNT), stddev(tottimes, COUNT, avg(tottimes, COUNT)));
+    printf("[execpipe] Memcpy time: %lu (%lu)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
     return 0;
 }

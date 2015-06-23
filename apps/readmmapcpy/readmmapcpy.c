@@ -23,11 +23,11 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    unsigned start1 = get_cycles();
+    cycle_t start1 = get_cycles();
     int fd = open(argv[1], O_RDONLY);
     off_t total = lseek(fd, 0, SEEK_END);
     void *addr = mmap(NULL, total, PROT_READ, MAP_PRIVATE, fd, 0);
-    unsigned start2 = get_cycles();
+    cycle_t start2 = get_cycles();
 
     off_t pos = 0;
     while(pos < total) {
@@ -36,9 +36,9 @@ int main(int argc, char **argv) {
         pos += amount;
     }
 
-    unsigned end1 = get_cycles();
+    cycle_t end1 = get_cycles();
 
-    unsigned start3 = get_cycles();
+    cycle_t start3 = get_cycles();
     pos = 0;
     while(pos < total) {
         size_t amount = (size_t)(total - pos) < sizeof(buffer) ? (size_t)(total - pos) : sizeof(buffer);
@@ -46,17 +46,17 @@ int main(int argc, char **argv) {
         pos += amount;
     }
 
-    unsigned end3 = get_cycles();
+    cycle_t end3 = get_cycles();
 
     munmap(addr, total);
     close(fd);
-    unsigned end2 = get_cycles();
+    cycle_t end2 = get_cycles();
 
     printf("[readmmapcpy] Total bytes: %zu\n", (size_t)pos);
-    printf("[readmmapcpy] Total time: %u\n", end2 - start1);
-    printf("[readmmapcpy] Open time: %u\n", start2 - start1);
-    printf("[readmmapcpy] Read time: %u\n", end1 - start2);
-    printf("[readmmapcpy] Read-again time: %u\n", end3 - start3);
-    printf("[readmmapcpy] Close time: %u\n", end2 - end3);
+    printf("[readmmapcpy] Total time: %lu\n", end2 - start1);
+    printf("[readmmapcpy] Open time: %lu\n", start2 - start1);
+    printf("[readmmapcpy] Read time: %lu\n", end1 - start2);
+    printf("[readmmapcpy] Read-again time: %lu\n", end3 - start3);
+    printf("[readmmapcpy] Close time: %lu\n", end2 - end3);
     return 0;
 }

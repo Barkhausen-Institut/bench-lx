@@ -45,19 +45,20 @@ extern int __my_clone (int (*fn)(void *arg), void *child_stack, int flags, void 
 
 typedef void (*start_func)(void);
 
-static unsigned start;
-static unsigned times[COUNT];
+static cycle_t start;
+static cycle_t times[COUNT];
 static size_t c = 0;
 static unsigned stack[1024];
 
 static void *thread_func(void *arg) {
-    unsigned end = get_cycles();
+    cycle_t end = get_cycles();
     times[c++] = end - start;
     /* to be able to call other library routines like printf here we would need a real pthread to
      * get attributes like the stacksize. */
     return arg;
 }
 
+#ifdef __xtensa__
 static void start_clone() {
     start = get_cycles();
     int pid = __my_clone((int (*)(void*))thread_func, stack + 1024,
@@ -68,6 +69,7 @@ static void start_clone() {
     if(waitpid(pid, NULL, __WCLONE) == -1)
         perror("waitpid");
 }
+#endif
 
 static void start_pthread() {
     pthread_t tid;
@@ -83,12 +85,14 @@ static void do_bench(const char *name, start_func func) {
     for(i = 0; i < COUNT; ++i)
         func();
 
-    unsigned average = avg(times, COUNT);
-    printf("[thread] Cycles per %s (avg): %u (%u)\n", name, average, stddev(times, COUNT, average));
+    cycle_t average = avg(times, COUNT);
+    printf("[thread] Cycles per %s (avg): %lu (%lu)\n", name, average, stddev(times, COUNT, average));
 }
 
 int main() {
     do_bench("pthread_start", start_pthread);
+#ifdef __xtensa__
     do_bench("clone", start_clone);
+#endif
     return 0;
 }

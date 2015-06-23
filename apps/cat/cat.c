@@ -17,17 +17,17 @@ int main(int argc, char **argv) {
         }
     }
 
-    unsigned start = get_cycles();
+    cycle_t start = get_cycles();
 
     ssize_t res;
     while((res = read(fd, buffer, sizeof(buffer))) > 0)
         write(STDOUT_FILENO, buffer, res);
 
-    unsigned end = get_cycles();
+    cycle_t end = get_cycles();
 
     if(argc > 1)
         close(fd);
 
-    fprintf(stderr, "cat time: %u\n", end - start);
+    fprintf(stderr, "cat time: %lu\n", end - start);
     return 0;
 }

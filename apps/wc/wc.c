@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    unsigned start = get_cycles();
+    cycle_t start = get_cycles();
     long lines = 0;
     long words = 0;
     long bytes = 0;
@@ -32,12 +32,12 @@ int main(int argc, char **argv) {
         count(buffer, res, &lines, &words, &last_space);
         bytes += res;
     }
-    unsigned end = get_cycles();
+    cycle_t end = get_cycles();
 
     if(argc > 1)
         close(fd);
 
     printf("%7ld %7ld %7ld\n", lines, words, bytes);
-    printf("[wc] wc time: %u\n", end - start);
+    printf("[wc] wc time: %lu\n", end - start);
     return 0;
 }

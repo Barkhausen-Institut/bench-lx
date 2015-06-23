@@ -25,9 +25,9 @@ int main(int argc, char **argv) {
     }
     else {
         waitpid(pid, NULL, 0);
-        unsigned copied;
-        unsigned cycles = smemcpy(&copied);
-        printf("Copied %u bytes in %u cycles\n", copied, cycles);
+        unsigned long copied;
+        cycle_t cycles = smemcpy(&copied);
+        printf("Copied %lu bytes in %lu cycles\n", copied, cycles);
         sysctrace();
     }
     return 0;
