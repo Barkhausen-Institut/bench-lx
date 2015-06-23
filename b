@@ -10,15 +10,20 @@ else
 	cpus=1
 fi
 
-libgcc=buildroot/output/host/usr/lib/gcc/xtensa-buildroot-linux-uclibc/4.8.4/libgcc.a
-core=DE_233L
+if [ "$LX_ARCH" = "" ]; then
+	LX_ARCH=xtensa
+fi
+export LX_ARCH
 
 build=$LX_BUILD
 if [ "$build" != "release" ] && [ "$build" != "debug" ]; then
 	build=release
 fi
-builddir="build/$build"
-mkdir -p $builddir
+builddir="build/$LX_ARCH-$build"
+mkdir -p $builddir $builddir/buildroot
+
+libgcc=$builddir/host/usr/lib/gcc/xtensa-buildroot-linux-uclibc/4.8.4/libgcc.a
+export XTENSA_CORE=DE_233L
 
 simflags=""
 # ensure that a cache miss costs 30 cycles, as a global memory read of 32bytes on T3
@@ -34,39 +39,41 @@ cmd=$1
 shift
 
 # add PATH to xtensa tools and buildroot-toolchain
-PATH=$XTENSA_DIR/XtDevTools/install/tools/RE-2014.5-linux/XtensaTools/bin/:$PATH
-PATH=$(pwd)/buildroot/output/host/usr/bin:$PATH
+if [ "$LX_ARCH" = "xtensa" ]; then
+	PATH=$XTENSA_DIR/XtDevTools/install/tools/RE-2014.5-linux/XtensaTools/bin/:$PATH
+fi
+PATH=$(pwd)/$builddir/buildroot/host/usr/bin:$PATH
 export PATH
 
-export CC=`readlink -f buildroot/output/host/usr/bin/xtensa-linux-gcc`
+export CC=`readlink -f $builddir/host/usr/bin/$LX_ARCH-linux-gcc`
 
 case $cmd in
 	mkbr)
-		if [ ! -f buildroot/.config ]; then
-			cp configs/config-buildroot-iss buildroot/.config
+		if [ ! -f $builddir/buildroot/.config ]; then
+			cp configs/config-buildroot-$LX_ARCH $builddir/buildroot/.config
 		fi
 
-		( cd buildroot && make -j$cpus $* )
+		( cd buildroot && make O=../$builddir/buildroot -j$cpus $* )
 
 		# we have to strip the debugging info here, because it's in gwarf-4 format but the xtensa gdb only
 		# supports 2 (and is too stupid to just ignore them)
-		if [ -f $libgcc ]; then
+		if [ "$LX_ARCH" = "xtensa" ] && [ -f $libgcc ]; then
 			xtensa-linux-objcopy -g $libgcc
 		fi
 		;;
 
 	mklx)
 		if [ ! -f $builddir/.config ]; then
-			cp configs/config-linux-iss $builddir/.config
+			cp configs/config-linux-$LX_ARCH $builddir/.config
 		fi
 
 		# tell linux our cross-compiler prefix
-		export CROSS_COMPILE=xtensa-linux-
+		export CROSS_COMPILE=$LX_ARCH-linux-
 
 		if [ "$build" = "debug" ]; then
-			( cd linux && make O=../$builddir ARCH=xtensa KBUILD_CFLAGS="-O1 -gdwarf-2 -g" -j$cpus $* )
+			( cd linux && make O=../$builddir ARCH=$LX_ARCH KBUILD_CFLAGS="-O1 -gdwarf-2 -g" -j$cpus $* )
 		else
-			( cd linux && make O=../$builddir ARCH=xtensa -j$cpus $* )
+			( cd linux && make O=../$builddir ARCH=$LX_ARCH -j$cpus $* )
 		fi
 		;;
 
@@ -75,27 +82,30 @@ case $cmd in
 		;;
 
 	elf=*)
-		xt-readelf -aW $builddir/bin/${cmd#elf=} | less
+		readelf -aW $builddir/bin/${cmd#elf=} | less
 		;;
 
 	dis=*)
-		xt-objdump --xtensa-core=$core -SC $builddir/bin/${cmd#dis=} | less
+		if [ "$LX_ARCH" = "xtensa" ]; then
+			xt-objdump -SC $builddir/bin/${cmd#dis=} | less
+		else
+			objdump -SC $builddir/bin/${cmd#dis=} | less
+		fi
 		;;
 
 	disp=*)
-		export XTENSA_CORE=$core
 		xt-objdump -dC $builddir/bin/${cmd#disp=} | \
 			awk -v EXEC=$builddir/bin/${cmd#disp=} -f ./tools/pimpdisasm.awk | less
 		;;
 
 	run)
-		xt-run --xtensa-core=$core --memlimit=128 --mem_model $simflags \
-			$builddir/arch/xtensa/boot/Image.elf
+		cd $builddir && xt-run --memlimit=128 --mem_model $simflags \
+			arch/xtensa/boot/Image.elf
 		;;
 
 	runturbo)
-		xt-run --xtensa-core=$core --memlimit=128 --mem_model $simflags --turbo \
-			$builddir/arch/xtensa/boot/Image.elf
+		cd $builddir && xt-run --memlimit=128 --mem_model $simflags --turbo \
+			arch/xtensa/boot/Image.elf
 		;;
 
 	bench|fsbench)
@@ -123,8 +133,10 @@ case $cmd in
 			kill `lsof $res | grep '^iss' -m 1 | awk -e '{ print $2 }'`
 		) &
 
-		xt-run --xtensa-core=$core --memlimit=128 --mem_model $simflags \
-			--loadbin=$tmp@0x3000000 $builddir/arch/xtensa/boot/Image.elf > $res
+		(
+			cd $builddir && xt-run --memlimit=128 --mem_model $simflags \
+			--loadbin=$tmp@0x3000000 arch/xtensa/boot/Image.elf > $res
+		)
 
 		# extract benchmark result
 		awk '/>===.*/ {
@@ -143,9 +155,9 @@ case $cmd in
 
 	trace)
 		args="--mem_model $simflags"
-		xt-run --xtensa-core=$core $args --memlimit=128 \
+		cd $builddir && xt-run $args --memlimit=128 \
 			--client_commands="trace --level 6 trace.txt" \
-			$builddir/arch/xtensa/boot/Image.elf
+			arch/xtensa/boot/Image.elf
 		;;
 
 	dbg|dbgturbo)
@@ -155,10 +167,10 @@ case $cmd in
 		else
 			echo "target sim --mem_model $simflags --memlimit=128" > $cmds
 		fi
-		echo "symbol-file $builddir/vmlinux" >> $cmds
+		echo "symbol-file vmlinux" >> $cmds
 		echo "display/i \$pc" >> $cmds
 
-		xt-gdb --xtensa-core=$core $builddir/arch/xtensa/boot/Image.elf --command=$cmds
+		cd $builddir && xt-gdb --tui arch/xtensa/boot/Image.elf --command=$cmds
 		rm $cmds
 		;;
 

@@ -15,6 +15,11 @@ typedef unsigned long cycle_t;
 #   define SYS_SMEMCPY      341
 #   define SYS_SYSCRESET    342
 #   define SYS_SYSCTRACE    343
+#else
+#   define SYS_GET_CYCLES   322
+#   define SYS_SMEMCPY      323
+#   define SYS_SYSCRESET    324
+#   define SYS_SYSCTRACE    325
 #endif
 
 static inline cycle_t avg(cycle_t *vals, unsigned long count) {

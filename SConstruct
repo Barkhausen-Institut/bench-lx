@@ -12,6 +12,9 @@ baseenv = Environment(
     }
 )
 
+# arch
+arch = os.environ.get('LX_ARCH')
+
 # build type
 btype = os.environ.get('LX_BUILD')
 if btype == 'debug':
@@ -21,7 +24,7 @@ else:
     baseenv.Append(CXXFLAGS = ' -O2 -DNDEBUG')
     baseenv.Append(CFLAGS = ' -O2 -DNDEBUG')
     btype = 'release'
-builddir = 'build/' + btype
+builddir = 'build/' + arch + '-' + btype
 
 # print executed commands?
 verbose = os.environ.get('LX_VERBOSE', 0)
@@ -32,13 +35,15 @@ if int(verbose) == 0:
     baseenv['ARCOMSTR'] = "AR $TARGET"
 
 baseenv.Append(
+    BUILDDIR = Dir(builddir),
     BINDIR = Dir(builddir + '/bin'),
-    FSDIR = Dir('rootfs')
+    FSDIR = Dir('rootfs'),
+    ARCH = arch
 )
 
 # create envs for xtensa-linux and host
 env = baseenv.Clone()
-ccprefix = 'buildroot/output/host/usr/bin/xtensa-linux'
+ccprefix = builddir + '/buildroot/host/usr/bin/' + arch + '-linux'
 env.Append(
     CPPPATH = ['#include'],
     LINKFLAGS = ' -static'
