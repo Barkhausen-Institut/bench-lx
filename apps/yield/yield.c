@@ -19,7 +19,7 @@ union semun {
    unsigned short  *array;
 };
 
-static unsigned times[COUNT];
+static cycle_t times[COUNT];
 
 int main(void) {
     int semid = semget(IPC_PRIVATE, 1, IPC_CREAT);
@@ -59,14 +59,14 @@ int main(void) {
         semop(semid, &sop, 1);
 
         for(i = 0; i < COUNT; ++i) {
-            unsigned before = get_cycles();
+            cycle_t before = get_cycles();
             sched_yield();
             times[i] = (get_cycles() - before) / 2;
         }
         waitpid(pid, NULL, 0);
     }
 
-    printf("[yield] Time: %u (%u)\n", avg(times, COUNT), stddev(times, COUNT, avg(times, COUNT)));
+    printf("[yield] Time: %lu (%lu)\n", avg(times, COUNT), stddev(times, COUNT, avg(times, COUNT)));
 
     semctl(semid, 0, IPC_RMID);
     return 0;
