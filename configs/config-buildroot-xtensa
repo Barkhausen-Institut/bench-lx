@@ -898,6 +898,7 @@ BR2_PACKAGE_STRACE=y
 # Database
 #
 # BR2_PACKAGE_BERKELEYDB is not set
+# BR2_PACKAGE_CPPDB is not set
 # BR2_PACKAGE_GDBM is not set
 # BR2_PACKAGE_MYSQL is not set
 
@@ -908,8 +909,17 @@ BR2_PACKAGE_STRACE=y
 #
 # redis needs a toolchain w/ IPv6, largefile, threads
 #
-# BR2_PACKAGE_SQLCIPHER is not set
-# BR2_PACKAGE_SQLITE is not set
+
+#
+# sqlcipher conflicts with sqlite
+#
+BR2_PACKAGE_SQLITE=y
+# BR2_PACKAGE_SQLITE_READLINE is not set
+# BR2_PACKAGE_SQLITE_STAT3 is not set
+BR2_PACKAGE_SQLITE_ENABLE_FTS3=y
+# BR2_PACKAGE_SQLITE_ENABLE_UNLOCK_NOTIFY is not set
+# BR2_PACKAGE_SQLITE_SECURE_DELETE is not set
+BR2_PACKAGE_SQLITE_NO_SYNC=y
 
 #
 # Filesystem
