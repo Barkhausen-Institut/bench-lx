@@ -14,6 +14,7 @@ cat /tmp/res.txt
 
 echo "===="
 
+rm /tmp/test.db
 /bench/stracetime $cmd 2>/dev/null
 
 echo "<=== Benchmarks done ==="
