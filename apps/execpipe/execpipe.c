@@ -1,3 +1,6 @@
+/* for vfork */
+#define _XOPEN_SOURCE 600
+
 #include <sys/fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -32,7 +35,7 @@ int main(int argc, char **argv) {
         pipe(fds);
 
         int pid1, pid2;
-        switch((pid1 = fork())) {
+        switch((pid1 = vfork())) {
             case -1:
                 fprintf(stderr, "fork failed: %s\n", strerror(errno));
                 break;
@@ -48,11 +51,12 @@ int main(int argc, char **argv) {
                 char *args[] = {argv[1], argv[3], NULL};
                 execv(args[0], args);
                 fprintf(stderr, "execv of '%s' failed: %s\n", argv[1], strerror(errno));
-                exit(0);
+                // vfork prohibits exit
+                _exit(0);
                 break;
         }
 
-        switch((pid2 = fork())) {
+        switch((pid2 = vfork())) {
             case -1:
                 fprintf(stderr, "fork failed: %s\n", strerror(errno));
                 break;
@@ -68,7 +72,8 @@ int main(int argc, char **argv) {
                 char *args[] = {argv[2], NULL};
                 execv(args[0], args);
                 fprintf(stderr, "execv of '%s' failed: %s\n", argv[2], strerror(errno));
-                exit(0);
+                // vfork prohibits exit
+                _exit(0);
                 break;
         }
 
