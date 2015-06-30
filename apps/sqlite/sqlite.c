@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <sqlite3.h>
 
-#define INSERT_COUNT    16
+#define INSERT_COUNT    8
 
 static void execute(sqlite3 *db, const char *sql) {
     char *zErrMsg = 0;
