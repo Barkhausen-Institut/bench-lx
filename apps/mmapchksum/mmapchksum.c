@@ -9,6 +9,7 @@
 
 #define COUNT   APPBENCH_REPEAT
 
+#ifdef __xtensa__
 // is ignored by the simulator :(
 static void prefetch_line(unsigned long addr) {
     __asm__ volatile (
@@ -16,6 +17,7 @@ static void prefetch_line(unsigned long addr) {
         : : "a"(addr)
     );
 }
+#endif
 
 static cycle_t optimes[COUNT];
 static cycle_t rdtimes[COUNT];
