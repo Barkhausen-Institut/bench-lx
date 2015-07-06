@@ -22,7 +22,7 @@ fi
 builddir="build/$LX_ARCH-$build"
 mkdir -p $builddir $builddir/buildroot
 
-libgcc=$builddir/host/usr/lib/gcc/xtensa-buildroot-linux-uclibc/4.8.4/libgcc.a
+libgcc=$builddir/buildroot/host/usr/lib/gcc/xtensa-buildroot-linux-uclibc/4.8.4/libgcc.a
 export XTENSA_CORE=DE_233L
 
 simflags=""
