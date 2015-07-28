@@ -1,8 +1,8 @@
-// for semaphores
+// for kill
 #define _XOPEN_SOURCE
 
 #include <sys/wait.h>
-#include <sys/sem.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -10,28 +10,13 @@
 #include <common.h>
 #include <cycles.h>
 #include <smemcpy.h>
+#include <signal.h>
 
-#define COUNT   MICROBENCH_REPEAT
-
-union semun {
-   int val;
-   struct semid_ds *buf;
-   unsigned short  *array;
-};
+#define COUNT   SYSCALL_REPEAT
 
 static cycle_t times[COUNT];
 
 int main(void) {
-    int semid = semget(IPC_PRIVATE, 1, IPC_CREAT);
-    if(semid == -1) {
-        perror("semget failed");
-        return 1;
-    }
-
-    union semun init;
-    init.val = 0;
-    semctl(semid, 1, SETVAL, init);
-
     int pid = fork();
     if(pid == -1) {
         perror("fork failed");
@@ -39,35 +24,25 @@ int main(void) {
     }
 
     int i;
-    struct sembuf sop;
     if(pid == 0) {
-        /* child */
-        sop.sem_num = 0;
-        sop.sem_flg = 0;
-        sop.sem_op = 1;
-        semop(semid, &sop, 1);
-
-        for(i = 0; i < COUNT; ++i)
+        while(1)
             sched_yield();
         exit(0);
     }
     else {
-        /* parent */
-        sop.sem_num = 0;
-        sop.sem_flg = 0;
-        sop.sem_op = -1;
-        semop(semid, &sop, 1);
+        for(i = 0; i < 50; ++i)
+            sched_yield();
 
         for(i = 0; i < COUNT; ++i) {
             cycle_t before = get_cycles();
             sched_yield();
             times[i] = (get_cycles() - before) / 2;
         }
-        waitpid(pid, NULL, 0);
+        kill(pid,SIGINT);
     }
 
     printf("[yield] Time: %lu (%lu)\n", avg(times, COUNT), stddev(times, COUNT, avg(times, COUNT)));
-
-    semctl(semid, 0, IPC_RMID);
+    for(int i = 0; i < COUNT; ++i)
+        printf("[%d] %lu\n",i,times[i]);
     return 0;
 }
