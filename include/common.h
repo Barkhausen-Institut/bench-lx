@@ -12,6 +12,8 @@ typedef unsigned long cycle_t;
 
 #define FIRST_RESULT        2   // throw away the first 2
 
+#define SYSCALL_TIME        430
+
 #ifdef __xtensa__
 #   define SYS_GET_CYCLES   340
 #   define SYS_SMEMCPY      341

@@ -14,11 +14,16 @@
 
 static cycle_t tottimes[COUNT];
 static cycle_t memtimes[COUNT];
+static cycle_t apptimes[COUNT];
 
 static char buffer[BUFFER_SIZE];
 
-__attribute__((noinline)) void replace(char *buffer, long res, char c1, char c2) {
+// the problem is that the number of fetched words from the icache depends on the alignment of the
+// instructions. thus, we make sure that the entire function is aligned and add a noop to ensure
+// that the important instructions are nicely aligned.
+__attribute__((aligned(16))) __attribute__((noinline)) void replace(char *buffer, long res, char c1, char c2) {
     long i;
+    __asm__ volatile ("nop");
     for(i = 0; i < res; ++i) {
         if(buffer[i] == c1)
             buffer[i] = c2;
@@ -37,6 +42,7 @@ int main(int argc, char **argv) {
         /* reset value */
         smemcpy(0);
 
+        cycle_t apptime = 0;
         cycle_t start = get_cycles();
         int fds[2];
         pipe(fds);
@@ -81,8 +87,13 @@ int main(int argc, char **argv) {
         char c2 = argv[4][0];
 
         ssize_t res;
+        int syscalls = 0;
         while((res = read(fds[0], buffer, sizeof(buffer))) > 0) {
+            cycle_t cstart = get_cycles();
             replace(buffer, res, c1, c2);
+            cycle_t cend = get_cycles();
+            apptime += (cend - cstart) - 2 * SYSCALL_TIME;
+            syscalls += 2;
             write(out, buffer, res);
         }
         close(fds[0]);
@@ -91,12 +102,14 @@ int main(int argc, char **argv) {
         waitpid(pid, NULL, 0);
 
         cycle_t end = get_cycles();
-        tottimes[i] = end - start;
+        tottimes[i] = (end - start) - syscalls * SYSCALL_TIME;
         memtimes[i] = smemcpy(&copied);
+        apptimes[i] = apptime;
     }
 
     printf("[pipetr] copied %lu bytes\n", copied);
     printf("[pipetr] Total time: %lu (%lu)\n", avg(tottimes, COUNT), stddev(tottimes, COUNT, avg(tottimes, COUNT)));
+    printf("[pipetr] App time: %lu (%lu)\n", avg(apptimes, COUNT), stddev(apptimes, COUNT, avg(apptimes, COUNT)));
     printf("[pipetr] Memcpy time: %lu (%lu)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
     return 0;
 }
