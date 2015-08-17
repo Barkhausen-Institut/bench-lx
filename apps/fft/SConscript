@@ -1,0 +1,2 @@
+Import('env')
+env.LxProgram(env, target = 'fft', source = env.Glob('*.c'))
