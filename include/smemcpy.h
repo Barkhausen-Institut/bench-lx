@@ -3,7 +3,7 @@
 #include <sys/syscall.h>
 #include <common.h>
 
-extern void syscall(int, unsigned long*, unsigned long*);
+extern long syscall(long, ...);
 
 static inline unsigned long smemcpy(unsigned long *bytes) {
     unsigned long cycles;

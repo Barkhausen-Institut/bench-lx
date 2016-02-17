@@ -3,7 +3,7 @@
 #include <sys/syscall.h>
 #include <common.h>
 
-extern void syscall(int, unsigned long*, unsigned long*);
+extern long syscall(long, ...);
 
 static inline void syscreset(int pid) {
     syscall(SYS_SYSCRESET, (unsigned long*)pid, 0);

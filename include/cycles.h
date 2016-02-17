@@ -3,7 +3,7 @@
 #include <sys/syscall.h>
 #include <common.h>
 
-extern void syscall(int, unsigned long*, unsigned long*);
+extern long syscall(long, ...);
 
 static inline cycle_t get_cycles() {
     unsigned long val;
