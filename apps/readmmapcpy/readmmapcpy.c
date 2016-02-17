@@ -1,3 +1,6 @@
+// for O_NOATIME
+#define _GNU_SOURCE
+
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <stdio.h>
@@ -24,7 +27,7 @@ int main(int argc, char **argv) {
     }
 
     cycle_t start1 = get_cycles();
-    int fd = open(argv[1], O_RDONLY);
+    int fd = open(argv[1], O_RDONLY | O_NOATIME);
     off_t total = lseek(fd, 0, SEEK_END);
     void *addr = mmap(NULL, total, PROT_READ, MAP_PRIVATE, fd, 0);
     cycle_t start2 = get_cycles();

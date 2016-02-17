@@ -1,3 +1,6 @@
+// for O_NOATIME
+#define _GNU_SOURCE
+
 /*
  * Copyright (C) 2013, Nils Asmussen <nils@os.inf.tu-dresden.de>
  * Economic rights: Technische Universitaet Dresden (Germany)
@@ -47,7 +50,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    int fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    int fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC | O_NOATIME, 0644);
     if(fd == -1) {
         perror("open");
         return 1;

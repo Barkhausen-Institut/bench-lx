@@ -1,3 +1,6 @@
+// for O_NOATIME
+#define _GNU_SOURCE
+
 #include <sys/fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,13 +27,13 @@ int main(int argc, char **argv) {
     unsigned long copied;
     for(i = 0; i < COUNT; ++i) {
         cycle_t start1 = get_cycles();
-        int infd = open(argv[1], O_RDONLY);
+        int infd = open(argv[1], O_RDONLY | O_NOATIME);
         if(infd == -1) {
     	    perror("open");
     	    return 1;
         }
 
-        int outfd = open(argv[2], O_WRONLY | O_TRUNC | O_CREAT);
+        int outfd = open(argv[2], O_WRONLY | O_TRUNC | O_CREAT | O_NOATIME);
         if(outfd == -1) {
     	    perror("open");
     	    return 1;

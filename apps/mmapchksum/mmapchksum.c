@@ -1,3 +1,6 @@
+// for O_NOATIME
+#define _GNU_SOURCE
+
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <stdio.h>
@@ -35,7 +38,7 @@ int main(int argc, char **argv) {
     unsigned checksum1,checksum2;
     for(i = 0; i < COUNT; ++i) {
         cycle_t start1 = get_cycles();
-        int fd = open(argv[1], O_RDONLY);
+        int fd = open(argv[1], O_RDONLY | O_NOATIME);
         if(fd == -1) {
             perror("open");
             return 1;

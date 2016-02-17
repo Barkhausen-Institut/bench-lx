@@ -1,5 +1,7 @@
 // for kill
 #define _XOPEN_SOURCE
+// for O_NOATIME
+#define _GNU_SOURCE
 
 #include <sys/wait.h>
 #include <sys/types.h>

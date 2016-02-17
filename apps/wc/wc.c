@@ -1,3 +1,6 @@
+// for O_NOATIME
+#define _GNU_SOURCE
+
 #include <sys/fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +17,7 @@ static char buffer[BUFFER_SIZE];
 int main(int argc, char **argv) {
     int fd = 0;
     if(argc > 1) {
-        fd = open(argv[1], O_RDONLY);
+        fd = open(argv[1], O_RDONLY | O_NOATIME);
         if(fd < 0) {
             fprintf(stderr, "Unable to open '%s'", argv[1]);
             return 1;

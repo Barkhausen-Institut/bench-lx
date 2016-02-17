@@ -1,3 +1,6 @@
+// for O_NOATIME
+#define _GNU_SOURCE
+
 #include <sys/fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -58,7 +61,7 @@ int main(int argc, char **argv) {
                 close(fds[0]);
 
                 {
-                    int fd = open(argv[1], O_RDONLY);
+                    int fd = open(argv[1], O_RDONLY | O_NOATIME);
                     if(fd < 0) {
                         fprintf(stderr, "Unable to open '%s'", argv[1]);
                         return 1;
@@ -77,7 +80,7 @@ int main(int argc, char **argv) {
         // close write-end
         close(fds[1]);
 
-        int out = open(argv[2], O_RDWR | O_CREAT | O_TRUNC, 0644);
+        int out = open(argv[2], O_RDWR | O_CREAT | O_TRUNC | O_NOATIME, 0644);
         if(out < 0) {
             fprintf(stderr, "Unable to open '%s'", argv[2]);
             return 1;
