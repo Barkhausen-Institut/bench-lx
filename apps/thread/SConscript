@@ -4,7 +4,7 @@ src = ['thread.c']
 if myenv['ARCH'] == 'xtensa':
     myenv.Append(
         CPPPATH = [
-            myenv['BUILDDIR'].abspath + '/buildroot/build/uclibc-7bf35c8b7d4a1f97174eb49f47f33946b282114c/libc/sysdeps/linux/xtensa/'
+            myenv['BUILDDIR'].abspath + '/buildroot/build/uclibc-1.0.12/libc/sysdeps/linux'
         ]
     )
     src += ['clone.S']

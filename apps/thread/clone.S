@@ -17,7 +17,7 @@
 /* clone is even more special than fork as it mucks with stacks
    and invokes a function in the right context after it's all over.  */
 
-#include "sysdep.h"
+#include <xtensa/sysdep.h>
 #include <sys/syscall.h>
 #define _ERRNO_H    1
 #include <bits/errno.h>

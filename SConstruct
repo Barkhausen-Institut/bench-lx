@@ -48,6 +48,18 @@ env.Append(
     CPPPATH = ['#include'],
     LINKFLAGS = ' -static'
 )
+
+if arch == 'xtensa':
+    xtdir = os.environ.get('XTENSA_DIR', '')
+    env.Append(
+        CPPPATH = [
+            xtdir + '/XtDevTools/install/tools/RE-2014.5-linux/XtensaTools/xtensa-elf/include',
+        ],
+        LIBPATH = [
+            xtdir + '/XtDevTools/install/builds/RE-2014.5-linux/DE_233L/xtensa-elf/arch/lib/'
+        ],
+    )
+
 env.Replace(
     CXX = ccprefix + '-g++',
     CC = ccprefix + '-gcc'
