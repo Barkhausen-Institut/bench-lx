@@ -1,0 +1,4 @@
+Import('env')
+env.LxProgram(
+    env, target = 'sendfile', source = 'sendfile.c', libs = ['sim'] if env['ARCH'] == 'xtensa' else []
+)

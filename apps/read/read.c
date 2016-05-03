@@ -1,6 +1,10 @@
 // for O_NOATIME
 #define _GNU_SOURCE
 
+#if defined(__xtensa__)
+#   include <xtensa/sim.h>
+#endif
+
 #include <sys/fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +26,10 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Usage: %s <file>\n", argv[0]);
         exit(1);
     }
+
+#if defined(__xtensa__)
+    //xt_iss_trace_level(6);
+#endif
 
     int i;
     size_t total;
@@ -52,6 +60,10 @@ int main(int argc, char **argv) {
         rdtimes[i] = end1 - start2;
         cltimes[i] = end2 - end1;
     }
+
+#if defined(__xtensa__)
+    //xt_iss_trace_level(0);
+#endif
 
     printf("[read] Total bytes: %zu\n", total);
     printf("[read] copied %lu bytes\n", copied);

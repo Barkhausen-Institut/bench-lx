@@ -260,7 +260,7 @@ case $cmd in
 	trace)
 		args="--mem_model $simflags"
 		cd $builddir && xt-run $args --memlimit=128 \
-			--client_commands="trace --level 6 trace.txt" \
+			--client_commands="trace --level 0 trace.txt" \
 			arch/xtensa/boot/Image.elf
 		;;
 
