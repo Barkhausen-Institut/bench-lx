@@ -21,3 +21,49 @@ copy:
     there is no point in mapping it in pieces, but we always map at much as possible.
     For writing, it's not that expensive to allocate space, so that we can easily allocate a few
     blocks at once and free them on close again, if we didn't need them.
+
+
+Linux read:
+
+    enter       : 198   = 15+14+7+90+50+22
+    fd to file  : 75    = 5+6+4+9+34+17
+    checks      : 99    = 15+33+6+9+22+14
+    iov init    : 75    = 31+4+14+19+7
+    get page    : 342   = 57+4+14+17+8+7+6+14+5+4+14+8+5+14
+                          +71+6+39+14+3+15+14+3
+    checks      : 75
+    mark acc.   : 17
+    iov         : 66    = 10+56
+    memcpy      : 4758
+    iov         : 55
+    go to next  : 77    = 37+40
+    put page    : 22
+    set atime   : 171   = 34+4+4+28+44+17+22+14+4
+    return      : 78    = 6+14+3+12+40+3
+    fsnotify    : 88    = 27+13+11+37
+    to syscall  : 91    = 3+14+3+16+9+3+17+22+4
+    leave       : 190   = 38+114+38
+
+    ---
+
+    syscall     : 382
+    fd+page     : 876
+    iov         : 196
+    memcpy      : 4758
+
+    fsnotify    : 88
+    set atime   : 171
+
+
+M3 read:
+
+    enter       : 39    = 11+8+20
+    get location: 87    = 26+14+12+35
+    read        : 589
+    leave       : 28    = 6+5+14+3
+
+    ---
+
+    func call   : 67
+    get location: 87
+    read        : 589
