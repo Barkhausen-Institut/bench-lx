@@ -7,12 +7,7 @@
 	],
     "settings":
     {
-        "sublimeclang_additional_language_options":
-        {
-            "c++" : ["-std=c++11"],
-            "c" : ["-std=c99"]
-        },
-        "sublimeclang_options":
+        "cc_include_options":
         [
             "-I/home/hrniels/imdata/xtensa-linux/include"
         ]
