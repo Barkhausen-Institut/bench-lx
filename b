@@ -200,8 +200,23 @@ case $cmd in
 			qemu-system-x86_64 -enable-kvm -serial stdio -hda $M5_PATH/disks/x86root.img \
 			    -kernel $builddir/arch/x86/boot/bzImage \
 			    -append "console=ttyS0 root=/dev/sda1"
-			#-initrd $builddir/buildroot/images/rootfs.cpio.gz
+		else
+			echo "Unsupported"
+		fi
+		;;
 
+	dbgqemu)
+		if [ "$LX_ARCH" = "x86_64" ]; then
+			qemu-system-x86_64 -serial stdio \
+			    -hda $M5_PATH/disks/x86root.img \
+			    -kernel $builddir/arch/x86/boot/bzImage \
+			    -append "console=ttyS0 root=/dev/sda1" -S -s &
+
+			cmd=`mktemp`
+			echo "target remote localhost:1234" > $cmd
+			echo 'display/i $pc' >> $cmd
+			gdb --tui $builddir/vmlinux -command=$cmd
+			rm $cmd
 		else
 			echo "Unsupported"
 		fi
