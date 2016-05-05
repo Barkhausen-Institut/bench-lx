@@ -233,6 +233,52 @@ case $cmd in
 		rm $res $tmp
 		;;
 
+	benchgem5|fsbenchgem5)
+		ln -sf `readlink -f $builddir/vmlinux` $M5_PATH/binaries/x86_64-vmlinux-2.6.22.9
+
+		GEM5_CPU=${GEM5_CPU:-detailed}
+
+	    params=`mktemp`
+	    echo -n "--outdir=$M5_PATH --debug-file=gem5.log" >> $params
+	    echo -n " $GEM5_DIR/configs/example/fs.py --cpu-type $GEM5_CPU" >> $params
+	    echo -n " --cpu-clock=1GHz --sys-clock=1GHz" >> $params
+	    echo -n " --caches --l2cache" >> $params
+	    echo -n " --command-line=\"ttyS0 noapictimer console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
+	    if [ "$GEM5_CP" != "" ]; then
+	        echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
+	    fi
+
+	    # start gem5 in background
+        xargs -a $params $GEM5_DIR/build/X86/gem5.opt > $M5_PATH/log.txt 2>/dev/null &
+
+        # wait until com1 port is open
+        while [ "`lsof -i :3456`" == "" ]; do
+        	echo "Waiting for GEM5 to start..." 1>&2
+        	sleep 1
+        done
+
+        # now send the command via telnet to gem5
+        (
+        	if [ "$cmd" = "fsbenchgem5" ]; then
+        		echo -e "\n/fsbench.sh '$FSBENCH_CMD'"
+        	else
+        		echo -e "\n/bench.sh"
+        	fi
+        	# wait "for ever"
+        	sleep 100000
+        ) | telnet 127.0.0.1 3456 2>/dev/null > $M5_PATH/res.tmp &
+
+        # wait until we see the "benchmarks done" in the log file
+	    while [ "`grep '^<=== Benchmarks done ===' $M5_PATH/res.tmp`" == "" ]; do
+	      	sleep 1
+	    done
+
+	    # now kill gem5, extract results and clean up
+        killall gem5.opt
+        grep -v '^#' $M5_PATH/res.tmp | extract_results
+        rm $M5_PATH/res.tmp
+		;;
+
 	trace)
 		args="--mem_model $simflags"
 		cd $builddir && xt-run $args --memlimit=128 \
