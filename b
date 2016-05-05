@@ -60,6 +60,19 @@ export PATH
 
 export CC=`readlink -f $builddir/host/usr/bin/$LX_ARCH-linux-gcc`
 
+extract_results() {
+	awk '/>===.*/ {
+		capture = 1
+	}
+	/<===.*/ {
+		capture = 0
+	}
+	/^[^<>].*/ {
+	    if(capture == 1)
+	        print $0
+	}'
+}
+
 case $cmd in
 	mkbr)
 		if [ ! -f $builddir/buildroot/.config ]; then
@@ -135,6 +148,11 @@ case $cmd in
 			arch/xtensa/boot/Image.elf
 		;;
 
+	runturbo)
+		cd $builddir && xt-run --memlimit=128 --mem_model $simflags --turbo \
+			arch/xtensa/boot/Image.elf
+		;;
+
 	rungem5)
 		if [ "$LX_ARCH" = "x86_64" ]; then
 			ln -sf `readlink -f $builddir/vmlinux` $M5_PATH/binaries/x86_64-vmlinux-2.6.22.9
@@ -171,30 +189,6 @@ case $cmd in
 		fi
 		;;
 
-	gem5serial)
-		while true; do
-			echo "Waiting for port 3456.. to be open..."
-			while true; do
-				popen=0
-				port=3456
-				while [ $port -lt 3458 ]; do
-					if [ "`lsof -i :$port`" != "" ]; then
-						popen=1
-						break
-					fi
-					port=$((port + 1))
-				done
-				if [ $popen -ne 0 ]; then
-					break
-				fi
-				sleep 1
-			done
-
-			echo "Connecting to port $port..."
-			telnet localhost $port
-		done
-		;;
-
 	runqemu)
 		if [ "$LX_ARCH" = "x86_64" ]; then
 			qemu-system-x86_64 -enable-kvm -serial stdio -hda $M5_PATH/disks/x86root.img \
@@ -203,28 +197,6 @@ case $cmd in
 		else
 			echo "Unsupported"
 		fi
-		;;
-
-	dbgqemu)
-		if [ "$LX_ARCH" = "x86_64" ]; then
-			qemu-system-x86_64 -serial stdio \
-			    -hda $M5_PATH/disks/x86root.img \
-			    -kernel $builddir/arch/x86/boot/bzImage \
-			    -append "console=ttyS0 root=/dev/sda1" -S -s &
-
-			cmd=`mktemp`
-			echo "target remote localhost:1234" > $cmd
-			echo 'display/i $pc' >> $cmd
-			gdb --tui $builddir/vmlinux -command=$cmd
-			rm $cmd
-		else
-			echo "Unsupported"
-		fi
-		;;
-
-	runturbo)
-		cd $builddir && xt-run --memlimit=128 --mem_model $simflags --turbo \
-			arch/xtensa/boot/Image.elf
 		;;
 
 	bench|fsbench)
@@ -257,18 +229,7 @@ case $cmd in
 			--loadbin=$tmp@0x3000000 arch/xtensa/boot/Image.elf > $res
 		)
 
-		# extract benchmark result
-		awk '/>===.*/ {
-			capture = 1
-		}
-		/<===.*/ {
-			capture = 0
-		}
-		/^[^<>].*/ {
-		    if(capture == 1)
-		        print $0
-		}' $res
-
+		extract_results < $res
 		rm $res $tmp
 		;;
 
@@ -291,6 +252,47 @@ case $cmd in
 
 		cd $builddir && xt-gdb --tui arch/xtensa/boot/Image.elf --command=$cmds
 		rm $cmds
+		;;
+
+	dbgqemu)
+		if [ "$LX_ARCH" = "x86_64" ]; then
+			qemu-system-x86_64 -serial stdio \
+			    -hda $M5_PATH/disks/x86root.img \
+			    -kernel $builddir/arch/x86/boot/bzImage \
+			    -append "console=ttyS0 root=/dev/sda1" -S -s &
+
+			cmd=`mktemp`
+			echo "target remote localhost:1234" > $cmd
+			echo 'display/i $pc' >> $cmd
+			gdb --tui $builddir/vmlinux -command=$cmd
+			rm $cmd
+		else
+			echo "Unsupported"
+		fi
+		;;
+
+	gem5serial)
+		while true; do
+			echo "Waiting for port 3456.. to be open..."
+			while true; do
+				popen=0
+				port=3456
+				while [ $port -lt 3458 ]; do
+					if [ "`lsof -i :$port`" != "" ]; then
+						popen=1
+						break
+					fi
+					port=$((port + 1))
+				done
+				if [ $popen -ne 0 ]; then
+					break
+				fi
+				sleep 1
+			done
+
+			echo "Connecting to port $port..."
+			telnet localhost $port
+		done
 		;;
 
 	*)
