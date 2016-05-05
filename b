@@ -131,7 +131,7 @@ case $cmd in
 
 			# create disk for root fs
 			rm -f $M5_PATH/disks/x86root.img
-			$GEM5_DIR/util/gem5img.py init $M5_PATH/disks/x86root.img 32
+			$GEM5_DIR/util/gem5img.py init $M5_PATH/disks/x86root.img 64
 			tmp=`mktemp -d`
 			$GEM5_DIR/util/gem5img.py mount $M5_PATH/disks/x86root.img $tmp
 			cpioimg=`readlink -f $builddir/buildroot/images/rootfs.cpio`
