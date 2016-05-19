@@ -73,6 +73,79 @@ extract_results() {
 	}'
 }
 
+run_gem5() {
+	ln -sf `readlink -f $builddir/vmlinux` $M5_PATH/binaries/x86_64-vmlinux-2.6.22.9
+
+	GEM5_CPU=${GEM5_CPU:-detailed}
+
+	params=`mktemp`
+	echo -n "--outdir=$M5_PATH --debug-file=gem5.log" >> $params
+	if [ "$GEM5_FLAGS" != "" ]; then
+		echo -n " --debug-flags=$GEM5_FLAGS" >> $params
+	fi
+	echo -n " $GEM5_DIR/configs/example/fs.py --cpu-type $GEM5_CPU" >> $params
+	echo -n " --cpu-clock=1GHz --sys-clock=1GHz" >> $params
+	echo -n " --caches --l2cache" >> $params
+	echo -n " --command-line=\"ttyS0 noapictimer console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
+	if [ "$GEM5_CP" != "" ]; then
+		echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
+	fi
+	if [ "$cmd" = "warmupgem5" ]; then
+		echo -n " --checkpoint-at-end" >> $params
+	fi
+
+	if [ "$cmd" = "rungem5" ]; then
+        xargs -a $params $GEM5_DIR/build/X86/gem5.opt | tee $M5_PATH/log.txt
+	else
+		# start gem5 in background
+		xargs -a $params $GEM5_DIR/build/X86/gem5.opt > $M5_PATH/log.txt 2>/dev/null &
+
+		# wait until com1 port is open
+		while [ "`lsof -i :3456`" == "" ]; do
+			echo "Waiting for GEM5 to start..." 1>&2
+			sleep 1
+		done
+
+		echo -n > $M5_PATH/res.tmp
+
+		# now send the command via telnet to gem5
+		(
+			if [ "$cmd" = "warmupgem5" ]; then
+				# login via bruteforce
+				while true; do
+					echo "root"
+					sleep 1
+				done
+			elif [ "$cmd" = "fsbenchgem5" ]; then
+				echo -e "\n/fsbench.sh '$FSBENCH_CMD'"
+			else
+				echo -e "\n/bench.sh"
+			fi
+			# sleep "for ever"
+			sleep 100000
+		) | telnet 127.0.0.1 3456 2>/dev/null > $M5_PATH/res.tmp &
+
+		# wait until we see the "benchmarks done" in the log file
+		while [ "`grep $1 $M5_PATH/res.tmp`" == "" ]; do
+			sleep 1
+		done
+
+		killall -INT gem5.opt
+		# kill all in our process group to stop subshells, too
+		trap "kill -INT 0" TERM
+
+		if [ "$cmd" = "warmupgem5" ]; then
+			# wait until the checkpoint is written
+			path=$M5_PATH/cpt.*/m5.cpt
+			while [ "`grep 'isa=x86' $path`" = "" ]; do
+				echo "Waiting for checkpoint..." 1>&2
+				sleep 1
+				path=$M5_PATH/cpt.*/m5.cpt
+			done
+		fi
+	fi
+}
+
 case $cmd in
 	mkbr)
 		if [ ! -f $builddir/buildroot/.config ]; then
@@ -155,35 +228,7 @@ case $cmd in
 
 	rungem5)
 		if [ "$LX_ARCH" = "x86_64" ]; then
-			ln -sf `readlink -f $builddir/vmlinux` $M5_PATH/binaries/x86_64-vmlinux-2.6.22.9
-
-			GEM5_CPU=${GEM5_CPU:-timing}
-
-		    params=`mktemp`
-		    echo -n "--outdir=$M5_PATH --debug-file=gem5.log" >> $params
-		    if [ "$GEM5_FLAGS" != "" ]; then
-		    	echo -n " --debug-flags=$GEM5_FLAGS" >> $params
-		    fi
-		    echo -n " $GEM5_DIR/configs/example/fs.py --cpu-type $GEM5_CPU" >> $params
-		    echo -n " --cpu-clock=1GHz --sys-clock=1GHz" >> $params
-		    echo -n " --caches --l2cache" >> $params
-		    echo -n " --command-line=\"ttyS0 noapictimer console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
-			echo -n " --checkpoint-at-end" >> $params
-		    if [ "$GEM5_CP" != "" ]; then
-		        echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
-		    fi
-
-		    if [ "$GEM5_DBG" != "" ]; then
-		        tmp=`mktemp`
-		        echo "b main" >> $tmp
-		        echo -n "run " >> $tmp
-		        cat $params >> $tmp
-		        echo >> $tmp
-		        gdb --tui $GEM5_DIR/build/X86/gem5.debug --command=$tmp
-		        rm $tmp
-		    else
-		        xargs -a $params $GEM5_DIR/build/X86/gem5.opt | tee $M5_PATH/log.txt
-		    fi
+			run_gem5
 		else
 			echo "Unsupported"
 		fi
@@ -234,48 +279,13 @@ case $cmd in
 		;;
 
 	benchgem5|fsbenchgem5)
-		ln -sf `readlink -f $builddir/vmlinux` $M5_PATH/binaries/x86_64-vmlinux-2.6.22.9
-
-		GEM5_CPU=${GEM5_CPU:-detailed}
-
-	    params=`mktemp`
-	    echo -n "--outdir=$M5_PATH --debug-file=gem5.log" >> $params
-	    echo -n " $GEM5_DIR/configs/example/fs.py --cpu-type $GEM5_CPU" >> $params
-	    echo -n " --cpu-clock=1GHz --sys-clock=1GHz" >> $params
-	    echo -n " --caches --l2cache" >> $params
-	    echo -n " --command-line=\"ttyS0 noapictimer console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
-	    if [ "$GEM5_CP" != "" ]; then
-	        echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
-	    fi
-
-	    # start gem5 in background
-        xargs -a $params $GEM5_DIR/build/X86/gem5.opt > $M5_PATH/log.txt 2>/dev/null &
-
-        # wait until com1 port is open
-        while [ "`lsof -i :3456`" == "" ]; do
-        	echo "Waiting for GEM5 to start..." 1>&2
-        	sleep 1
-        done
-
-        # now send the command via telnet to gem5
-        (
-        	if [ "$cmd" = "fsbenchgem5" ]; then
-        		echo -e "\n/fsbench.sh '$FSBENCH_CMD'"
-        	else
-        		echo -e "\n/bench.sh"
-        	fi
-        	# wait "for ever"
-        	sleep 100000
-        ) | telnet 127.0.0.1 3456 2>/dev/null > $M5_PATH/res.tmp &
-
-        # wait until we see the "benchmarks done" in the log file
-	    while [ "`grep '^<=== Benchmarks done ===' $M5_PATH/res.tmp`" == "" ]; do
-	      	sleep 1
-	    done
-
-	    # now kill gem5, extract results and clean up
-        killall gem5.opt
+		run_gem5 '^<===Benchmarks_done==='
         grep -v '^#' $M5_PATH/res.tmp | extract_results
+        rm $M5_PATH/res.tmp
+		;;
+
+	warmupgem5)
+		run_gem5 '^#'
         rm $M5_PATH/res.tmp
 		;;
 
@@ -342,7 +352,9 @@ case $cmd in
 		;;
 
 	*)
-		echo "Usage: $0 (mkbr|mklx|mkapps|mkdisk|run|rungem5|runqemu|runturbo|bench|fsbench|trace|dbg|dbgturbo)" >&2
+		echo -n "Usage: $0 (mkbr|mklx|mkapps|elf|dis|disp|mkdisk|run|runturbo|rungem5|" >&2
+		echo -n "runqemu|bench|fsbench|benchgem5|fsbenchgem5|warmupgem5|trace|dbg|dbgturbo|" >&2
+		echo "dbgqemu|gem5serial)" >&2
 		echo "  Use LX_ARCH to set the architecture to build for (xtensa|x86_64)." >&2
 		echo "  Use LX_BUILD to set the build-type (debug|release)." >&2
 		echo "  Set LX_THCMP=1 to configure cache misses comparably." >&2

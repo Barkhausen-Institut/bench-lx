@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo ">=== Starting benchmarks ==="
+echo ">===Starting_benchmarks==="
 
 /bench/syscall
 
@@ -35,4 +35,4 @@ echo "Cycles per task-create (avg): 0"
 
 /bench/fftpipe /tmp/fft.out > /tmp/res.txt && grep "Total\|Memcpy" /tmp/res.txt
 
-echo "<=== Benchmarks done ==="
+echo "<===Benchmarks_done==="
