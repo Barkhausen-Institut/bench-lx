@@ -58,7 +58,7 @@ static void *thread_func(void *arg) {
     return arg;
 }
 
-#ifdef __xtensa__
+#if 0
 static void start_clone() {
     start = get_cycles();
     int pid = __my_clone((int (*)(void*))thread_func, stack + 1024,
@@ -91,8 +91,6 @@ static void do_bench(const char *name, start_func func) {
 
 int main() {
     do_bench("pthread_start", start_pthread);
-#ifdef __xtensa__
-    do_bench("clone", start_clone);
-#endif
+    // do_bench("clone", start_clone);
     return 0;
 }
