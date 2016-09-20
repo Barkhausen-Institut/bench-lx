@@ -27,7 +27,7 @@ run_gem5() {
         echo -n " --debug-flags=$GEM5_FLAGS" >> $params
     fi
     echo -n " $GEM5_DIR/configs/example/fs.py --cpu-type $GEM5_CPU" >> $params
-    echo -n " --cpu-clock=1GHz --sys-clock=1GHz" >> $params
+    echo -n " --cpu-clock=1GHz --sys-clock=333MHz" >> $params
     echo -n " --caches --l2cache" >> $params
     # echo -n " -n 2" >> $params
     echo -n " --command-line=\"ttyS0 noapictimer console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
