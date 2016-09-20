@@ -48,6 +48,8 @@ export PATH
 export CC=`readlink -f $LX_BUILDDIR/host/usr/bin/$LX_ARCH-linux-gcc`
 export M5_PATH=gem5
 
+mkdir -p $M5_PATH/binaries $M5_PATH/disks
+
 case $cmd in
 	warmup|run|dbg|bench|fsbench|trace)
 		./platforms/$LX_PLATFORM $cmd
