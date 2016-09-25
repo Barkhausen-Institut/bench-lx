@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <pthread.h>
 #include <common.h>
 #include <cycles.h>
 
@@ -23,6 +24,16 @@ int main(int argc, char **argv) {
             return 1;
         }
     }
+
+    pthread_t thread = pthread_self();
+
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(1, &cpuset);
+
+    int s = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+    if (s != 0)
+        perror("pthread_setaffinity_np");
 
     cycle_t start = get_cycles();
     long lines = 0;

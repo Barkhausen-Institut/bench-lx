@@ -1,2 +1,2 @@
 Import('env')
-env.LxProgram(env, target = 'wc', source = env.Glob('*.c'))
+env.LxProgram(env, target = 'wc', source = env.Glob('*.c'), libs = ['pthread'])
