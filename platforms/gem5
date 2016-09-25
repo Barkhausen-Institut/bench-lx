@@ -21,6 +21,12 @@ run_gem5() {
 
     GEM5_CPU=${GEM5_CPU:-detailed}
 
+    if [ $LX_CORES -gt 1 ]; then
+        gem5_build=X86_MOESI_hammer
+    else
+        gem5_build=X86
+    fi
+
     params=`mktemp`
     echo -n "--outdir=$M5_PATH --debug-file=gem5.log" >> $params
     if [ "$GEM5_FLAGS" != "" ]; then
@@ -29,8 +35,13 @@ run_gem5() {
     echo -n " $GEM5_DIR/configs/example/fs.py --cpu-type $GEM5_CPU" >> $params
     echo -n " --cpu-clock=1GHz --sys-clock=333MHz" >> $params
     echo -n " --caches --l2cache" >> $params
-    # echo -n " -n 2" >> $params
-    echo -n " --command-line=\"ttyS0 noapictimer console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
+    if [ $LX_CORES -gt 1 ]; then
+        echo -n " -n $LX_CORES --ruby --num-dirs=1 --topology=Torus --mesh-rows=1" >> $params
+        echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
+    else
+        echo -n " --command-line=\"ttyS0 console=ttyS0 noapictimer lpj=7999923 root=/dev/sda1\" " >> $params
+    fi
+
     if [ "$GEM5_CP" != "" ]; then
         echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
     fi
@@ -39,10 +50,10 @@ run_gem5() {
     fi
 
     if [ "$cmd" = "run" ]; then
-        xargs -a $params $GEM5_DIR/build/X86/gem5.opt | tee $M5_PATH/log.txt
+        xargs -a $params $GEM5_DIR/build/$gem5_build/gem5.opt | tee $M5_PATH/log.txt
     else
         # start gem5 in background
-        xargs -a $params $GEM5_DIR/build/X86/gem5.opt > $M5_PATH/log.txt 2>/dev/null &
+        xargs -a $params $GEM5_DIR/build/$gem5_build/gem5.opt > $M5_PATH/log.txt 2>/dev/null &
 
         # wait until com1 port is open
         while [ "`lsof -i :3456`" == "" ]; do

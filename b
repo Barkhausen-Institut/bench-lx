@@ -17,6 +17,8 @@ else
 	cpus=1
 fi
 
+LX_CORES=${LX_CORES:-1}
+
 if [ "$LX_BUILD" != "release" ] && [ "$LX_BUILD" != "debug" ]; then
 	LX_BUILD=release
 fi
