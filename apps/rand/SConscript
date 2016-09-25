@@ -1,0 +1,2 @@
+Import('env')
+env.LxProgram(env, target = 'rand', source = 'rand.c', libs = ['pthread'])
