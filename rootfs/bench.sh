@@ -35,4 +35,8 @@ echo "Cycles per task-create (avg): 0"
 
 /bench/fftpipe /tmp/fft.out > /tmp/res.txt && grep "Total\|Memcpy" /tmp/res.txt
 
+/bench/yield > /tmp/res.txt && grep "Time" /tmp/res.txt
+
+# /bench/pagefault > /tmp/res.txt && grep "Time" /tmp/res.txt
+
 echo "<===Benchmarks_done==="
