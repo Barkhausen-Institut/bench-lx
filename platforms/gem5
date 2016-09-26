@@ -85,6 +85,8 @@ run_gem5() {
             sleep 1
         done
 
+        sleep 10
+
         killall -INT gem5.opt
         # kill all in our process group to stop subshells, too
         trap "kill -INT 0" TERM
