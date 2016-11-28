@@ -7,6 +7,7 @@ case $1 in
     run)
         qemu-system-x86_64 -nographic -smp $LX_CORES \
             -hda $M5_PATH/disks/x86root.img \
+            -hdb $M5_PATH/disks/linux-bigswap2.img \
             -kernel $LX_BUILDDIR/arch/x86/boot/bzImage \
             -append "console=ttyS0 root=/dev/sda1" $LX_FLAGS
         ;;
@@ -14,6 +15,7 @@ case $1 in
     dbg)
         qemu-system-x86_64 $LX_FLAGS -nographic -smp $LX_CORES \
             -hda $M5_PATH/disks/x86root.img \
+            -hdb $M5_PATH/disks/linux-bigswap2.img \
             -kernel $LX_BUILDDIR/arch/x86/boot/bzImage \
             -append "console=ttyS0 root=/dev/sda1" $LX_FLAGS -S -s &
         pid=$!

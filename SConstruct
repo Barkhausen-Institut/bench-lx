@@ -37,7 +37,7 @@ if int(verbose) == 0:
 baseenv.Append(
     BUILDDIR = Dir(builddir),
     BINDIR = Dir(builddir + '/bin'),
-    FSDIR = Dir('rootfs'),
+    FSDIR = Dir('benchfs'),
     ARCH = arch
 )
 
@@ -72,7 +72,7 @@ def LxProgram(env, target, source, libs = []):
         LIBS = libs + ['m']
     )
     env.Install(env['BINDIR'], prog)
-    env.Install(env['FSDIR'].abspath + '/bench', prog)
+    env.Install(env['FSDIR'].abspath + '/bin', prog)
     return prog
 
 env.LxProgram = LxProgram
