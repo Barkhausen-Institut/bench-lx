@@ -28,16 +28,6 @@ int main(int argc, char **argv) {
     if(argc > 1)
         count = strtoul(argv[1], NULL, 0);
 
-    pthread_t thread = pthread_self();
-
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(0, &cpuset);
-
-    int s = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
-    if (s != 0)
-        perror("pthread_setaffinity_np");
-
     while(count > 0) {
         size_t amount = count < EL_COUNT ? count : EL_COUNT;
 
