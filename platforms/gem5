@@ -47,17 +47,19 @@ run_gem5() {
         xargs -a $params $GEM5_DIR/build/X86/gem5.opt | tee $M5_PATH/log.txt
     else
         # start gem5 in background
-        xargs -a $params $GEM5_DIR/build/X86/gem5.opt > $M5_PATH/log.txt 2>/dev/null &
+        xargs -a $params $GEM5_DIR/build/X86/gem5.opt 2>$M5_PATH/logerr.txt > $M5_PATH/log.txt &
 
-        # wait until com1 port is open
-        while [ "`lsof -i :3456`" == "" ]; do
+        # wait until the port is open
+        while [ "`grep 'com_1 connection on port' $M5_PATH/logerr.txt`" = "" ]; do
             echo "Waiting for GEM5 to start..." 1>&2
             sleep 1
         done
+        port=`grep 'com_1 connection on port' $M5_PATH/logerr.txt | awk '{ print $7 }'`
 
         echo -n > $M5_PATH/res.tmp
 
         # now send the command via telnet to gem5
+        echo "Connecting to serial line on port $port"
         (
             if [ "$cmd" = "warmup" ]; then
                 # login via bruteforce
@@ -72,7 +74,7 @@ run_gem5() {
             fi
             # sleep "for ever"
             sleep 100000
-        ) | telnet 127.0.0.1 3456 2>/dev/null > $M5_PATH/res.tmp &
+        ) | telnet 127.0.0.1 $port > $M5_PATH/res.tmp &
 
         # wait until we see the "benchmarks done" in the log file
         while [ "`grep $wait $M5_PATH/res.tmp`" == "" ]; do
