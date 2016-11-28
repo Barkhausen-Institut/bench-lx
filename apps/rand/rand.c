@@ -9,19 +9,9 @@
 #include <common.h>
 #include <cycles.h>
 
-#define EL_COUNT    (BUFFER_SIZE / sizeof(rand_type))
-
-typedef unsigned char rand_type;
+#include "loop.h"
 
 static rand_type buffer[EL_COUNT];
-
-static unsigned get_rand() {
-    static unsigned _last = 0x1234;
-    static unsigned _randa = 1103515245;
-    static unsigned _randc = 12345;
-    _last = _randa * _last + _randc;
-    return (_last / 65536) % 32768;
-}
 
 int main(int argc, char **argv) {
     size_t count = 100000;
@@ -31,8 +21,7 @@ int main(int argc, char **argv) {
     while(count > 0) {
         size_t amount = count < EL_COUNT ? count : EL_COUNT;
 
-        for(size_t i = 0; i < amount; ++i)
-            buffer[i] = get_rand() * get_rand();
+        generate(buffer, amount);
         write(STDOUT_FILENO, buffer, amount * sizeof(rand_type));
 
         count -= amount;

@@ -1,2 +1,2 @@
 Import('env')
-env.LxProgram(env, target = 'wc', source = ['wc.c'])
+env.LxProgram(env, target = 'wc', source = ['wc.c', 'loop.S'])

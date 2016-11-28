@@ -1,2 +1,2 @@
 Import('env')
-env.LxProgram(env, target = 'rand', source = ['rand.c'])
+env.LxProgram(env, target = 'rand', source = ['rand.c', 'loop.S'])
