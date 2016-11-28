@@ -47,3 +47,19 @@ static inline cycle_t stddev(cycle_t *vals, unsigned long count, cycle_t avg) {
     }
     return (cycle_t)sqrt(sum / (count - FIRST_RESULT));
 }
+
+static inline void gem5_resetstats(void) {
+    __asm__ volatile (
+        ".byte 0x0F, 0x04;"
+        ".word 0x40;"
+        : : "D"(0), "S"(0)
+    );
+}
+
+static inline void gem5_dumpstats(void) {
+    __asm__ volatile (
+        ".byte 0x0F, 0x04;"
+        ".word 0x41;"
+        : : "D"(0), "S"(0)
+    );
+}
