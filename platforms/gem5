@@ -1,28 +1,29 @@
 #!/bin/bash
 
-extract_results() {
-    awk '/>===.*/ {
-        capture = 1
-    }
-    /<===.*/ {
-        capture = 0
-    }
-    /^[^<>].*/ {
-        if(capture == 1)
-            print $0
-    }'
-}
-
 run_gem5() {
     cmd=$1
     wait=$2
 
-    ln -sf `readlink -f $LX_BUILDDIR/vmlinux` $M5_PATH/binaries/x86_64-vmlinux-2.6.22.9
+    if [ "$cmd" = "warmup" ]; then
+        GEM5_OUT="gem5"
+    else
+        if [ ! -d "$GEM5_OUT" ]; then
+            echo "Please specify the gem5 output directory via GEM5_OUT!" >&2
+            exit 1
+        fi
+
+        ln -sf `readlink -f gem5/cpt.*` $GEM5_OUT
+    fi
+    export M5_PATH=$GEM5_OUT
+
+    mkdir -p $GEM5_OUT/binaries
+    ln -sf `readlink -f $LX_BUILDDIR/vmlinux` $GEM5_OUT/binaries/x86_64-vmlinux-2.6.22.9
+    ln -sf `readlink -f $LX_BUILDDIR/disks` $GEM5_OUT
 
     GEM5_CPU=${GEM5_CPU:-detailed}
 
     params=`mktemp`
-    echo -n "--outdir=$M5_PATH --debug-file=gem5.log" >> $params
+    echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log" >> $params
     if [ "$GEM5_FLAGS" != "" ]; then
         echo -n " --debug-flags=$GEM5_FLAGS" >> $params
     fi
@@ -44,19 +45,23 @@ run_gem5() {
     fi
 
     if [ "$cmd" = "run" ]; then
-        xargs -a $params $GEM5_DIR/build/X86/gem5.opt | tee $M5_PATH/log.txt
+        xargs -a $params $GEM5_DIR/build/X86/gem5.opt | tee $GEM5_OUT/log.txt
     else
+        echo -n > $GEM5_OUT/logerr.txt
+
         # start gem5 in background
-        xargs -a $params $GEM5_DIR/build/X86/gem5.opt 2>$M5_PATH/logerr.txt > $M5_PATH/log.txt &
+        xargs -a $params $GEM5_DIR/build/X86/gem5.opt 2>$GEM5_OUT/logerr.txt > $GEM5_OUT/log.txt &
 
         # wait until the port is open
-        while [ "`grep 'com_1 connection on port' $M5_PATH/logerr.txt`" = "" ]; do
+        while [ "`grep 'com_1 connection on port' $GEM5_OUT/logerr.txt`" = "" ]; do
             echo "Waiting for GEM5 to start..." 1>&2
             sleep 1
         done
-        port=`grep 'com_1 connection on port' $M5_PATH/logerr.txt | awk '{ print $7 }'`
+        port=`grep 'com_1 connection on port' $GEM5_OUT/logerr.txt | awk '{ print $7 }'`
 
-        echo -n > $M5_PATH/res.tmp
+        gem5pid=`pgrep -P $!`
+
+        echo -n > $GEM5_OUT/res.tmp
 
         # now send the command via telnet to gem5
         echo "Connecting to serial line on port $port"
@@ -68,34 +73,38 @@ run_gem5() {
                     sleep 1
                 done
             elif [ "$cmd" = "fsbench" ]; then
-                echo -e "\n/fsbench.sh '$FSBENCH_CMD'"
+                echo -e "\n/mount.sh\n/bench/fsbench.sh '$BENCH_CMD'"
+            elif [ "$cmd" = "bench" ]; then
+                echo -e "\n/mount.sh\n/bench/bench.sh '$BENCH_CMD'"
             else
-                echo -e "\n/bench.sh"
+                echo -e "\n/mount.sh\n/bench/microbench.sh"
             fi
             # sleep "for ever"
             sleep 100000
-        ) | telnet 127.0.0.1 $port > $M5_PATH/res.tmp &
+        ) | telnet 127.0.0.1 $port > $GEM5_OUT/res.tmp &
 
         # wait until we see the "benchmarks done" in the log file
-        while [ "`grep $wait $M5_PATH/res.tmp`" == "" ]; do
+        while [ "`grep $wait $GEM5_OUT/res.tmp`" == "" ]; do
             sleep 1
         done
 
-        sleep 10
-
-        killall -INT gem5.opt
+        kill -INT $gem5pid
         # kill all in our process group to stop subshells, too
         trap "kill -INT 0" TERM
 
         if [ "$cmd" = "warmup" ]; then
             # wait until the checkpoint is written
-            path=$M5_PATH/cpt.*/m5.cpt
+            path=$GEM5_OUT/cpt.*/m5.cpt
             while [ "`grep 'isa=x86' $path`" = "" ]; do
                 echo "Waiting for checkpoint..." 1>&2
                 sleep 1
-                path=$M5_PATH/cpt.*/m5.cpt
+                path=$GEM5_OUT/cpt.*/m5.cpt
             done
+        else
+            grep -v '^#' $GEM5_OUT/res.tmp > $GEM5_OUT/res.txt
         fi
+
+        rm $GEM5_OUT/res.tmp
     fi
 }
 
@@ -112,8 +121,7 @@ case $1 in
         echo "Not supported"
         ;;
 
-    bench|fsbench)
+    bench|fsbench|microbench)
         run_gem5 $1 '^<===Benchmarks_done==='
-        grep -v '^#' $M5_PATH/res.tmp | extract_results
         ;;
 esac

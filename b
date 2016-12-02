@@ -48,9 +48,8 @@ PATH=$(pwd)/$LX_BUILDDIR/buildroot/host/usr/bin:$PATH
 export PATH
 
 export CC=`readlink -f $LX_BUILDDIR/host/usr/bin/$LX_ARCH-linux-gcc`
-export M5_PATH=gem5
 
-mkdir -p $M5_PATH/binaries $M5_PATH/disks
+mkdir -p $LX_BUILDDIR/disks
 
 case $cmd in
 	warmup|run|dbg|bench|fsbench|trace)
@@ -72,20 +71,20 @@ case $cmd in
 
 		if [ "$LX_ARCH" = "x86_64" ]; then
 			# create disk for root fs
-			rm -f $M5_PATH/disks/x86root.img
-			$GEM5_DIR/util/gem5img.py init $M5_PATH/disks/x86root.img 16
+			rm -f $LX_BUILDDIR/disks/x86root.img
+			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/x86root.img 16
 			tmp=`mktemp -d`
-			$GEM5_DIR/util/gem5img.py mount $M5_PATH/disks/x86root.img $tmp
+			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/x86root.img $tmp
 			cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
 			( cd $tmp && sudo cpio -id < $cpioimg )
 			$GEM5_DIR/util/gem5img.py umount $tmp
 			rmdir $tmp
 
 			# create disk for bench fs
-			rm -f $M5_PATH/disks/linux-bigswap2.img
-			$GEM5_DIR/util/gem5img.py init $M5_PATH/disks/linux-bigswap2.img 64
+			rm -f $LX_BUILDDIR/disks/linux-bigswap2.img
+			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/linux-bigswap2.img 64
 			tmp=`mktemp -d`
-			$GEM5_DIR/util/gem5img.py mount $M5_PATH/disks/linux-bigswap2.img $tmp
+			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/linux-bigswap2.img $tmp
 			cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
 			sudo cp -r benchfs/* $tmp
 			$GEM5_DIR/util/gem5img.py umount $tmp
