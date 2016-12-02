@@ -48,6 +48,16 @@ static inline cycle_t stddev(cycle_t *vals, unsigned long count, cycle_t avg) {
     return (cycle_t)sqrt(sum / (count - FIRST_RESULT));
 }
 
+static inline void compute(cycle_t cycles) {
+    cycle_t iterations = cycles / 2;
+    __asm__ volatile (
+        "1: dec %0;"
+        "test   %0, %0;"
+        "ja     1b;"
+        : "=r"(iterations) : "0"(iterations)
+    );
+}
+
 static inline void gem5_resetstats(void) {
     __asm__ volatile (
         ".byte 0x0F, 0x04;"
