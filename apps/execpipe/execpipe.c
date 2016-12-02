@@ -21,15 +21,22 @@
 static cycle_t tottimes[COUNT];
 static cycle_t memtimes[COUNT];
 
-int main(int argc, char **argv) {
-    if(argc < 7) {
-        fprintf(stderr, "Usage: %s <prog1> <arg> <prog2> <repeats> <pin> <stats>\n", argv[0]);
-        exit(1);
-    }
+static void usage(const char *name) {
+    fprintf(stderr, "Usage: %s <wargc> <rargc> <repeats> <pin> <stats> <warg1>... <rarg1>...\n", name);
+    exit(1);
+}
 
-    int repeats = atoi(argv[4]);
-    int pin = strcmp(argv[5], "1") == 0;
-    int stats = strcmp(argv[6], "1") == 0;
+int main(int argc, char **argv) {
+    if(argc < 6)
+        usage(argv[0]);
+
+    int wargc = atoi(argv[1]);
+    int rargc = atoi(argv[2]);
+    int repeats = atoi(argv[3]);
+    int pin = strcmp(argv[4], "1") == 0;
+    int stats = strcmp(argv[5], "1") == 0;
+    if(argc != 6 + wargc + rargc)
+        usage(argv[0]);
     if(repeats > COUNT) {
         fprintf(stderr, "Too many repeats (max %d)\n", COUNT);
         exit(1);
@@ -71,9 +78,12 @@ int main(int argc, char **argv) {
                 dup2(fds[1], STDOUT_FILENO);
 
                 // child is executing cat
-                char *args[] = {argv[1], argv[2], NULL};
+                char **args = (char**)malloc(sizeof(char*) * (wargc + 1));
+                for(int j = 0; j < wargc; ++j)
+                    args[j] = argv[6 + j];
+                args[wargc] = NULL;
                 execv(args[0], args);
-                fprintf(stderr, "execv of '%s' failed: %s\n", argv[1], strerror(errno));
+                fprintf(stderr, "execv of '%s' failed: %s\n", args[0], strerror(errno));
                 // vfork prohibits exit
                 _exit(0);
                 break;
@@ -95,9 +105,12 @@ int main(int argc, char **argv) {
                 dup2(fds[0], STDIN_FILENO);
 
                 // child is executing wc
-                char *args[] = {argv[3], NULL};
+                char **args = (char**)malloc(sizeof(char*) * (rargc + 1));
+                for(int j = 0; j < rargc; ++j)
+                    args[j] = argv[6 + wargc + j];
+                args[rargc] = NULL;
                 execv(args[0], args);
-                fprintf(stderr, "execv of '%s' failed: %s\n", argv[3], strerror(errno));
+                fprintf(stderr, "execv of '%s' failed: %s\n", args[0], strerror(errno));
                 // vfork prohibits exit
                 _exit(0);
                 break;
