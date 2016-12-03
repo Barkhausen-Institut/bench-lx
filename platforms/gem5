@@ -12,6 +12,7 @@ run_gem5() {
             exit 1
         fi
 
+	rm -f $GEM5_OUT/cpt.*
         ln -sf `readlink -f gem5/cpt.*` $GEM5_OUT
     fi
     export M5_PATH=$GEM5_OUT
