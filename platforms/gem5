@@ -89,6 +89,10 @@ run_gem5() {
             sleep 1
         done
 
+        if [ "$cmd" = "warmup" ]; then
+            sleep 10
+        fi
+
         kill -INT $gem5pid
         # kill all in our process group to stop subshells, too
         trap "kill -INT 0" TERM
