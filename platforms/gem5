@@ -31,12 +31,8 @@ run_gem5() {
     echo -n " $GEM5_DIR/configs/example/fs.py --cpu-type $GEM5_CPU" >> $params
     echo -n " --cpu-clock=1GHz --sys-clock=333MHz" >> $params
     echo -n " --caches --l2cache" >> $params
-    if [ $LX_CORES -gt 1 ]; then
-        echo -n " -n $LX_CORES" >> $params
-        echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
-    else
-        echo -n " --command-line=\"ttyS0 console=ttyS0 noapictimer lpj=7999923 root=/dev/sda1\" " >> $params
-    fi
+    echo -n " -n $LX_CORES" >> $params
+    echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
 
     if [ "$GEM5_CP" != "" ]; then
         echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
