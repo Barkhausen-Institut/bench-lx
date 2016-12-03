@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
         pipe(fds);
 
         int pid1, pid2;
-        switch((pid1 = vfork())) {
+        switch((pid1 = fork())) {
             case -1:
                 fprintf(stderr, "fork failed: %s\n", strerror(errno));
                 break;
@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
                 break;
         }
 
-        switch((pid2 = vfork())) {
+        switch((pid2 = fork())) {
             case -1:
                 fprintf(stderr, "fork failed: %s\n", strerror(errno));
                 break;
