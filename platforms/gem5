@@ -61,8 +61,9 @@ run_gem5() {
         echo -n > $GEM5_OUT/res.tmp
 
         # now send the command via telnet to gem5
-        echo "Connecting to serial line on port $port"
+        echo "Connecting to serial line on port $port" 1>&2
         (
+            echo -n $BASHPID > $GEM5_OUT/pid.txt
             if [ "$cmd" = "warmup" ]; then
                 # login via bruteforce
                 while true; do
@@ -90,8 +91,7 @@ run_gem5() {
         fi
 
         kill -INT $gem5pid
-        # kill all in our process group to stop subshells, too
-        trap "kill -INT 0" TERM
+        pkill -INT -P `cat $GEM5_OUT/pid.txt`
 
         if [ "$cmd" = "warmup" ]; then
             # wait until the checkpoint is written
