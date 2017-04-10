@@ -2,14 +2,19 @@
 #include <common.h>
 #include <stdio.h>
 
-#define COUNT	SYSCALL_REPEAT
+#define WARMUP 	5
+#define COUNT	100
 
 static cycle_t times[COUNT];
 static cycle_t nice_times[COUNT];
 
 int main() {
-	cycle_t start = get_cycles();
+	cycle_t start;
 	int i;
+
+	for(i = 0; i < WARMUP; ++i)
+		start = get_cycles();
+
 	for(i = 0; i < COUNT; ++i) {
 		cycle_t cyc = get_cycles();
 		times[i] = cyc - start;
@@ -24,6 +29,6 @@ int main() {
 	}
 
     cycle_t average = avg(nice_times, nice);
-    printf("[syscall] Time per syscall (avg): %lu (%lu)\n", average, stddev(nice_times, nice, average));
+    printf("%lu %lu\n", average, stddev(nice_times, nice, average));
 	return 0;
 }
