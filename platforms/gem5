@@ -21,14 +21,14 @@ run_gem5() {
     ln -sf `readlink -f $LX_BUILDDIR/vmlinux` $GEM5_OUT/binaries/x86_64-vmlinux-2.6.22.9
     ln -sf `readlink -f $LX_BUILDDIR/disks` $GEM5_OUT
 
-    GEM5_CPU=${GEM5_CPU:-detailed}
+    GEM5_CPU=${GEM5_CPU:-DerivO3CPU}
 
     params=`mktemp`
-    echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log" >> $params
+    echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log --listener-mode=on" >> $params
     if [ "$GEM5_FLAGS" != "" ]; then
         echo -n " --debug-flags=$GEM5_FLAGS" >> $params
     fi
-    echo -n " $GEM5_DIR/configs/example/fs.py --cpu-type $GEM5_CPU" >> $params
+    echo -n " $GEM5_DIR/configs/example/linux_fs.py --cpu-type $GEM5_CPU" >> $params
     echo -n " --cpu-clock=1GHz --sys-clock=333MHz" >> $params
     echo -n " --caches --l2cache" >> $params
     echo -n " -n $LX_CORES" >> $params
