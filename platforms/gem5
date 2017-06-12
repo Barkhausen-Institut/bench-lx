@@ -22,6 +22,9 @@ run_gem5() {
     ln -sf `readlink -f $LX_BUILDDIR/disks` $GEM5_OUT
 
     GEM5_CPU=${GEM5_CPU:-DerivO3CPU}
+    GEM5_CPUFREQ=${GEM5_CPUFREQ:-1GHz}
+    GEM5_MEMFREQ=${GEM5_MEMFREQ:-333MHz}
+    GEM5_L1LAT=${GEM5_L1LAT:-4}
 
     params=`mktemp`
     echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log --listener-mode=on" >> $params
@@ -29,8 +32,9 @@ run_gem5() {
         echo -n " --debug-flags=$GEM5_FLAGS" >> $params
     fi
     echo -n " $GEM5_DIR/configs/example/linux_fs.py --cpu-type $GEM5_CPU" >> $params
-    echo -n " --cpu-clock=1GHz --sys-clock=333MHz" >> $params
+    echo -n " --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ" >> $params
     echo -n " --caches --l2cache" >> $params
+    echo -n " --l1-latency=$GEM5_L1LAT" >> $params
     echo -n " -n $LX_CORES" >> $params
     echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
 
