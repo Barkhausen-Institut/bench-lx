@@ -21,7 +21,7 @@ static cycle_t filetimes[COUNT];
 
 static void do_access(volatile char *data) {
     for(size_t i = 0; i < PAGES; ++i)
-        data[i * PAGE_SIZE];
+        data[i * PAGE_SIZE] = i;
 }
 
 int main() {
