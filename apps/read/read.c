@@ -13,13 +13,12 @@
 #include <cycles.h>
 #include <smemcpy.h>
 
-#define COUNT   FSBENCH_REPEAT
+// there is pretty much no variation; one run after warmup is enough
+#define COUNT   (FIRST_RESULT + 1)
 
 static char buffer[BUFFER_SIZE];
-static cycle_t optimes[COUNT];
 static cycle_t rdtimes[COUNT];
 static cycle_t memtimes[COUNT];
-static cycle_t cltimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 2) {
@@ -27,49 +26,28 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-#if defined(__xtensa__)
-    //xt_iss_trace_level(6);
-#endif
-
-    int i;
-    size_t total;
-    unsigned long copied;
-    for(i = 0; i < COUNT; ++i) {
-        cycle_t start1 = get_cycles();
+    for(int i = 0; i < COUNT; ++i) {
         int fd = open(argv[1], O_RDONLY | O_NOATIME);
         if(fd == -1) {
             perror("open");
             return 1;
         }
-        cycle_t start2 = get_cycles();
 
         /* reset value */
         smemcpy(0);
 
-        ssize_t res;
-        total = 0;
-        while((res = read(fd, buffer, sizeof(buffer))) > 0)
-            total += res;
+        cycle_t start = get_cycles();
+        while(read(fd, buffer, sizeof(buffer)) > 0)
+            ;
+        cycle_t end = get_cycles();
 
+        unsigned long copied;
         memtimes[i] = smemcpy(&copied);
 
-        cycle_t end1 = get_cycles();
         close(fd);
-        cycle_t end2 = get_cycles();
-        optimes[i] = start2 - start1;
-        rdtimes[i] = end1 - start2;
-        cltimes[i] = end2 - end1;
+        rdtimes[i] = end - start;
     }
 
-#if defined(__xtensa__)
-    //xt_iss_trace_level(0);
-#endif
-
-    printf("[read] Total bytes: %zu\n", total);
-    printf("[read] copied %lu bytes\n", copied);
-    printf("[read] Open time: %lu (%lu)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
-    printf("[read] Read time: %lu (%lu)\n", avg(rdtimes, COUNT), stddev(rdtimes, COUNT, avg(rdtimes, COUNT)));
-    printf("[read] Memcpy time: %lu (%lu)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
-    printf("[read] Close time: %lu (%lu)\n", avg(cltimes, COUNT), stddev(cltimes, COUNT, avg(cltimes, COUNT)));
+    printf("%lu %lu\n", avg(rdtimes, COUNT), avg(memtimes, COUNT));
     return 0;
 }

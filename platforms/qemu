@@ -13,7 +13,7 @@ case $1 in
         ;;
 
     dbg)
-        qemu-system-x86_64 $LX_FLAGS -nographic -smp $LX_CORES \
+        qemu-system-x86_64 -nographic -smp $LX_CORES \
             -hda $LX_BUILDDIR/disks/x86root.img \
             -hdb $LX_BUILDDIR/disks/linux-bigswap2.img \
             -kernel $LX_BUILDDIR/arch/x86/boot/bzImage \

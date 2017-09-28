@@ -9,13 +9,12 @@
 #include <cycles.h>
 #include <smemcpy.h>
 
-#define COUNT   FSBENCH_REPEAT
+// there is pretty much no variation; one run after warmup is enough
+#define COUNT   (FIRST_RESULT + 1)
 
 static char buffer[BUFFER_SIZE];
-static cycle_t optimes[COUNT];
 static cycle_t wrtimes[COUNT];
 static cycle_t memtimes[COUNT];
-static cycle_t cltimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 3) {
@@ -23,45 +22,37 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    int i;
     unsigned long copied;
-    for(i = 0; i < COUNT; ++i) {
-        cycle_t start1 = get_cycles();
+    for(int i = 0; i < COUNT; ++i) {
         int infd = open(argv[1], O_RDONLY | O_NOATIME);
         if(infd == -1) {
-    	    perror("open");
-    	    return 1;
+            perror("open");
+            return 1;
         }
 
         int outfd = open(argv[2], O_WRONLY | O_TRUNC | O_CREAT | O_NOATIME);
         if(outfd == -1) {
-    	    perror("open");
-    	    return 1;
+            perror("open");
+            return 1;
         }
-        cycle_t start2 = get_cycles();
 
         /* reset value */
         smemcpy(0);
 
+        cycle_t start = get_cycles();
         ssize_t count;
         while((count = read(infd, buffer, sizeof(buffer))) > 0)
-        	write(outfd, buffer, count);
+            write(outfd, buffer, count);
+        cycle_t end = get_cycles();
 
-        cycle_t end1 = get_cycles();
+        memtimes[i] = smemcpy(&copied);
+
         close(outfd);
         close(infd);
-        cycle_t end2 = get_cycles();
 
-        optimes[i] = start2 - start1;
-        wrtimes[i] = end1 - start2;
-        memtimes[i] = smemcpy(&copied);
-        cltimes[i] = end2 - end1;
+        wrtimes[i] = end - start;
     }
 
-    printf("[cp] copied %lu bytes\n", copied);
-    printf("[cp] Open time: %lu (%lu)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
-    printf("[cp] Write time: %lu (%lu)\n", avg(wrtimes, COUNT), stddev(wrtimes, COUNT, avg(wrtimes, COUNT)));
-    printf("[cp] Memcpy time: %lu (%lu)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
-    printf("[cp] Close time: %lu (%lu)\n", avg(cltimes, COUNT), stddev(cltimes, COUNT, avg(cltimes, COUNT)));
+    printf("%lu %lu %lu\n", avg(wrtimes, COUNT), avg(memtimes, COUNT), copied);
     return 0;
 }

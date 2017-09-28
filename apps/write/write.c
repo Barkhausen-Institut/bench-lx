@@ -4,61 +4,51 @@
 #include <sys/fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <common.h>
 #include <cycles.h>
 #include <smemcpy.h>
 
-#define COUNT   FSBENCH_REPEAT
+// there is pretty much no variation; one run after warmup is enough
+#define COUNT   (FIRST_RESULT + 1)
 
 static char buffer[BUFFER_SIZE];
-static cycle_t optimes[COUNT];
 static cycle_t rdtimes[COUNT];
 static cycle_t memtimes[COUNT];
-static cycle_t cltimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 3) {
-        fprintf(stderr, "Usage: %s <file> <size>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <file> <size> [notrunc]\n", argv[0]);
         exit(1);
     }
 
     size_t total = atoi(argv[2]);
+    int trunc = argc < 4 || strcmp(argv[3], "notrunc") != 0;
 
-    int i;
     unsigned long copied;
-    for(i = 0; i < COUNT; ++i) {
-        cycle_t start1 = get_cycles();
-        int fd = open(argv[1], O_WRONLY | O_TRUNC | O_CREAT | O_NOATIME);
+    for(int i = 0; i < COUNT; ++i) {
+        int fd = open(argv[1], O_WRONLY | O_CREAT | (trunc ? O_TRUNC : 0) | O_NOATIME);
         if(fd == -1) {
-    	    perror("open");
-    	    return 1;
+            perror("open");
+            return 1;
         }
-        cycle_t start2 = get_cycles();
 
         /* reset value */
         smemcpy(0);
 
-        size_t pos = 0;
-        for(; pos < total; pos += sizeof(buffer))
-        	write(fd, buffer, sizeof(buffer));
+        cycle_t start = get_cycles();
+        for(size_t pos = 0; pos < total; pos += sizeof(buffer))
+            write(fd, buffer, sizeof(buffer));
+        cycle_t end = get_cycles();
 
         memtimes[i] = smemcpy(&copied);
 
-        cycle_t end1 = get_cycles();
         close(fd);
-        cycle_t end2 = get_cycles();
 
-        optimes[i] = start2 - start1;
-        rdtimes[i] = end1 - start2;
-        cltimes[i] = end2 - end1;
+        rdtimes[i] = end - start;
     }
 
-    printf("[write] Total bytes: %zu\n", total);
-    printf("[write] copied %lu bytes\n", copied);
-    printf("[write] Open time: %lu (%lu)\n", avg(optimes, COUNT), stddev(optimes, COUNT, avg(optimes, COUNT)));
-    printf("[write] Write time: %lu (%lu)\n", avg(rdtimes, COUNT), stddev(rdtimes, COUNT, avg(rdtimes, COUNT)));
-    printf("[write] Memcpy time: %lu (%lu)\n", avg(memtimes, COUNT), stddev(memtimes, COUNT, avg(memtimes, COUNT)));
-    printf("[write] Close time: %lu (%lu)\n", avg(cltimes, COUNT), stddev(cltimes, COUNT, avg(cltimes, COUNT)));
+    printf("%lu %lu %lu\n", avg(rdtimes, COUNT), avg(memtimes, COUNT), copied);
     return 0;
 }

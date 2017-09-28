@@ -4,10 +4,10 @@
 
 typedef unsigned long cycle_t;
 
-#define BUFFER_SIZE         4096
+#define BUFFER_SIZE         8192
 #define SYSCALL_REPEAT      2000
 #define MICROBENCH_REPEAT   32
-#define FSBENCH_REPEAT      8   // low variation
+#define FSBENCH_REPEAT      4   // low variation
 #define APPBENCH_REPEAT     8
 
 #define FIRST_RESULT        2   // throw away the first 2
@@ -72,4 +72,14 @@ static inline void gem5_dumpstats(void) {
         ".word 0x41;"
         : : "D"(0), "S"(0)
     );
+}
+
+static inline cycle_t gem5_debug(unsigned msg) {
+    cycle_t res;
+    __asm__ volatile (
+        ".byte 0x0F, 0x04;"
+        ".word 0x63;"
+        : "=a"(res) : "D"(msg)
+    );
+    return res;
 }
