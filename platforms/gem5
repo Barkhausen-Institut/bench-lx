@@ -73,9 +73,15 @@ run_gem5() {
                     sleep 1
                 done
             elif [ "$cmd" = "fsbench" ]; then
-                echo -e "\n/mount.sh\n/bench/fsbench.sh '$BENCH_CMD'"
+                echo -e "\n/mount.sh\n"
+                # better wait a bit
+                # Linux is quite fragile as it seems, if serial input comes too quickly
+                sleep 10
+                echo -e "/bench/fsbench.sh '$BENCH_CMD'"
             elif [ "$cmd" = "bench" ]; then
-                echo -e "\n/mount.sh\n/bench/bench.sh '$BENCH_CMD'"
+                echo -e "\n/mount.sh\n"
+                sleep 10
+                echo -e "/bench/bench.sh '$BENCH_CMD'"
             else
                 echo -e "\n/mount.sh\n/bench/microbench.sh"
             fi
