@@ -5,7 +5,7 @@ run_gem5() {
     wait=$2
 
     if [ "$cmd" = "warmup" ]; then
-        GEM5_OUT="gem5"
+        GEM5_OUT="gem5-$LX_CORES"
     else
         if [ ! -d "$GEM5_OUT" ]; then
             echo "Please specify the gem5 output directory via GEM5_OUT!" >&2
@@ -13,7 +13,7 @@ run_gem5() {
         fi
 
         rm -f $GEM5_OUT/cpt.*
-        ln -sf `readlink -f gem5/cpt.*` $GEM5_OUT
+        ln -sf `readlink -f gem5-$LX_CORES/cpt.*` $GEM5_OUT
     fi
     export M5_PATH=$GEM5_OUT
 
