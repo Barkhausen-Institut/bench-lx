@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <common.h>
 
-static char buffer[4096 * 4];
+static char buffer[BUFFER_SIZE];
 
 int main(int argc, char **argv) {
     if(argc < 2) {
@@ -29,7 +29,19 @@ int main(int argc, char **argv) {
 
     cycle_t cycles = strtoul(argv[1], NULL, 0);
 
-    while(read(STDIN_FILENO, buffer, sizeof(buffer)) > 0)
+    prof_start(0x1235);
+
+    while(1) {
+        prof_start(0xbbbb);
+        ssize_t res = read(STDIN_FILENO, buffer, sizeof(buffer));
+        prof_stop(0xbbbb);
+
+        if(res <= 0)
+            break;
+
         compute(cycles);
+    }
+
+    prof_stop(0x1235);
     return 0;
 }

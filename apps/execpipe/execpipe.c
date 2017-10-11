@@ -48,16 +48,15 @@ int main(int argc, char **argv) {
     CPU_SET(0, &reader);
     CPU_SET(1, &writer);
 
-    if(stats)
-        gem5_resetstats();
-
     int i;
     unsigned long copied;
     for(i = 0; i < repeats; ++i) {
         /* reset value */
         smemcpy(0);
 
-        cycle_t start = get_cycles();
+        gem5_resetstats();
+
+        cycle_t start = prof_start(0x1234);
         int fds[2];
         pipe(fds);
 
@@ -122,16 +121,20 @@ int main(int argc, char **argv) {
         waitpid(pid1, NULL, 0);
         waitpid(pid2, NULL, 0);
 
-        cycle_t end = get_cycles();
+        gem5_dumpstats();
+
+        cycle_t end = prof_stop(0x1234);
         tottimes[i] = end - start;
         memtimes[i] = smemcpy(&copied);
     }
 
-    if(stats)
-        gem5_dumpstats();
-
-    printf("[execpipe] copied %lu bytes\n", copied);
-    printf("[execpipe] Total time: %lu (%lu)\n", avg(tottimes, repeats), stddev(tottimes, repeats, avg(tottimes, repeats)));
-    printf("[execpipe] Memcpy time: %lu (%lu)\n", avg(memtimes, repeats), stddev(memtimes, repeats, avg(memtimes, repeats)));
+    printf(
+        "%lu %lu %lu %lu %lu\n",
+        avg(tottimes, repeats),
+        avg(memtimes, repeats),
+        stddev(tottimes, repeats, avg(tottimes, repeats)),
+        stddev(memtimes, repeats, avg(memtimes, repeats)),
+        copied
+    );
     return 0;
 }

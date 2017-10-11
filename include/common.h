@@ -1,8 +1,7 @@
 #pragma once
 
 #include <math.h>
-
-typedef unsigned long cycle_t;
+#include <profile.h>
 
 #define BUFFER_SIZE         8192
 #define SYSCALL_REPEAT      2000
@@ -72,14 +71,4 @@ static inline void gem5_dumpstats(void) {
         ".word 0x41;"
         : : "D"(0), "S"(0)
     );
-}
-
-static inline cycle_t gem5_debug(unsigned msg) {
-    cycle_t res;
-    __asm__ volatile (
-        ".byte 0x0F, 0x04;"
-        ".word 0x63;"
-        : "=a"(res) : "D"(msg)
-    );
-    return res;
 }

@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <common.h>
 
-static char buffer[4096 * 4];
+static char buffer[BUFFER_SIZE];
 
 int main(int argc, char **argv) {
     if(argc < 3) {
@@ -30,13 +30,19 @@ int main(int argc, char **argv) {
     size_t bytes = strtoul(argv[1], NULL, 0);
     cycle_t cycles = strtoul(argv[2], NULL, 0);
 
+    prof_start(0x1235);
+
     while(bytes > 0) {
         compute(cycles);
 
         size_t amount = bytes < sizeof(buffer) ? bytes : sizeof(buffer);
+        prof_start(0xbbbb);
         write(STDOUT_FILENO, buffer, amount);
+        prof_stop(0xbbbb);
 
         bytes -= amount;
     }
+
+    prof_stop(0x1235);
     return 0;
 }
