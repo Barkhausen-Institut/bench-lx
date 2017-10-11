@@ -26,7 +26,7 @@ run_gem5() {
     GEM5_MEMFREQ=${GEM5_MEMFREQ:-333MHz}
 
     params=`mktemp`
-    echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log --listener-mode=on" >> $params
+    echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log" >> $params
     if [ "$GEM5_FLAGS" != "" ]; then
         echo -n " --debug-flags=$GEM5_FLAGS" >> $params
     fi
