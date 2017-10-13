@@ -13,12 +13,10 @@
 #include <cycles.h>
 #include <smemcpy.h>
 
-// there is pretty much no variation; one run after warmup is enough
-#define COUNT   (FIRST_RESULT + 1)
+// there is pretty much no variation; 4 runs after 1 warmup run is enough
+#define COUNT   5
 
 static char buffer[BUFFER_SIZE];
-static cycle_t rdtimes[COUNT];
-static cycle_t memtimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 2) {
@@ -36,18 +34,18 @@ int main(int argc, char **argv) {
         /* reset value */
         smemcpy(0);
 
-        cycle_t start = get_cycles();
+        cycle_t start = prof_start(0x1234);
         while(read(fd, buffer, sizeof(buffer)) > 0)
             ;
-        cycle_t end = get_cycles();
+        cycle_t end = prof_stop(0x1234);
 
         unsigned long copied;
-        memtimes[i] = smemcpy(&copied);
+        unsigned long memcpy_time = smemcpy(&copied);
+
+        printf("total: %lu, memcpy: %lu, copied: %lu\n",
+            end - start, memcpy_time, copied);
 
         close(fd);
-        rdtimes[i] = end - start;
     }
-
-    printf("%lu %lu\n", avg(rdtimes, COUNT), avg(memtimes, COUNT));
     return 0;
 }

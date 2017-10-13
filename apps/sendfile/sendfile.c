@@ -15,11 +15,8 @@
 #include <cycles.h>
 #include <smemcpy.h>
 
-// there is pretty much no variation; one run after warmup is enough
-#define COUNT   (FIRST_RESULT + 1)
-
-static cycle_t wrtimes[COUNT];
-static cycle_t memtimes[COUNT];
+// there is pretty much no variation; 4 runs after 1 warmup run is enough
+#define COUNT   5
 
 int main(int argc, char **argv) {
     if(argc < 3) {
@@ -27,7 +24,6 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    unsigned long copied;
     for(int i = 0; i < COUNT; ++i) {
         int in = open(argv[1], O_RDONLY | O_NOATIME);
         if(in == -1) {
@@ -44,7 +40,7 @@ int main(int argc, char **argv) {
         /* reset value */
         smemcpy(0);
 
-        cycle_t start = get_cycles();
+        cycle_t start = prof_start(0x1234);
 
         struct stat st;
         if(fstat(in, &st) == -1) {
@@ -57,16 +53,16 @@ int main(int argc, char **argv) {
             perror("sendfile");
             return 1;
         }
-        cycle_t end = get_cycles();
+        cycle_t end = prof_stop(0x1234);
 
-        memtimes[i] = smemcpy(&copied);
+        unsigned long copied;
+        unsigned long memcpy_time = smemcpy(&copied);
+
+        printf("total: %lu, memcpy: %lu, copied: %lu\n",
+            end - start, memcpy_time, copied);
 
         close(out);
         close(in);
-
-        wrtimes[i] = end - start;
     }
-
-    printf("%lu %lu %lu\n", avg(wrtimes, COUNT), avg(memtimes, COUNT), copied);
     return 0;
 }

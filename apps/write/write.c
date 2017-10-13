@@ -10,12 +10,10 @@
 #include <cycles.h>
 #include <smemcpy.h>
 
-// there is pretty much no variation; one run after warmup is enough
-#define COUNT   (FIRST_RESULT + 1)
+// there is pretty much no variation; 4 runs after 1 warmup run is enough
+#define COUNT   5
 
 static char buffer[BUFFER_SIZE];
-static cycle_t rdtimes[COUNT];
-static cycle_t memtimes[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 3) {
@@ -26,7 +24,6 @@ int main(int argc, char **argv) {
     size_t total = atoi(argv[2]);
     int trunc = argc < 4 || strcmp(argv[3], "notrunc") != 0;
 
-    unsigned long copied;
     for(int i = 0; i < COUNT; ++i) {
         int fd = open(argv[1], O_WRONLY | O_CREAT | (trunc ? O_TRUNC : 0) | O_NOATIME);
         if(fd == -1) {
@@ -37,18 +34,18 @@ int main(int argc, char **argv) {
         /* reset value */
         smemcpy(0);
 
-        cycle_t start = get_cycles();
+        cycle_t start = prof_start(0x1234);
         for(size_t pos = 0; pos < total; pos += sizeof(buffer))
             write(fd, buffer, sizeof(buffer));
-        cycle_t end = get_cycles();
+        cycle_t end = prof_stop(0x1234);
 
-        memtimes[i] = smemcpy(&copied);
+        unsigned long copied;
+        unsigned long memcpy_time = smemcpy(&copied);
+
+        printf("total: %lu, memcpy: %lu, copied: %lu\n",
+            end - start, memcpy_time, copied);
 
         close(fd);
-
-        rdtimes[i] = end - start;
     }
-
-    printf("%lu %lu %lu\n", avg(rdtimes, COUNT), avg(memtimes, COUNT), copied);
     return 0;
 }
