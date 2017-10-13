@@ -16,11 +16,6 @@
 #include <cycles.h>
 #include <smemcpy.h>
 
-#define COUNT   64
-
-static cycle_t tottimes[COUNT];
-static cycle_t memtimes[COUNT];
-
 static void usage(const char *name) {
     fprintf(stderr, "Usage: %s <wargc> <rargc> <repeats> <pin> <stats> <warg1>... <rarg1>...\n", name);
     exit(1);
@@ -37,10 +32,6 @@ int main(int argc, char **argv) {
     int stats = strcmp(argv[5], "1") == 0;
     if(argc != 6 + wargc + rargc)
         usage(argv[0]);
-    if(repeats > COUNT) {
-        fprintf(stderr, "Too many repeats (max %d)\n", COUNT);
-        exit(1);
-    }
 
     cpu_set_t reader, writer;
     CPU_ZERO(&reader);
@@ -124,17 +115,10 @@ int main(int argc, char **argv) {
         gem5_dumpstats();
 
         cycle_t end = prof_stop(0x1234);
-        tottimes[i] = end - start;
-        memtimes[i] = smemcpy(&copied);
-    }
 
-    printf(
-        "%lu %lu %lu %lu %lu\n",
-        avg(tottimes, repeats),
-        avg(memtimes, repeats),
-        stddev(tottimes, repeats, avg(tottimes, repeats)),
-        stddev(memtimes, repeats, avg(memtimes, repeats)),
-        copied
-    );
+        unsigned long memcpy_time = smemcpy(&copied);
+        printf("total : %lu, memcpy: %lu, copied: %lu\n",
+            end - start, memcpy_time, copied);
+    }
     return 0;
 }
