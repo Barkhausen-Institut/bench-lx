@@ -3,38 +3,47 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <cycles.h>
+#include <profile.h>
 #include <common.h>
 
-#define COUNT MICROBENCH_REPEAT
+#define COUNT 20
 
-static cycle_t times[COUNT];
+#if !defined(DUMMY_BUF_SIZE)
+#   define DUMMY_BUF_SIZE 4096
+#endif
 
-int main() {
+static char dummy[DUMMY_BUF_SIZE] = {'a'};
+
+int main(int argc, __attribute__((unused)) char **argv) {
+    // for the exec benchmark
+    if(argc > 1) {
+        prof_stop(0x1234);
+        return 0;
+    }
+
+    memset(dummy, 0, sizeof(dummy));
+
     size_t i;
     for(i = 0; i < COUNT; ++i) {
         int pid;
-        cycle_t start = get_cycles();
+        prof_start(0x1234);
         switch((pid = fork())) {
-            case 0: {
-                cycle_t end = get_cycles();
-                exit((end - start) / 1000);
-            }
+            case 0:
+                prof_stop(0x1234);
+                exit(0);
+                break;
             case -1:
                 perror("fork");
                 break;
             default: {
-                int status;
-                waitpid(pid, &status, 0);
-                times[i] = WEXITSTATUS(status) * 1000;
+                waitpid(pid, NULL, 0);
                 break;
             }
         }
     }
-
-    cycle_t average = avg(times, COUNT);
-    printf("[fork] Cycles per fork (avg): %lu (%lu)\n", average, stddev(times, COUNT, average));
     return 0;
 }
