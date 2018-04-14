@@ -10,7 +10,7 @@
 #include <profile.h>
 #include <common.h>
 
-#define COUNT 20
+#define COUNT 5
 
 #if !defined(DUMMY_BUF_SIZE)
 #   define DUMMY_BUF_SIZE 4096

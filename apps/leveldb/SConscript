@@ -1,0 +1,5 @@
+Import('env')
+
+myenv = env.Clone()
+myenv['LINKFLAGS'] = str(myenv['LINKFLAGS']).replace('-static', '')
+myenv.LxProgram(myenv, target = 'leveldb', source = 'leveldb.cc', libs = ['leveldb'])

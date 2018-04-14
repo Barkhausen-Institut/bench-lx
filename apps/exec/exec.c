@@ -12,7 +12,7 @@
 #include <profile.h>
 #include <common.h>
 
-#define COUNT 20
+#define COUNT 5
 
 int main(int argc, char **argv) {
     if(argc < 2) {
