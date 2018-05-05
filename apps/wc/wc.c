@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <common.h>
 #include <cycles.h>
+#include <profile.h>
 
 #include "loop.h"
 
@@ -33,7 +34,9 @@ int main(int argc, char **argv) {
     ssize_t res;
     int last_space = false;
     while((res = read(fd, buffer, sizeof(buffer))) > 0) {
+        prof_start(0x5555);
         count(buffer, res, &lines, &words, &last_space);
+        prof_stop(0x5555);
         bytes += res;
     }
     cycle_t end = get_cycles();
