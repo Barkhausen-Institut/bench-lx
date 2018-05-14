@@ -50,6 +50,7 @@ static inline cycle_t stddev(cycle_t *vals, unsigned long count, cycle_t avg) {
 static inline void compute(cycle_t cycles) {
     cycle_t iterations = cycles / 2;
     __asm__ volatile (
+        ".align 16;"
         "1: dec %0;"
         "test   %0, %0;"
         "ja     1b;"
