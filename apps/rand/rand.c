@@ -22,7 +22,8 @@ int main(int argc, char **argv) {
         size_t amount = count < EL_COUNT ? count : EL_COUNT;
 
         prof_start(0x5555);
-        generate(buffer, amount);
+        compute(amount * 8);
+        // generate(buffer, amount);
         prof_stop(0x5555);
         write(STDOUT_FILENO, buffer, amount * sizeof(rand_type));
 
