@@ -52,7 +52,7 @@ export CC=`readlink -f $LX_BUILDDIR/host/usr/bin/$LX_ARCH-linux-gcc`
 mkdir -p $LX_BUILDDIR/disks
 
 case $cmd in
-	warmup|run|dbg|bench|fsbench|trace)
+	warmup|run|dbg|bench|fsbench|trace|serverbench|servertrace)
 		./platforms/$LX_PLATFORM $cmd
 		;;
 
@@ -82,7 +82,7 @@ case $cmd in
 
 			# create disk for bench fs
 			rm -f $LX_BUILDDIR/disks/linux-bigswap2.img
-			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/linux-bigswap2.img 64
+			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/linux-bigswap2.img 128
 			tmp=`mktemp -d`
 			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/linux-bigswap2.img $tmp
 			cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
@@ -90,6 +90,18 @@ case $cmd in
 			$GEM5_DIR/util/gem5img.py umount $tmp
 			rmdir $tmp
 		fi
+		;;
+
+	mkbenchfs)
+		# create disk for bench fs
+		rm -f $LX_BUILDDIR/disks/linux-bigswap2.img
+		$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/linux-bigswap2.img 128
+		tmp=`mktemp -d`
+		$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/linux-bigswap2.img $tmp
+		cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
+		sudo cp -r benchfs/* $tmp
+		$GEM5_DIR/util/gem5img.py umount $tmp
+		rmdir $tmp
 		;;
 
 	mklx)

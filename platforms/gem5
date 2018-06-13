@@ -27,6 +27,11 @@ run_gem5() {
 
     params=`mktemp`
     echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log" >> $params
+    # echo -n " --debug-start=22369202756649" >> $params
+    # only use the listener-mode argument, if we're using M3's gem5 version
+    if [[ $GEM5_DIR = *"/m3/"* ]]; then
+        echo -n " --listener-mode=on" >> $params
+    fi
     if [ "$GEM5_FLAGS" != "" ]; then
         echo -n " --debug-flags=$GEM5_FLAGS" >> $params
     fi
@@ -82,6 +87,14 @@ run_gem5() {
                 echo -e "\n/mount.sh\n"
                 sleep 10
                 echo -e "/bench/bench.sh '$BENCH_CMD'"
+            elif [ "$cmd" = "servertrace" ]; then
+                echo -e "\n/mount.sh"
+                sleep 10
+                echo -e "/bench/servertrace.sh $BENCH_CMD"
+            elif [ "$cmd" = "serverbench" ]; then
+                echo -e "\n/mount.sh"
+                sleep 10
+                echo -e "/bench/serverbench.sh $BENCH_CMD"
             else
                 echo -e "\n/mount.sh\n/bench/microbench.sh"
             fi
@@ -132,7 +145,7 @@ case $1 in
         echo "Not supported"
         ;;
 
-    bench|fsbench|microbench)
+    bench|fsbench|microbench|serverbench|servertrace)
         run_gem5 $1 '^<===Benchmarks_done==='
         ;;
 esac
