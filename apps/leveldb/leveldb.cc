@@ -5,7 +5,7 @@
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
 
-#define INSERT_COUNT	128
+#define INSERT_COUNT	512
 #define STRLEN          1024
 
 using namespace std;

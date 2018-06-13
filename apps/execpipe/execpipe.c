@@ -15,14 +15,20 @@
 #include <common.h>
 #include <cycles.h>
 #include <smemcpy.h>
+#include <sysctrace.h>
 
 static void usage(const char *name) {
-    fprintf(stderr, "Usage: %s <wargc> <rargc> <repeats> <pin> <stats> <warg1>... <rarg1>...\n", name);
+    fprintf(stderr, "Usage: %s <wargc> <rargc> <repeats> <pin> <stats> <trace> <warg1>... <rarg1>...\n", name);
+    fprintf(stderr, "  <trace>=0: no tracing\n");
+    fprintf(stderr, "  <trace>=1: trace syscalls of writer\n");
+    fprintf(stderr, "  <trace>=2: trace syscalls of reader\n");
+    fprintf(stderr, "  <trace>=3: strace of writer\n");
+    fprintf(stderr, "  <trace>=4: strace of reader\n");
     exit(1);
 }
 
 int main(int argc, char **argv) {
-    if(argc < 6)
+    if(argc < 7)
         usage(argv[0]);
 
     int wargc = atoi(argv[1]);
@@ -30,7 +36,8 @@ int main(int argc, char **argv) {
     int repeats = atoi(argv[3]);
     int pin = strcmp(argv[4], "1") == 0;
     int stats = strcmp(argv[5], "1") == 0;
-    if(argc != 6 + wargc + rargc)
+    int trace = atoi(argv[6]);
+    if(argc != 7 + wargc + rargc)
         usage(argv[0]);
 
     cpu_set_t reader, writer;
@@ -60,6 +67,8 @@ int main(int argc, char **argv) {
             case 0:
                 if(pin)
                     sched_setaffinity(getpid(), sizeof(writer), &writer);
+                if(trace == 1)
+                    syscreset(getpid());
 
                 // close read-end
                 close(fds[0]);
@@ -67,11 +76,14 @@ int main(int argc, char **argv) {
                 // redirect stdout to pipe
                 dup2(fds[1], STDOUT_FILENO);
 
-                // child is executing cat
-                char **args = (char**)malloc(sizeof(char*) * (wargc + 1));
+                // child is executing writer
+                size_t off = trace == 3 ? 1 : 0;
+                char **args = (char**)malloc(sizeof(char*) * (wargc + off + 1));
                 for(int j = 0; j < wargc; ++j)
-                    args[j] = argv[6 + j];
-                args[wargc] = NULL;
+                    args[off + j] = argv[7 + j];
+                if(trace == 3)
+                    args[0] = "/usr/bin/strace";
+                args[off + wargc] = NULL;
                 execv(args[0], args);
                 fprintf(stderr, "execv of '%s' failed: %s\n", args[0], strerror(errno));
                 // vfork prohibits exit
@@ -87,6 +99,8 @@ int main(int argc, char **argv) {
             case 0:
                 if(pin)
                     sched_setaffinity(getpid(), sizeof(reader), &reader);
+                if(trace == 2)
+                    syscreset(getpid());
 
                 // close write-end
                 close(fds[1]);
@@ -94,11 +108,14 @@ int main(int argc, char **argv) {
                 // redirect stdin to pipe
                 dup2(fds[0], STDIN_FILENO);
 
-                // child is executing wc
-                char **args = (char**)malloc(sizeof(char*) * (rargc + 1));
+                // child is executing reader
+                size_t off = trace == 4 ? 1 : 0;
+                char **args = (char**)malloc(sizeof(char*) * (rargc + off + 1));
                 for(int j = 0; j < rargc; ++j)
-                    args[j] = argv[6 + wargc + j];
-                args[rargc] = NULL;
+                    args[off + j] = argv[7 + wargc + j];
+                args[off + rargc] = NULL;
+                if(trace == 4)
+                    args[0] = "/usr/bin/strace";
                 execv(args[0], args);
                 fprintf(stderr, "execv of '%s' failed: %s\n", args[0], strerror(errno));
                 // vfork prohibits exit
@@ -119,6 +136,9 @@ int main(int argc, char **argv) {
         unsigned long memcpy_time = smemcpy(&copied);
         printf("total : %lu, memcpy: %lu, copied: %lu\n",
             end - start, memcpy_time, copied);
+        fflush(stdout);
+        if(trace == 1 || trace == 2)
+            sysctrace();
     }
     return 0;
 }
