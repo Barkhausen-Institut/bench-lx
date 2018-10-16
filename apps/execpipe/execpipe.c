@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
             case 0:
                 if(pin)
                     sched_setaffinity(getpid(), sizeof(writer), &writer);
-                if(trace == 1)
+                if(i == repeats - 1 && trace == 1)
                     syscreset(getpid());
 
                 // close read-end
@@ -77,12 +77,14 @@ int main(int argc, char **argv) {
                 dup2(fds[1], STDOUT_FILENO);
 
                 // child is executing writer
-                size_t off = trace == 3 ? 1 : 0;
+                size_t off = trace >= 3 ? 2 : 0;
                 char **args = (char**)malloc(sizeof(char*) * (wargc + off + 1));
                 for(int j = 0; j < wargc; ++j)
                     args[off + j] = argv[7 + j];
-                if(trace == 3)
+                if(trace >= 3) {
                     args[0] = "/usr/bin/strace";
+                    args[1] = trace == 3 ? "-s32" : "-o/dev/null";
+                }
                 args[off + wargc] = NULL;
                 execv(args[0], args);
                 fprintf(stderr, "execv of '%s' failed: %s\n", args[0], strerror(errno));
@@ -99,7 +101,7 @@ int main(int argc, char **argv) {
             case 0:
                 if(pin)
                     sched_setaffinity(getpid(), sizeof(reader), &reader);
-                if(trace == 2)
+                if(i == repeats - 1 && trace == 2)
                     syscreset(getpid());
 
                 // close write-end
@@ -109,13 +111,15 @@ int main(int argc, char **argv) {
                 dup2(fds[0], STDIN_FILENO);
 
                 // child is executing reader
-                size_t off = trace == 4 ? 1 : 0;
+                size_t off = trace >= 3 ? 2 : 0;
                 char **args = (char**)malloc(sizeof(char*) * (rargc + off + 1));
                 for(int j = 0; j < rargc; ++j)
                     args[off + j] = argv[7 + wargc + j];
                 args[off + rargc] = NULL;
-                if(trace == 4)
+                if(trace >= 3) {
                     args[0] = "/usr/bin/strace";
+                    args[1] = trace == 4 ? "-s32" : "-o/dev/null";
+                }
                 execv(args[0], args);
                 fprintf(stderr, "execv of '%s' failed: %s\n", args[0], strerror(errno));
                 // vfork prohibits exit
@@ -137,7 +141,7 @@ int main(int argc, char **argv) {
         printf("total : %lu, memcpy: %lu, copied: %lu\n",
             end - start, memcpy_time, copied);
         fflush(stdout);
-        if(trace == 1 || trace == 2)
+        if(i == repeats - 1 && (trace == 1 || trace == 2))
             sysctrace();
     }
     return 0;
