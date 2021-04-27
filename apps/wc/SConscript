@@ -1,2 +1,4 @@
 Import('env')
-env.LxProgram(env, target = 'wc', source = ['wc.c', 'loop.S'])
+src = ['wc.c']
+src += ['loop.S'] if env['ARCH'] == 'x86_64' else ['loop.c']
+env.LxProgram(env, target = 'wc', source = src)

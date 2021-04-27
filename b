@@ -1,55 +1,39 @@
 #!/bin/bash
 
-if [ "$LX_ARCH" = "" ]; then
-	echo "Defaulting to LX_ARCH=xtensa LX_PLATFORM=xtensa"
-	LX_ARCH=xtensa
-	LX_PLATFORM=xtensa
+if [ -z $LX_ARCH ]; then
+	LX_ARCH=x86_64
+	echo "Defaulting to LX_ARCH=$LX_ARCH"
 fi
 
-if [ "$LX_PLATFORM" = "" ]; then
-	echo "Please specify the platform to run on (gem5|qemu)" >&2
+if [ -z $LX_PLATFORM ]; then
+	LX_PLATFORM=qemu
+	echo "Defaulting to LX_PLATFORM=$LX_PLATFORM"
+fi
+
+if [ "$LX_PLATFORM" = "gem5" ] && [ ! -d "$GEM5_DIR" ]; then
+	echo "Please set GEM5_DIR to the path of the gem5 directory" >&2
 	exit 1
 fi
 
-if [ -f /proc/cpuinfo ]; then
-	cpus=`cat /proc/cpuinfo | grep '^processor[[:space:]]*:' | wc -l`
-else
-	cpus=1
-fi
-
 LX_CORES=${LX_CORES:-1}
+LX_BUILDDIR="build/$LX_ARCH"
+export LX_ARCH LX_PLATFORM LX_BUILDDIR LX_CORES
 
-if [ "$LX_BUILD" != "release" ] && [ "$LX_BUILD" != "debug" ]; then
-	LX_BUILD=release
-fi
-LX_BUILDDIR="build/$LX_ARCH-$LX_BUILD"
-mkdir -p $LX_BUILDDIR $LX_BUILDDIR/buildroot
-
-export LX_BUILD LX_ARCH LX_PLATFORM LX_BUILDDIR LX_CORES
+mkdir -p $LX_BUILDDIR/linux $LX_BUILDDIR/buildroot $LX_BUILDDIR/opensbi $LX_BUILDDIR/disks
 
 cmd=$1
 shift
 
-if [ "$LX_ARCH" = "xtensa" ]; then
-	if [ ! -d "$XTENSA_DIR" ]; then
-		echo "Please set XTENSA_DIR to the path of the xtensa directory" >&2
-		exit 1
-	fi
-	libgcc=$builddir/buildroot/host/usr/lib/gcc/xtensa-buildroot-linux-uclibc/4.8.4/libgcc.a
-	# add PATH to xtensa tools and buildroot-toolchain
-	PATH=$XTENSA_DIR/XtDevTools/install/tools/RE-2014.5-linux/XtensaTools/bin/:$PATH
-else
-	if [ ! -d "$GEM5_DIR" ]; then
-		echo "Please set GEM5_DIR to the path of the gem5 directory" >&2
-		exit 1
-	fi
+if [ ! -f build/ignoreint ]; then
+	g++ -Wall -Wextra -O2 -o build/ignoreint tools/ignoreint.cc
 fi
-PATH=$(pwd)/$LX_BUILDDIR/buildroot/host/usr/bin:$PATH
-export PATH
+
+if [ "$cmd" != "mkqemu" ]; then
+	export PATH=$(pwd)/$LX_BUILDDIR/buildroot/host/usr/bin:$PATH
+fi
 
 export CC=`readlink -f $LX_BUILDDIR/host/usr/bin/$LX_ARCH-linux-gcc`
-
-mkdir -p $LX_BUILDDIR/disks
+export CROSS_COMPILE=$LX_ARCH-buildroot-linux-uclibc-
 
 case $cmd in
 	warmup|run|dbg|bench|fsbench|trace|serverbench|servertrace)
@@ -61,15 +45,9 @@ case $cmd in
 			cp configs/config-buildroot-$LX_ARCH $LX_BUILDDIR/buildroot/.config
 		fi
 
-		( cd buildroot && make O=../$LX_BUILDDIR/buildroot -j$cpus $* )
+		( cd buildroot && make O=../$LX_BUILDDIR/buildroot -j$(nproc) $* )
 
-		# we have to strip the debugging info here, because it's in gwarf-4 format but the xtensa gdb only
-		# supports 2 (and is too stupid to just ignore them)
-		if [ "$LX_ARCH" = "xtensa" ] && [ -f $libgcc ]; then
-			xtensa-linux-objcopy -g $libgcc
-		fi
-
-		if [ "$LX_ARCH" = "x86_64" ]; then
+		if [ "$LX_PLATFORM" = "gem5" ]; then
 			# create disk for root fs
 			rm -f $LX_BUILDDIR/disks/x86root.img
 			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/x86root.img 16
@@ -93,74 +71,84 @@ case $cmd in
 		;;
 
 	mkbenchfs)
-		# create disk for bench fs
-		rm -f $LX_BUILDDIR/disks/linux-bigswap2.img
-		$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/linux-bigswap2.img 128
-		tmp=`mktemp -d`
-		$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/linux-bigswap2.img $tmp
-		cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
-		sudo cp -r benchfs/* $tmp
-		$GEM5_DIR/util/gem5img.py umount $tmp
-		rmdir $tmp
+		if [ "$LX_PLATFORM" = "gem5" ]; then
+			# create disk for bench fs
+			rm -f $LX_BUILDDIR/disks/linux-bigswap2.img
+			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/linux-bigswap2.img 128
+			tmp=`mktemp -d`
+			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/linux-bigswap2.img $tmp
+			cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
+			sudo cp -r benchfs/* $tmp
+			$GEM5_DIR/util/gem5img.py umount $tmp
+			rmdir $tmp
+		else
+			echo "Not supported"
+		fi
 		;;
 
 	mklx)
-		if [ ! -f $LX_BUILDDIR/.config ]; then
-			cp configs/config-linux-$LX_ARCH $LX_BUILDDIR/.config
+		if [ ! -f $LX_BUILDDIR/linux/.config ]; then
+			cp configs/config-linux-$LX_ARCH $LX_BUILDDIR/linux/.config
 		fi
 
-		# tell linux our cross-compiler prefix
-		export CROSS_COMPILE=$LX_ARCH-linux-
-
-		if [ "$LX_ARCH" = "xtensa" ] && [ "$build" = "debug" ]; then
-			( cd linux && make O=../$LX_BUILDDIR ARCH=$LX_ARCH KBUILD_CFLAGS="-O1 -gdwarf-2 -g" -j$cpus $* )
+		if [ "$LX_ARCH" = "riscv64" ]; then
+			export ARCH=riscv
 		else
-			( cd linux && make O=../$LX_BUILDDIR ARCH=$LX_ARCH -j$cpus $* )
+			export ARCH=$LX_ARCH
 		fi
+
+		( cd linux && make O=../$LX_BUILDDIR/linux -j$(nproc) $* )
+		;;
+
+	mkopensbi)
+		if [ "$LX_ARCH" = "riscv64" ]; then
+			cd opensbi && make O=../$LX_BUILDDIR/opensbi PLATFORM=generic
+		else
+			echo "Not supported"
+		fi
+		;;
+
+	mkqemu)
+		mkdir -p build/qemu
+		cd build/qemu
+		../../qemu/configure \
+			--target-list=riscv64-softmmu,x86_64-softmmu \
+			--enable-trace-backends=simple \
+			&& make -j$(nproc)
 		;;
 
 	mkapps)
-		scons -j$cpus
+		scons -j$(nproc)
 		;;
 
 	elf=*)
-		readelf -aW $LX_BUILDDIR/bin/${cmd#elf=} | less
+		${CROSS_COMPILE}readelf -aW $LX_BUILDDIR/bin/${cmd#elf=} | less
 		;;
 
 	dis=*)
-		if [ "$LX_ARCH" = "xtensa" ]; then
-			xt-objdump -SC $LX_BUILDDIR/bin/${cmd#dis=} | less
-		else
-			objdump -SC $LX_BUILDDIR/bin/${cmd#dis=} | less
-		fi
-		;;
-
-	disp=*)
-		xt-objdump -dC $LX_BUILDDIR/bin/${cmd#disp=} | \
-			awk -v EXEC=$LX_BUILDDIR/bin/${cmd#disp=} -f ./tools/pimpdisasm.awk | less
+		${CROSS_COMPILE}objdump -SC $LX_BUILDDIR/bin/${cmd#dis=} | less
 		;;
 
 	*)
 		echo "Usage: $0 <cmd>" >&2
 		echo ""
 		echo "The following commands are supported:" >&2
-		echo "  mklx:       make linux" >&2
-		echo "  mkapps:     make applications" >&2
-		echo "  mkbr:       make buildroot (and disk for x86_64)" >&2
-		echo "  elf:        show ELF information" >&2
-		echo "  dis:        disassembly" >&2
-		echo "  disp:       enhanced disassembly" >&2
-		echo "  warmup:     boot linux and checkpoint it" >&2
-		echo "  run:        run it" >&2
-		echo "  dbg:        debug linux" >&2
-		echo "  bench:      run benchmarks" >&2
-		echo "  fsbench:    run FS benchmarks" >&2
-		echo "  trace:      create instruction trace" >&2
+		echo "  mklx [<arg>..]:     make linux" >&2
+		echo "  mkbr [<arg>..]:     make buildroot (and disk for x86_64)" >&2
+		echo "  mkopensbi:          make OpenSBI (riscv64 only)" >&2
+		echo "  mkqemu:             make QEMU" >&2
+		echo "  mkapps:             make applications" >&2
+		echo "  elf:                show ELF information" >&2
+		echo "  dis:                disassembly" >&2
+		echo "  warmup:             boot linux and checkpoint it" >&2
+		echo "  run:                run it" >&2
+		echo "  dbg:                debug linux" >&2
+		echo "  bench:              run benchmarks" >&2
+		echo "  fsbench:            run FS benchmarks" >&2
+		echo "  trace:              create instruction trace" >&2
 		echo ""
-		echo "Use LX_ARCH to set the architecture to build for (xtensa|x86_64)." >&2
-		echo "Use LX_PLATFORM to set the platform to run linux on (xtensa|gem5|qemu)." >&2
-		echo "Use LX_BUILD to set the build-type (debug|release)." >&2
+		echo "Use LX_ARCH to set the architecture to build for (riscv64|x86_64)." >&2
+		echo "Use LX_PLATFORM to set the platform to run linux on (gem5|qemu)." >&2
 		echo "Use LX_FLAGS to specify additional flags to the simulator" >&2
-		echo "Set LX_THCMP=1 to configure cache misses comparably." >&2
 		;;
 esac

@@ -1,29 +1,37 @@
 #!/bin/bash
 
+QEMU_FLAGS="-serial stdio -smp $LX_CORES -m 256M"
+
+if [ $LX_ARCH = "x86_64" ]; then
+    QEMU_FLAGS+=" -kernel $LX_BUILDDIR/linux/arch/x86/boot/bzImage"
+elif [ $LX_ARCH = "riscv64" ]; then
+    QEMU_FLAGS+=" -M virt"
+    QEMU_FLAGS+=" -bios $LX_BUILDDIR/opensbi/platform/generic/firmware/fw_jump.bin"
+    QEMU_FLAGS+=" -kernel $LX_BUILDDIR/linux/arch/riscv/boot/Image"
+else
+    echo "Not supported"
+    exit 1
+fi
+
+QEMU_FLAGS+=" -initrd $LX_BUILDDIR/buildroot/images/rootfs.cpio.bz2"
+QEMU_FLAGS+=" -append \"console=ttyS0\" $LX_FLAGS"
+
 case $1 in
     warmup)
         ;;
 
     run)
-        qemu-system-x86_64 -nographic -smp $LX_CORES \
-            -hda $LX_BUILDDIR/disks/x86root.img \
-            -hdb $LX_BUILDDIR/disks/linux-bigswap2.img \
-            -kernel $LX_BUILDDIR/arch/x86/boot/bzImage \
-            -append "console=ttyS0 root=/dev/sda1" $LX_FLAGS
+        build/qemu/qemu-system-$LX_ARCH $QEMU_FLAGS
         ;;
 
     dbg)
-        qemu-system-x86_64 -nographic -smp $LX_CORES \
-            -hda $LX_BUILDDIR/disks/x86root.img \
-            -hdb $LX_BUILDDIR/disks/linux-bigswap2.img \
-            -kernel $LX_BUILDDIR/arch/x86/boot/bzImage \
-            -append "console=ttyS0 root=/dev/sda1" $LX_FLAGS -S -s &
+        build/ignoreint build/qemu/qemu-system-$LX_ARCH $QEMU_FLAGS -S -s &
         pid=$!
 
         cmd=`mktemp`
         echo "target remote localhost:1234" > $cmd
         echo 'display/i $pc' >> $cmd
-        gdb --tui $LX_BUILDDIR/vmlinux -command=$cmd
+        ${CROSS_COMPILE}gdb --tui $LX_BUILDDIR/linux/vmlinux -command=$cmd
         rm $cmd
         kill $pid
         ;;

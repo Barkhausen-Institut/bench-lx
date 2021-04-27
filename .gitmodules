@@ -4,3 +4,9 @@
 [submodule "buildroot"]
 	path = buildroot
 	url = git://git.buildroot.net/buildroot
+[submodule "qemu"]
+	path = qemu
+	url = https://github.com/qemu/qemu
+[submodule "opensbi"]
+	path = opensbi
+	url = https://github.com/riscv/opensbi.git
