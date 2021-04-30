@@ -19,7 +19,7 @@ LX_CORES=${LX_CORES:-1}
 LX_BUILDDIR="build/$LX_ARCH"
 export LX_ARCH LX_PLATFORM LX_BUILDDIR LX_CORES
 
-mkdir -p $LX_BUILDDIR/linux $LX_BUILDDIR/buildroot $LX_BUILDDIR/opensbi $LX_BUILDDIR/disks
+mkdir -p $LX_BUILDDIR/{linux,buildroot,riscv-pk,disks}
 
 cmd=$1
 shift
@@ -100,9 +100,14 @@ case $cmd in
 		( cd linux && make O=../$LX_BUILDDIR/linux -j$(nproc) $* )
 		;;
 
-	mkopensbi)
+	mkbbl)
 		if [ "$LX_ARCH" = "riscv64" ]; then
-			cd opensbi && make O=../$LX_BUILDDIR/opensbi PLATFORM=generic
+			cd $LX_BUILDDIR/riscv-pk
+			export RISCV=$(pwd)/$LX_BUILDDIR/buildroot/host
+			../../../riscv-pk/configure \
+				--host=${CROSS_COMPILE::-1} \
+				--with-payload=../linux/vmlinux \
+				&& make -j$(nproc)
 		else
 			echo "Not supported"
 		fi
@@ -133,9 +138,9 @@ case $cmd in
 		echo "Usage: $0 <cmd>" >&2
 		echo ""
 		echo "The following commands are supported:" >&2
-		echo "  mklx [<arg>..]:     make linux" >&2
 		echo "  mkbr [<arg>..]:     make buildroot (and disk for x86_64)" >&2
-		echo "  mkopensbi:          make OpenSBI (riscv64 only)" >&2
+		echo "  mklx [<arg>..]:     make linux" >&2
+		echo "  mkbbl: 		        make RISC-V bootloader" >&2
 		echo "  mkqemu:             make QEMU" >&2
 		echo "  mkapps:             make applications" >&2
 		echo "  elf:                show ELF information" >&2

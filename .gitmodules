@@ -7,6 +7,6 @@
 [submodule "qemu"]
 	path = qemu
 	url = https://github.com/qemu/qemu
-[submodule "opensbi"]
-	path = opensbi
-	url = https://github.com/riscv/opensbi.git
+[submodule "riscv-pk"]
+	path = riscv-pk
+	url = https://github.com/riscv/riscv-pk.git

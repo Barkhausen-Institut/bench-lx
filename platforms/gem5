@@ -17,9 +17,15 @@ run_gem5() {
     fi
     export M5_PATH=$GEM5_OUT
 
-    mkdir -p $GEM5_OUT/binaries
-    ln -sf `readlink -f $LX_BUILDDIR/vmlinux` $GEM5_OUT/binaries/x86_64-vmlinux-2.6.22.9
-    ln -sf `readlink -f $LX_BUILDDIR/disks` $GEM5_OUT
+    if [ "$LX_ARCH" = "riscv64" ]; then
+        GEM5_ARCH=RISCV
+    else
+        GEM5_ARCH=X86
+    fi
+
+    # mkdir -p $GEM5_OUT/binaries
+    # ln -sf `readlink -f $LX_BUILDDIR/vmlinux` $GEM5_OUT/binaries/x86_64-vmlinux-2.6.22.9
+    # ln -sf `readlink -f $LX_BUILDDIR/disks` $GEM5_OUT
 
     GEM5_CPU=${GEM5_CPU:-DerivO3CPU}
     GEM5_CPUFREQ=${GEM5_CPUFREQ:-1GHz}
@@ -35,11 +41,12 @@ run_gem5() {
     if [ "$GEM5_FLAGS" != "" ]; then
         echo -n " --debug-flags=$GEM5_FLAGS" >> $params
     fi
-    echo -n " $GEM5_DIR/configs/example/linux_fs.py --cpu-type $GEM5_CPU" >> $params
+    echo -n " $GEM5_DIR/configs/example/riscv/fs_linux.py --cpu-type $GEM5_CPU" >> $params
     echo -n " --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ" >> $params
     echo -n " --caches --l2cache" >> $params
     echo -n " -n $LX_CORES" >> $params
-    echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
+    echo -n " --kernel $LX_BUILDDIR/riscv-pk/bbl" >> $params
+    # echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
 
     if [ "$GEM5_CP" != "" ]; then
         echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
@@ -49,12 +56,12 @@ run_gem5() {
     fi
 
     if [ "$cmd" = "run" ]; then
-        xargs -a $params $GEM5_DIR/build/X86/gem5.opt | tee $GEM5_OUT/log.txt
+        xargs -a $params $GEM5_DIR/build/$GEM5_ARCH/gem5.opt | tee $GEM5_OUT/log.txt
     else
         echo -n > $GEM5_OUT/logerr.txt
 
         # start gem5 in background
-        xargs -a $params $GEM5_DIR/build/X86/gem5.opt 2>$GEM5_OUT/logerr.txt > $GEM5_OUT/log.txt &
+        xargs -a $params $GEM5_DIR/build/$GEM5_ARCH/gem5.opt 2>$GEM5_OUT/logerr.txt > $GEM5_OUT/log.txt &
 
         # wait until the port is open
         while [ "`grep 'com_1 connection on port' $GEM5_OUT/logerr.txt`" = "" ]; do

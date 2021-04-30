@@ -4,16 +4,16 @@ QEMU_FLAGS="-serial stdio -smp $LX_CORES -m 256M"
 
 if [ $LX_ARCH = "x86_64" ]; then
     QEMU_FLAGS+=" -kernel $LX_BUILDDIR/linux/arch/x86/boot/bzImage"
+    QEMU_FLAGS+=" -initrd $LX_BUILDDIR/buildroot/images/rootfs.cpio.bz2"
 elif [ $LX_ARCH = "riscv64" ]; then
     QEMU_FLAGS+=" -M virt"
-    QEMU_FLAGS+=" -bios $LX_BUILDDIR/opensbi/platform/generic/firmware/fw_jump.bin"
-    QEMU_FLAGS+=" -kernel $LX_BUILDDIR/linux/arch/riscv/boot/Image"
+    QEMU_FLAGS+=" -bios none"
+    QEMU_FLAGS+=" -kernel $LX_BUILDDIR/riscv-pk/bbl"
 else
     echo "Not supported"
     exit 1
 fi
 
-QEMU_FLAGS+=" -initrd $LX_BUILDDIR/buildroot/images/rootfs.cpio.bz2"
 QEMU_FLAGS+=" -append \"console=ttyS0\" $LX_FLAGS"
 
 case $1 in
