@@ -45,7 +45,7 @@ run_gem5() {
     echo -n " --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ" >> $params
     echo -n " --caches --l2cache" >> $params
     echo -n " -n $LX_CORES" >> $params
-    echo -n " --kernel $LX_BUILDDIR/riscv-pk/bbl" >> $params
+    echo -n " --kernel $LX_BUILDDIR/riscv-pk/gem5/bbl" >> $params
     # echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
 
     if [ "$GEM5_CP" != "" ]; then

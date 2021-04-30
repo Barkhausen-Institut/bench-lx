@@ -102,12 +102,23 @@ case $cmd in
 
 	mkbbl)
 		if [ "$LX_ARCH" = "riscv64" ]; then
-			cd $LX_BUILDDIR/riscv-pk
 			export RISCV=$(pwd)/$LX_BUILDDIR/buildroot/host
-			../../../riscv-pk/configure \
-				--host=${CROSS_COMPILE::-1} \
-				--with-payload=../linux/vmlinux \
-				&& make -j$(nproc)
+			for pl in qemu gem5; do
+				if [ "$pl" = "qemu" ]; then
+					memstart="0x80000000"
+				else
+					memstart="0x10000000"
+				fi
+				mkdir -p $LX_BUILDDIR/riscv-pk/$pl
+				(
+					cd $LX_BUILDDIR/riscv-pk/$pl \
+						&& ../../../../riscv-pk/configure \
+							--host=${CROSS_COMPILE::-1} \
+							--with-payload=../../linux/vmlinux \
+							--with-mem-start=$memstart \
+						&& make -j$(nproc)
+				)
+			done
 		else
 			echo "Not supported"
 		fi
