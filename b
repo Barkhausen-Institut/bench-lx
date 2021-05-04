@@ -142,7 +142,7 @@ case $cmd in
 		;;
 
 	dis=*)
-		${CROSS_COMPILE}objdump -SC $LX_BUILDDIR/bin/${cmd#dis=} | less
+		${CROSS_COMPILE}objdump -d $LX_BUILDDIR/bin/${cmd#dis=} | less
 		;;
 
 	*)
