@@ -1,0 +1,39 @@
+#!/bin/bash
+
+hwssh=bitest
+tty=/dev/ttyUSB2
+
+kernel=$LX_BUILDDIR/riscv-pk/$LX_PLATFORM/bbl
+initrd=$LX_BUILDDIR/buildroot/images/rootfs.cpio
+
+files="$kernel $initrd"
+args="--fpga 1 --pe bbl --initrd rootfs.cpio --serial $tty"
+
+runsh="run/run.sh"
+echo -n > $runsh
+echo "#!/bin/bash" >> $runsh
+echo "set -m" >> $runsh
+echo "export PYTHONPATH=\$HOME/tcu/fpga_tools/python:\$PYTHONPATH" >> $runsh
+echo "export PYTHONPATH=\$HOME/tcu/fpga_tools/pyelftools-0.26:\$PYTHONPATH" >> $runsh
+
+case $1 in
+    run)
+        echo "python3 ./fpga.py $args 2>&1 | tee setup.txt" >> $runsh
+        ;;
+
+    bench|fsbench)
+        echo "python3 ./fpga.py $args --until mount.sh 2>&1 | tee log.txt" >> $runsh
+        ;;
+esac
+
+case $1 in
+    dbg)
+        echo "Not supported"
+        ;;
+
+    run|bench|fsbench)
+        rsync -z --copy-links tools/fpga.py $files $runsh $hwssh:linux
+        ssh -t $hwssh "cd linux && sh run.sh"
+        scp "$hwssh:linux/log.txt" run
+        ;;
+esac

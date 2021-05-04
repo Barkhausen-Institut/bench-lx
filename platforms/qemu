@@ -9,23 +9,24 @@ elif [ $LX_ARCH = "riscv64" ]; then
     QEMU_FLAGS+=" -M virt"
     QEMU_FLAGS+=" -bios none"
     QEMU_FLAGS+=" -kernel $LX_BUILDDIR/riscv-pk/qemu/bbl"
+    QEMU_FLAGS+=" -initrd $LX_BUILDDIR/buildroot/images/rootfs.cpio.bz2"
 else
     echo "Not supported"
     exit 1
 fi
 
-QEMU_FLAGS+=" -append \"console=ttyS0\" $LX_FLAGS"
+kargs="console=ttyS0 root=/dev/initrd"
 
 case $1 in
     warmup)
         ;;
 
     run)
-        build/qemu/qemu-system-$LX_ARCH $QEMU_FLAGS
+        build/qemu/qemu-system-$LX_ARCH $QEMU_FLAGS -append "$kargs" $LX_FLAGS
         ;;
 
     dbg)
-        build/ignoreint build/qemu/qemu-system-$LX_ARCH $QEMU_FLAGS -S -s &
+        build/ignoreint build/qemu/qemu-system-$LX_ARCH $QEMU_FLAGS -append "$kargs" $LX_FLAGS -S -s &
         pid=$!
 
         cmd=`mktemp`
@@ -36,7 +37,7 @@ case $1 in
         kill $pid
         ;;
 
-    trace|bench|fsbench)
+    bench|fsbench)
         echo "Not supported"
         ;;
 esac

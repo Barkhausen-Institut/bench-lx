@@ -36,7 +36,7 @@ export CC=`readlink -f $LX_BUILDDIR/host/usr/bin/$LX_ARCH-linux-gcc`
 export CROSS_COMPILE=$LX_ARCH-buildroot-linux-uclibc-
 
 case $cmd in
-	warmup|run|dbg|bench|fsbench|trace|serverbench|servertrace)
+	warmup|run|dbg|bench|fsbench|serverbench|servertrace)
 		./platforms/$LX_PLATFORM $cmd
 		;;
 
@@ -47,7 +47,7 @@ case $cmd in
 
 		( cd buildroot && make O=../$LX_BUILDDIR/buildroot -j$(nproc) $* )
 
-		if [ "$LX_PLATFORM" = "gem5" ]; then
+		if [ "$LX_PLATFORM" = "gem5" ] && [ "$LX_ARCH" = "x86_64" ]; then
 			# create disk for root fs
 			rm -f $LX_BUILDDIR/disks/x86root.img
 			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/x86root.img 16
@@ -98,29 +98,25 @@ case $cmd in
 		fi
 
 		( cd linux && make O=../$LX_BUILDDIR/linux -j$(nproc) $* )
-		;;
+		;&	# fall through; bbl includes Linux
 
 	mkbbl)
 		if [ "$LX_ARCH" = "riscv64" ]; then
 			export RISCV=$(pwd)/$LX_BUILDDIR/buildroot/host
-			for pl in qemu gem5; do
-				if [ "$pl" = "qemu" ]; then
-					memstart="0x80000000"
-				else
-					memstart="0x10000000"
-				fi
-				mkdir -p $LX_BUILDDIR/riscv-pk/$pl
-				(
-					cd $LX_BUILDDIR/riscv-pk/$pl \
-						&& ../../../../riscv-pk/configure \
-							--host=${CROSS_COMPILE::-1} \
-							--with-payload=../../linux/vmlinux \
-							--with-mem-start=$memstart \
-						&& make -j$(nproc)
-				)
-			done
-		else
-			echo "Not supported"
+			case $LX_PLATFORM in
+				qemu) args="--with-mem-start=0x80000000" ;;
+				gem5) args="--with-mem-start=0x10000000" ;;
+				hw)   args="--with-mem-start=0x10000000 --with-dts=../../../../configs/hw.dts" ;;
+			esac
+			mkdir -p $LX_BUILDDIR/riscv-pk/$LX_PLATFORM
+			(
+				cd $LX_BUILDDIR/riscv-pk/$LX_PLATFORM \
+					&& ../../../../riscv-pk/configure \
+						--host=${CROSS_COMPILE::-1} \
+						--with-payload=../../linux/vmlinux \
+						$args \
+					&& CFLAGS=" -D__riscv_compressed=1" make -j$(nproc)
+			)
 		fi
 		;;
 
@@ -161,10 +157,9 @@ case $cmd in
 		echo "  dbg:                debug linux" >&2
 		echo "  bench:              run benchmarks" >&2
 		echo "  fsbench:            run FS benchmarks" >&2
-		echo "  trace:              create instruction trace" >&2
 		echo ""
 		echo "Use LX_ARCH to set the architecture to build for (riscv64|x86_64)." >&2
-		echo "Use LX_PLATFORM to set the platform to run linux on (gem5|qemu)." >&2
+		echo "Use LX_PLATFORM to set the platform to run linux on (gem5|qemu|hw)." >&2
 		echo "Use LX_FLAGS to specify additional flags to the simulator" >&2
 		;;
 esac

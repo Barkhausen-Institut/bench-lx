@@ -1,6 +1,7 @@
 /build/**
 /benchfs/bin/*
 /gem5/**
+/run/**
 .scons*
 *.o
 *~
