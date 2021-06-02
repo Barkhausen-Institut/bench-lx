@@ -47,24 +47,14 @@ case $cmd in
 
 		( cd buildroot && make O=../$LX_BUILDDIR/buildroot -j$(nproc) $* )
 
-		if [ "$LX_PLATFORM" = "gem5" ] && [ "$LX_ARCH" = "x86_64" ]; then
+		if [ "$LX_PLATFORM" = "gem5" ]; then
 			# create disk for root fs
 			rm -f $LX_BUILDDIR/disks/x86root.img
-			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/x86root.img 16
+			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/x86root.img 64
 			tmp=`mktemp -d`
 			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/x86root.img $tmp
 			cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
 			( cd $tmp && sudo cpio -id < $cpioimg )
-			$GEM5_DIR/util/gem5img.py umount $tmp
-			rmdir $tmp
-
-			# create disk for bench fs
-			rm -f $LX_BUILDDIR/disks/linux-bigswap2.img
-			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/linux-bigswap2.img 128
-			tmp=`mktemp -d`
-			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/linux-bigswap2.img $tmp
-			cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
-			sudo cp -r benchfs/* $tmp
 			$GEM5_DIR/util/gem5img.py umount $tmp
 			rmdir $tmp
 		fi
@@ -105,7 +95,7 @@ case $cmd in
 			export RISCV=$(pwd)/$LX_BUILDDIR/buildroot/host
 			case $LX_PLATFORM in
 				qemu) args="--with-mem-start=0x80000000" ;;
-				gem5) args="--with-mem-start=0x10000000" ;;
+				gem5) args="--with-mem-start=0x80000000" ;;
 				hw)   args="--with-mem-start=0x10000000 --with-dts=../../../../configs/hw.dts" ;;
 			esac
 			mkdir -p $LX_BUILDDIR/riscv-pk/$LX_PLATFORM

@@ -6,6 +6,7 @@ run_gem5() {
 
     if [ "$cmd" = "warmup" ]; then
         GEM5_OUT="gem5-$LX_CORES"
+        GEM5_CPU=TimingSimpleCPU
     else
         if [ ! -d "$GEM5_OUT" ]; then
             echo "Please specify the gem5 output directory via GEM5_OUT!" >&2
@@ -16,6 +17,7 @@ run_gem5() {
         ln -sf `readlink -f gem5-$LX_CORES/cpt.*` $GEM5_OUT
     fi
     export M5_PATH=$GEM5_OUT
+    mkdir -p $GEM5_OUT
 
     if [ "$LX_ARCH" = "riscv64" ]; then
         GEM5_ARCH=RISCV
@@ -34,10 +36,7 @@ run_gem5() {
     params=`mktemp`
     echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log" >> $params
     # echo -n " --debug-start=22369202756649" >> $params
-    # only use the listener-mode argument, if we're using M3's gem5 version
-    if [[ $GEM5_DIR = *"/m3/"* ]]; then
-        echo -n " --listener-mode=on" >> $params
-    fi
+    echo -n " --listener-mode=on" >> $params
     if [ "$GEM5_FLAGS" != "" ]; then
         echo -n " --debug-flags=$GEM5_FLAGS" >> $params
     fi
@@ -46,7 +45,8 @@ run_gem5() {
     echo -n " --caches --l2cache --mem-size 512MB" >> $params
     echo -n " -n $LX_CORES" >> $params
     echo -n " --kernel $LX_BUILDDIR/riscv-pk/gem5/bbl" >> $params
-    # echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
+    echo -n " --command-line=\"earlycon=sbi console=ttyS0 root=/dev/vda1\" " >> $params
+    echo -n " --disk-image $LX_BUILDDIR/disks/x86root.img" >> $params
 
     if [ "$GEM5_CP" != "" ]; then
         echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
@@ -64,11 +64,12 @@ run_gem5() {
         xargs -a $params $GEM5_DIR/build/$GEM5_ARCH/gem5.opt 2>$GEM5_OUT/logerr.txt > $GEM5_OUT/log.txt &
 
         # wait until the port is open
-        while [ "`grep 'com_1 connection on port' $GEM5_OUT/logerr.txt`" = "" ]; do
+
+        while [ "`grep 'system.platform.terminal: Listening for connections on port' $GEM5_OUT/logerr.txt`" = "" ]; do
             echo "Waiting for GEM5 to start..." 1>&2
             sleep 1
         done
-        port=`grep 'com_1 connection on port' $GEM5_OUT/logerr.txt | awk '{ print $7 }'`
+        port=`grep 'system.platform.terminal: Listening for connections on port' $GEM5_OUT/logerr.txt | awk '{ print $7 }'`
 
         gem5pid=`pgrep -P $!`
 
@@ -79,11 +80,8 @@ run_gem5() {
         (
             echo -n $BASHPID > $GEM5_OUT/pid.txt
             if [ "$cmd" = "warmup" ]; then
-                # login via bruteforce
-                while true; do
-                    echo "root"
-                    sleep 1
-                done
+                # just wait
+                sleep 1
             elif [ "$cmd" = "fsbench" ]; then
                 echo -e "\n/mount.sh\n"
                 # better wait a bit
@@ -124,7 +122,7 @@ run_gem5() {
         if [ "$cmd" = "warmup" ]; then
             # wait until the checkpoint is written
             path=$GEM5_OUT/cpt.*/m5.cpt
-            while [ "`grep 'isa=x86' $path`" = "" ]; do
+            while [ "`grep '^isa=' $path`" = "" ]; do
                 echo "Waiting for checkpoint..." 1>&2
                 sleep 1
                 path=$GEM5_OUT/cpt.*/m5.cpt
