@@ -36,7 +36,7 @@ baseenv.Append(
 
 # create envs for xtensa-linux and host
 env = baseenv.Clone()
-ccprefix = builddir + '/buildroot/host/usr/bin/' + arch + '-buildroot-linux-uclibc'
+ccprefix = builddir + '/buildroot/host/usr/bin/' + arch + '-linux'
 env.Append(
     CPPPATH = ['#include'],
     LINKFLAGS = ' -static'

@@ -33,7 +33,7 @@ if [ "$cmd" != "mkqemu" ]; then
 fi
 
 export CC=`readlink -f $LX_BUILDDIR/host/usr/bin/$LX_ARCH-linux-gcc`
-export CROSS_COMPILE=$LX_ARCH-buildroot-linux-uclibc-
+export CROSS_COMPILE=$LX_ARCH-linux-
 
 case $cmd in
 	warmup|run|dbg|bench|fsbench|serverbench|servertrace)
