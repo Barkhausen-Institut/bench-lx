@@ -9,4 +9,7 @@
 	url = https://github.com/qemu/qemu
 [submodule "riscv-pk"]
 	path = riscv-pk
-	url = https://github.com/riscv/riscv-pk.git
+	url = git@gitlab.com:Nils-TUD/riscv-pk.git
+[submodule "libs/leveldb"]
+	path = libs/leveldb
+	url = git@gitlab.com:Nils-TUD/m3-leveldb.git

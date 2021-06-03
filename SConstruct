@@ -39,7 +39,8 @@ env = baseenv.Clone()
 ccprefix = builddir + '/buildroot/host/usr/bin/' + arch + '-linux'
 env.Append(
     CPPPATH = ['#include'],
-    LINKFLAGS = ' -static'
+    LIBPATH = [env['BINDIR']],
+    LINKFLAGS = ['-static']
 )
 
 env.Replace(
@@ -57,7 +58,14 @@ def LxProgram(env, target, source, libs = []):
     env.Install(env['FSDIR'].abspath + '/bin', prog)
     return prog
 
+def LxLibrary(env, target, source):
+    lib = env.StaticLibrary(target, source)
+    env.Install(env['BINDIR'], lib)
+    return lib
+
 env.LxProgram = LxProgram
+env.LxLibrary = LxLibrary
 
 # build everything
 env.SConscript('apps/SConscript', 'env', variant_dir = builddir + '/apps', duplicate = 0)
+env.SConscript('libs/SConscript', 'env', variant_dir = builddir + '/libs', duplicate = 0)
