@@ -1,8 +1,8 @@
 // for O_NOATIME
 #define _GNU_SOURCE
 
-#include <sys/fcntl.h>
 #include <sys/mman.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

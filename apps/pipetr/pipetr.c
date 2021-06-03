@@ -1,9 +1,9 @@
 // for O_NOATIME
 #define _GNU_SOURCE
 
-#include <sys/fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>

@@ -1,9 +1,10 @@
 /* for vfork */
 #define _XOPEN_SOURCE 600
+#define _GNU_SOURCE
 
-#include <sys/fcntl.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

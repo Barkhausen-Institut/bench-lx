@@ -17,7 +17,7 @@
  * General Public License version 2 for more details.
  */
 
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

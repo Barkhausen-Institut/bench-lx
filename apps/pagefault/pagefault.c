@@ -1,8 +1,8 @@
 // for MAP_ANONYMOUS
 #define _GNU_SOURCE
 
-#include <sys/fcntl.h>
 #include <sys/mman.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
