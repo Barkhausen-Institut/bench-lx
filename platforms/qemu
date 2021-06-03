@@ -4,12 +4,12 @@ QEMU_FLAGS="-serial stdio -smp $LX_CORES -m 256M"
 
 if [ $LX_ARCH = "x86_64" ]; then
     QEMU_FLAGS+=" -kernel $LX_BUILDDIR/linux/arch/x86/boot/bzImage"
-    QEMU_FLAGS+=" -initrd $LX_BUILDDIR/buildroot/images/rootfs.cpio.bz2"
+    QEMU_FLAGS+=" -initrd $LX_BUILDDIR/buildroot/images/rootfs.cpio"
 elif [ $LX_ARCH = "riscv64" ]; then
     QEMU_FLAGS+=" -M virt"
     QEMU_FLAGS+=" -bios none"
     QEMU_FLAGS+=" -kernel $LX_BUILDDIR/riscv-pk/qemu/bbl"
-    QEMU_FLAGS+=" -initrd $LX_BUILDDIR/buildroot/images/rootfs.cpio.bz2"
+    QEMU_FLAGS+=" -initrd $LX_BUILDDIR/buildroot/images/rootfs.cpio"
 else
     echo "Not supported"
     exit 1
