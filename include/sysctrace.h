@@ -6,7 +6,7 @@
 extern long syscall(long, ...);
 
 static inline void syscreset(int pid) {
-    syscall(SYS_SYSCRESET, (unsigned long*)pid, 0);
+    syscall(SYS_SYSCRESET, pid, 0);
 }
 
 static inline void sysctrace() {
