@@ -1,2 +1,0 @@
-Import('env')
-env.LxProgram(env, target = 'pipewr', source = 'pipewr.c')

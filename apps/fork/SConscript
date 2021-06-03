@@ -1,7 +1,0 @@
-Import('env')
-
-for size in [1, 1024 * 2048, 1024 * 4096, 1024 * 8192]:
-    myenv = env.Clone()
-    myenv.Append(CFLAGS = ' -DDUMMY_BUF_SIZE=' + str(size))
-    obj = myenv.Object(target = 'fork-' + str(size), source = 'fork.c')
-    myenv.LxProgram(myenv, target = 'fork-' + str(size), source = obj)

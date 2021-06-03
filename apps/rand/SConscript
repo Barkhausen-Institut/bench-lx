@@ -1,4 +1,0 @@
-Import('env')
-src = ['rand.c']
-src += ['loop.S'] if env['ARCH'] == 'x86_64' else ['loop.c']
-env.LxProgram(env, target = 'rand', source = src)

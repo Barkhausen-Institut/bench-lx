@@ -1,2 +1,0 @@
-Import('env')
-env.LxProgram(env, target = 'pipe', source = 'pipe.c')
