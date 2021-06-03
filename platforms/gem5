@@ -38,7 +38,8 @@ run_gem5() {
     fi
     echo -n " $GEM5_DIR/configs/example/riscv/fs_linux.py --cpu-type $GEM5_CPU" >> $params
     echo -n " --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ" >> $params
-    echo -n " --caches --l2cache --mem-size 512MB" >> $params
+    echo -n " --caches --l2cache --l1d_size 32kB --l1i_size 32kB --l2_size 256kB" >> $params
+    echo -n " --mem-size 512MB" >> $params
     echo -n " -n $LX_CORES" >> $params
     echo -n " --kernel $LX_BUILDDIR/riscv-pk/gem5/bbl" >> $params
     echo -n " --command-line=\"earlycon=sbi console=ttyS0 root=/dev/vda1\" " >> $params
