@@ -1,7 +1,8 @@
 #pragma once
 
 #include <math.h>
-#include <profile.h>
+
+typedef unsigned long cycle_t;
 
 #define BUFFER_SIZE         8192
 #define SYSCALL_REPEAT      2000

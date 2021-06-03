@@ -8,6 +8,7 @@
 #include <common.h>
 #include <cycles.h>
 #include <smemcpy.h>
+#include <profile.h>
 
 // there is pretty much no variation; 4 runs after 1 warmup run is enough
 #define COUNT   5

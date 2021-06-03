@@ -1,7 +1,3 @@
-/* for vfork */
-#define _XOPEN_SOURCE 600
-#define _GNU_SOURCE
-
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -23,19 +19,23 @@ int main(int argc, char **argv) {
 
     size_t i;
     for(i = 0; i < COUNT; ++i) {
+        cycle_t start = prof_start(0x1234);
+
         int pid;
-        prof_start(0x1234);
-        switch((pid = vfork())) {
+        switch((pid = fork())) {
             case 0: {
                 char *args[] = {argv[1], "dummy", NULL};
                 execv(args[0], args);
                 perror("exec");
+                break;
             }
             case -1:
-                perror("vfork");
+                perror("fork");
                 break;
             default: {
                 waitpid(pid, NULL, 0);
+                cycle_t end = prof_stop(0x1234);
+                printf("Execution took %lu cycles\n", end - start);
                 break;
             }
         }

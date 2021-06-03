@@ -1,12 +1,20 @@
 #pragma once
 
-#include <sys/syscall.h>
 #include <common.h>
 
-extern long syscall(long, ...);
-
 static inline cycle_t get_cycles() {
+#if defined(__x86_64__)
+    unsigned int u, l;
+    __asm__ volatile ("rdtsc" : "=a" (l), "=d" (u) : : "memory");
+    return (cycle_t)u << 32 | l;
+#elif defined(__riscv)
     unsigned long val;
-    syscall(SYS_GET_CYCLES, &val, 0);
+    __asm__ volatile (
+        "rdcycle %0;"
+        : "=r" (val) : : "memory"
+    );
     return val;
+#else
+#   error "Unsupported ISA"
+#endif
 }
