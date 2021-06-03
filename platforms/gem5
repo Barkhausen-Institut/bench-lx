@@ -5,7 +5,7 @@ run_gem5() {
     wait=$2
 
     if [ "$cmd" = "warmup" ]; then
-        GEM5_OUT="gem5-$LX_CORES"
+        GEM5_OUT="run/boot-$LX_CORES"
         GEM5_CPU=TimingSimpleCPU
     else
         if [ ! -d "$GEM5_OUT" ]; then
@@ -14,7 +14,7 @@ run_gem5() {
         fi
 
         rm -f $GEM5_OUT/cpt.*
-        ln -sf `readlink -f gem5-$LX_CORES/cpt.*` $GEM5_OUT
+        ln -sf `readlink -f run/boot-$LX_CORES/cpt.*` $GEM5_OUT
     fi
     export M5_PATH=$GEM5_OUT
     mkdir -p $GEM5_OUT
