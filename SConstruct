@@ -2,8 +2,8 @@ import os
 
 # build basic environment
 baseenv = Environment(
-    CFLAGS = ' -std=c99 -Wall -Wextra',
-    CXXFLAGS = ' -std=c++11 -Wall -Wextra',
+    CFLAGS = ['-std=c99', '-Wall', '-Wextra'],
+    CXXFLAGS = ['-std=c++11', '-Wall', '-Wextra'],
     ENV = {
         'PATH' : os.environ['PATH'],
         # required for colored outputs
@@ -15,8 +15,8 @@ baseenv = Environment(
 # arch
 arch = os.environ.get('LX_ARCH')
 
-baseenv.Append(CXXFLAGS = ' -O2 -DNDEBUG -g')
-baseenv.Append(CFLAGS = ' -O2 -DNDEBUG -g')
+baseenv.Append(CXXFLAGS = ['-O2', '-DNDEBUG', '-g'])
+baseenv.Append(CFLAGS = ['-O2', '-DNDEBUG', '-g'])
 builddir = 'build/' + arch
 
 # print executed commands?

@@ -1,5 +1,2 @@
 Import('env')
-
-myenv = env.Clone()
-myenv['LINKFLAGS'] = str(myenv['LINKFLAGS']).replace('-static', '')
-myenv.LxProgram(myenv, target = 'sqlite', source = 'sqlite.c', libs = ['sqlite3'])
+env.LxProgram(env, target = 'sqlite', source = 'sqlite.c', libs = ['sqlite3'])
