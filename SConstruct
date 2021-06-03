@@ -30,7 +30,7 @@ if int(verbose) == 0:
 baseenv.Append(
     BUILDDIR = Dir(builddir),
     BINDIR = Dir(builddir + '/bin'),
-    FSDIR = Dir('benchfs'),
+    FSDIR = Dir('rootfs/bench'),
     ARCH = arch
 )
 

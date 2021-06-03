@@ -1,2 +1,2 @@
 #!/bin/sh
-mount /dev/sdb1 /bench
+mount /dev/vdb1 /bench

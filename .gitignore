@@ -1,5 +1,5 @@
 /build/**
-/benchfs/bin/*
+/rootfs/bench/bin/*
 /gem5/**
 /run/**
 .scons*

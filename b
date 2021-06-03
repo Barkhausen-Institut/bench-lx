@@ -49,30 +49,27 @@ case $cmd in
 
 		if [ "$LX_PLATFORM" = "gem5" ]; then
 			# create disk for root fs
-			rm -f $LX_BUILDDIR/disks/x86root.img
-			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/x86root.img 64
+			rm -f $LX_BUILDDIR/disks/root.img
+			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/root.img 128
 			tmp=`mktemp -d`
-			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/x86root.img $tmp
+			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/root.img $tmp
 			cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
 			( cd $tmp && sudo cpio -id < $cpioimg )
 			$GEM5_DIR/util/gem5img.py umount $tmp
 			rmdir $tmp
 		fi
-		;;
+		;&	# fall through; build benchfs as well
 
 	mkbenchfs)
 		if [ "$LX_PLATFORM" = "gem5" ]; then
 			# create disk for bench fs
-			rm -f $LX_BUILDDIR/disks/linux-bigswap2.img
-			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/linux-bigswap2.img 128
+			rm -f $LX_BUILDDIR/disks/bench.img
+			$GEM5_DIR/util/gem5img.py init $LX_BUILDDIR/disks/bench.img 128
 			tmp=`mktemp -d`
-			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/linux-bigswap2.img $tmp
-			cpioimg=`readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio`
-			sudo cp -r benchfs/* $tmp
+			$GEM5_DIR/util/gem5img.py mount $LX_BUILDDIR/disks/bench.img $tmp
+			sudo cp -r rootfs/bench/* $tmp
 			$GEM5_DIR/util/gem5img.py umount $tmp
 			rmdir $tmp
-		else
-			echo "Not supported"
 		fi
 		;;
 
