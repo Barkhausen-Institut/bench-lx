@@ -5,6 +5,12 @@
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
 
+extern "C" {
+#include <profile.h>
+#include <sysctrace.h>
+#include <unistd.h>
+}
+
 #define INSERT_COUNT	512
 #define STRLEN          1024
 
@@ -16,6 +22,10 @@ int main(int argc, char** argv)
         cerr << "Usage: " << argv[0] << " <file>\n";
         return 1;
     }
+
+    syscreset(getpid());
+    cycle_t start = prof_start(0x1234);
+
     // Set up database connection information and open database
     leveldb::DB* db;
     leveldb::Options options;
@@ -81,4 +91,10 @@ int main(int argc, char** argv)
 
     // Close the database
     delete db;
+
+    cycle_t end = prof_stop(0x1234);
+    cout << "Execution took " << (end - start) << " cycles" << endl;
+    sysctrace();
+
+    return 0;
 }
