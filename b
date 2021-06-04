@@ -140,7 +140,7 @@ case $cmd in
 		echo "The following commands are supported:" >&2
 		echo "  mkbr [<arg>..]:     make buildroot (and disk for x86_64)" >&2
 		echo "  mklx [<arg>..]:     make linux" >&2
-		echo "  mkbbl: 		        make RISC-V bootloader" >&2
+		echo "  mkbbl:              make RISC-V bootloader" >&2
 		echo "  mkqemu:             make QEMU" >&2
 		echo "  mkapps:             make applications" >&2
 		echo "  elf:                show ELF information" >&2
