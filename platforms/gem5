@@ -128,7 +128,7 @@ run_gem5() {
         else
             grep -v '^# ' $GEM5_OUT/res.tmp | \
                 awk '/>===Starting_benchmarks===/ {p=1}; p; /<===Benchmarks_done===/ {p=0}' | \
-                tail -n +2 | head -n -1 | dos2unix > $GEM5_OUT/res.txt
+                tail -n +2 | head -n -1 > $GEM5_OUT/res.txt
         fi
 
         rm $GEM5_OUT/res.tmp
