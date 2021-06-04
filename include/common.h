@@ -14,17 +14,9 @@ typedef unsigned long cycle_t;
 
 #define SYSCALL_TIME        430
 
-#ifdef __xtensa__
-#   define SYS_GET_CYCLES   351
-#   define SYS_SMEMCPY      352
-#   define SYS_SYSCRESET    353
-#   define SYS_SYSCTRACE    354
-#else
-#   define SYS_GET_CYCLES   332
-#   define SYS_SMEMCPY      333
-#   define SYS_SYSCRESET    334
-#   define SYS_SYSCTRACE    335
-#endif
+#define SYS_SMEMCPY         0
+#define SYS_SYSCRESET       442
+#define SYS_SYSCTRACE       443
 
 static inline cycle_t sum(cycle_t *vals, unsigned long count) {
     cycle_t sum = 0;
