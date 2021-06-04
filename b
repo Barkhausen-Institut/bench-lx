@@ -46,6 +46,9 @@ case $cmd in
 		fi
 
 		( cd buildroot && make O=../$LX_BUILDDIR/buildroot -j$(nproc) $* )
+		if [ $? -ne 0 ]; then
+			exit 1
+		fi
 
 		if [ "$LX_PLATFORM" = "gem5" ]; then
 			# create disk for root fs
@@ -85,6 +88,9 @@ case $cmd in
 		fi
 
 		( cd linux && make O=../$LX_BUILDDIR/linux -j$(nproc) $* )
+		if [ $? -ne 0 ]; then
+			exit 1
+		fi
 		;&	# fall through; bbl includes Linux
 
 	mkbbl)
