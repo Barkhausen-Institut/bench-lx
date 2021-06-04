@@ -17,8 +17,17 @@ import memory
 DRAM_OFF = 0x10000000
 MAX_FS_SIZE = 256 * 1024 * 1024
 INIT_PMP_SIZE = 512 * 1024 * 1024
-MAX_INITRD_SIZE = 64 * 1024 * 1024
+MAX_INITRD_SIZE = 128 * 1024 * 1024
+BENCH_CMD_SIZE = 1024
+BENCH_CMD_ADDR = INIT_PMP_SIZE - MAX_INITRD_SIZE - 1024
 PRINT_TIMEOUT = 60 # seconds
+
+def write_str(mod, str, addr, minlen=0):
+    buf = bytearray(str.encode())
+    buf += b'\x00'
+    while len(buf) < minlen:
+        buf += b'\x00'
+    mod.mem.write_bytes(addr, bytes(buf), burst=False) # TODO enable burst
 
 def write_file(mod, file, offset):
     print("%s: loading %u bytes to %#x" % (mod.name, os.path.getsize(file), offset))
@@ -71,6 +80,7 @@ def main():
     parser.add_argument('--reset', action='store_true')
     parser.add_argument('--pe', action='append')
     parser.add_argument('--serial', default='/dev/ttyUSB0')
+    parser.add_argument('--bench')
     parser.add_argument('--until')
     parser.add_argument('--initrd')
     args = parser.parse_args()
@@ -92,6 +102,10 @@ def main():
     if not args.initrd is None:
         write_file(fpga_inst.dram1, args.initrd, INIT_PMP_SIZE - MAX_INITRD_SIZE)
 
+    # write benchmark command
+    if not args.bench is None:
+        write_str(fpga_inst.dram1, args.bench, BENCH_CMD_ADDR, BENCH_CMD_SIZE)
+
     # start PEs
     for pe in fpga_inst.pms:
         # start core (via interrupt 0)
@@ -101,11 +115,15 @@ def main():
     if not args.until is None:
         # wait for specific string
         while True:
-            line = ser.read_until().decode().rstrip()
-            print(line)
-            sys.stdout.flush()
-            if not args.until is None and args.until in line:
-                break
+            line = ser.read_until()
+            try:
+                line = line.decode().rstrip()
+                print(line)
+                sys.stdout.flush()
+                if not args.until is None and args.until in line:
+                    break
+            except:
+                print(line.rstrip())
     else:
         # interactive usage
         from serial.tools.miniterm import Miniterm

@@ -22,7 +22,12 @@ case $1 in
         ;;
 
     bench|fsbench)
-        echo "python3 ./fpga.py $args --until mount.sh 2>&1 | tee log.txt" >> $runsh
+        if [ "$BENCH_CMD" = "" ]; then
+            echo "Please set BENCH_CMD to the command to run" >&2
+            exit 1
+        fi
+        args="$args --bench 'RUN_BENCH$BENCH_CMD' --until '<===Benchmarks_done==='"
+        echo "python3 ./fpga.py $args 2>&1 | tee log.txt" >> $runsh
         ;;
 esac
 
@@ -35,5 +40,13 @@ case $1 in
         rsync -z --copy-links tools/fpga.py $files $runsh $hwssh:linux
         ssh -t $hwssh "cd linux && sh run.sh"
         scp "$hwssh:linux/log.txt" run
+        ;;
+esac
+
+case $1 in
+    bench|fsbench)
+        grep -v '^# ' run/log.txt | \
+            awk '/>===Starting_benchmarks===/ {p=1}; p; /<===Benchmarks_done===/ {p=0}' | \
+            tail -n +2 | head -n -1 > run/res.txt
         ;;
 esac
