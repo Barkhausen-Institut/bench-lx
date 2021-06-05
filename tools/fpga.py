@@ -105,6 +105,8 @@ def main():
     # write benchmark command
     if not args.bench is None:
         write_str(fpga_inst.dram1, args.bench, BENCH_CMD_ADDR, BENCH_CMD_SIZE)
+    else:
+        write_str(fpga_inst.dram1, '', BENCH_CMD_ADDR, BENCH_CMD_SIZE)
 
     # start PEs
     for pe in fpga_inst.pms:
