@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "tools/ycsbclient",
+]
+
+[profile.release]
+lto = true
+panic = 'abort'
+
+[profile.dev]
+panic = 'abort'
