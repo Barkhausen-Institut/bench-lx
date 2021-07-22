@@ -1,0 +1,38 @@
+Import('env')
+
+myenv = env.Clone()
+
+myenv['CPPPATH'] += ['#libs/leveldb/include']
+
+myenv['CXXFLAGS'] = [
+    # use the same flags as for M³
+    '-std=c++14',
+    '-fno-strict-aliasing',
+    '-fno-omit-frame-pointer',
+    '-fno-threadsafe-statics',
+    '-fno-stack-protector',
+    '-O2',
+    '-DNDEBUG',
+    '-flto',
+    '-march=rv64imafdc',
+    '-mabi=lp64',
+    '-U_FORTIFY_SOURCE',
+    '-D_GNU_SOURCE',
+]
+
+myenv['LINKFLAGS'] = [
+    # like above, same link flags as on M³
+    '-fno-stack-protector',
+    '-O2',
+    '-flto',
+    '-march=rv64imafdc',
+    '-mabi=lp64',
+    '-static',
+    '-Wl,--build-id=none',
+    '-Wl,-z,max-page-size=4096',
+    '-Wl,-z,common-page-size=4096',
+]
+
+myenv.LxProgram(
+    myenv, target = 'ycsbserver', source = myenv.Glob('*.cc'), libs = ['leveldb', 'pthread']
+)
