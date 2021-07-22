@@ -87,16 +87,17 @@ def main():
 
     # connect to FPGA
     fpga_inst = fpga_top.FPGA_TOP(args.fpga)
+    pms = [fpga_inst.pms[0]]
     if args.reset:
         fpga_inst.eth_rf.system_reset()
 
     # stop all PEs
-    for pe in fpga_inst.pms:
+    for pe in pms:
         pe.stop()
 
     # load programs onto PEs
-    for i, peargs in enumerate(args.pe[0:len(fpga_inst.pms)], 0):
-        load_prog(fpga_inst.dram1, fpga_inst.pms, i, peargs.split(' '))
+    for i, peargs in enumerate(args.pe[0:len(pms)], 0):
+        load_prog(fpga_inst.dram1, pms, i, peargs.split(' '))
 
     # load initrd
     if not args.initrd is None:
@@ -109,7 +110,7 @@ def main():
         write_str(fpga_inst.dram1, '', BENCH_CMD_ADDR, BENCH_CMD_SIZE)
 
     # start PEs
-    for pe in fpga_inst.pms:
+    for pe in pms:
         # start core (via interrupt 0)
         pe.rocket_start()
 
