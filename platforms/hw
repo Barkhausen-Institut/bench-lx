@@ -18,7 +18,7 @@ echo "export PYTHONPATH=\$HOME/tcu/fpga_tools/pyelftools-0.26:\$PYTHONPATH" >> $
 
 case $1 in
     run)
-        echo "python3 ./fpga.py $args 2>&1 | tee setup.txt" >> $runsh
+        echo "python3 ./fpga.py $args 2>&1 | tee log.txt" >> $runsh
         ;;
 
     bench|fsbench)
