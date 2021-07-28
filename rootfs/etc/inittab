@@ -26,6 +26,13 @@ null::sysinit:/bin/ln -sf /proc/self/fd/2 /dev/stderr
 ::sysinit:/bin/hostname -F /etc/hostname
 # now run any rc scripts
 #::sysinit:/etc/init.d/rcS
+# disable IPv6; not needed and only causes confusion
+::sysinit:sysctl -w net.ipv6.conf.all.disable_ipv6=1
+::sysinit:sysctl -w net.ipv6.conf.default.disable_ipv6=1
+::sysinit:sysctl -w net.ipv6.conf.lo.disable_ipv6=1
+# static IP setup
+::sysinit:ifconfig eth0 192.168.42.242 netmask 255.255.255.0 up
+::sysinit:route add default gw 192.168.42.1 eth0
 # run benchmarks, if requested
 ::sysinit:/etc/init.d/S50bench
 
