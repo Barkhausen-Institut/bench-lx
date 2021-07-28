@@ -31,8 +31,9 @@ ycsb_standalone_client workload.wl 127.0.0.2 1337
 fn main() {
     // Parse arguments
     // workaround for riscv64-*-musl: apparently, the arguments don't work, so hardcode them
-    // let args = std::env::args().map(|a| a.to_string()).collect::<Vec<_>>();
-    let args = vec!["whatever", "/bench/workload.wl", "127.0.0.1", "1337"];
+    // let args = vec!["whatever", "/bench/workload.wl", "127.0.0.1", "1337"];
+
+    let args = std::env::args().map(|a| a.to_string()).collect::<Vec<_>>();
     if args.len() != 4 {
         print_help();
         return;
