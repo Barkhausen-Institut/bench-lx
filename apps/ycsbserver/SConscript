@@ -14,24 +14,30 @@ myenv['CXXFLAGS'] = [
     '-O2',
     '-DNDEBUG',
     '-flto',
-    '-march=rv64imafdc',
-    '-mabi=lp64',
     '-U_FORTIFY_SOURCE',
     '-D_GNU_SOURCE',
 ]
+if myenv['ARCH'] == 'riscv64':
+    myenv['CXXFLAGS'] += [
+        '-march=rv64imafdc',
+        '-mabi=lp64',
+    ]
 
 myenv['LINKFLAGS'] = [
     # like above, same link flags as on M³
     '-fno-stack-protector',
     '-O2',
     '-flto',
-    '-march=rv64imafdc',
-    '-mabi=lp64',
     '-static',
     '-Wl,--build-id=none',
     '-Wl,-z,max-page-size=4096',
     '-Wl,-z,common-page-size=4096',
 ]
+if myenv['ARCH'] == 'riscv64':
+    myenv['LINKFLAGS'] += [
+        '-march=rv64imafdc',
+        '-mabi=lp64',
+    ]
 
 myenv.LxProgram(
     myenv, target = 'ycsbserver', source = myenv.Glob('*.cc'), libs = ['leveldb', 'pthread']

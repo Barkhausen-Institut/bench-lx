@@ -1,2 +1,3 @@
 Import('env')
-env.LxProgram(env, target = 'sqlite', source = 'sqlite.c', libs = ['sqlite3'])
+if env['ARCH'] == 'riscv64':
+    env.LxProgram(env, target = 'sqlite', source = 'sqlite.c', libs = ['sqlite3'])
