@@ -156,7 +156,8 @@ int main(int argc, char** argv)
 
             if((opcounter % 16) == 0) {
                 uint8_t b = 0;
-                send(cfd, &b, 1, 0);
+                if(send(cfd, &b, 1, MSG_DONTWAIT) == -1)
+                    perror("send");
             }
 
             op_timing += get_cycles() - op_start;
