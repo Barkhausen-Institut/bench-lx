@@ -34,7 +34,7 @@
             status = "okay";
             riscv,isa = "rv64imafdcsu";
             compatible = "riscv";
-            clock-frequency = <0x05F5E100>;
+            clock-frequency = <80000000>;
             phandle = <0x00000002>;
             cpu0_intc: interrupt-controller {
                 #interrupt-cells = <0x00000001>;
@@ -70,7 +70,7 @@
         };
         axi_ethernet_eth_buf: ethernet@f4000000 {
             axififo-connected = <&axi_fifo>;
-            clock-frequency = <100000000>;
+            clock-frequency = <80000000>;
             compatible = "xlnx,axi-ethernet-1.00.a";
             device_type = "network";
             mac-address = [00 0A 35 03 02 02];
