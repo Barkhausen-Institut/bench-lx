@@ -11,10 +11,11 @@
 #include <smemcpy.h>
 #include <profile.h>
 
-// there is pretty much no variation; 4 runs after 1 warmup run is enough
-#define COUNT   5
+#define COUNT   10
+#define WARMUP  4
 
-static char buffer[BUFFER_SIZE];
+static char buffer[BUFFER_SIZE] __attribute__((aligned(4096)));
+static cycle_t times[COUNT];
 
 int main(int argc, char **argv) {
     if(argc < 3) {
@@ -25,28 +26,27 @@ int main(int argc, char **argv) {
     size_t total = atoi(argv[2]);
     int trunc = argc < 4 || strcmp(argv[3], "notrunc") != 0;
 
-    for(int i = 0; i < COUNT; ++i) {
+    for(int i = 0; i < WARMUP + COUNT; ++i) {
+        cycle_t start = prof_start(0x1234);
+
         int fd = open(argv[1], O_WRONLY | O_CREAT | (trunc ? O_TRUNC : 0) | O_NOATIME);
         if(fd == -1) {
             perror("open");
             return 1;
         }
 
-        /* reset value */
-        smemcpy(0);
-
-        cycle_t start = prof_start(0x1234);
         for(size_t pos = 0; pos < total; pos += sizeof(buffer))
             write(fd, buffer, sizeof(buffer));
-        cycle_t end = prof_stop(0x1234);
-
-        unsigned long copied;
-        unsigned long memcpy_time = smemcpy(&copied);
-
-        printf("total: %lu, memcpy: %lu, copied: %lu\n",
-            end - start, memcpy_time, copied);
 
         close(fd);
+
+        cycle_t end = prof_stop(0x1234);
+
+        if(i >= WARMUP)
+            times[i - WARMUP] = end - start;
     }
+
+    cycle_t average = avg(times, COUNT);
+    printf("%lu %lu\n", average, stddev(times, COUNT, average));
     return 0;
 }
