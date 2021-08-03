@@ -32,19 +32,19 @@ int main(void) {
         exit(0);
     }
     else {
-        for(i = 0; i < 50; ++i)
+        for(i = 0; i < 1000; ++i)
             sched_yield();
 
         for(i = 0; i < COUNT; ++i) {
             cycle_t before = get_cycles();
             sched_yield();
-            times[i] = (get_cycles() - before) / 2;
+            times[i] = get_cycles() - before;
         }
         kill(pid,SIGINT);
     }
 
-    printf("[yield] Time: %lu (%lu)\n", avg(times, COUNT), stddev(times, COUNT, avg(times, COUNT)));
-    for(int i = 0; i < COUNT; ++i)
-        printf("[%d] %lu\n",i,times[i]);
+    printf("%lu %lu\n", avg(times, COUNT), stddev(times, COUNT, avg(times, COUNT)));
+    // for(int i = 0; i < COUNT; ++i)
+    //     printf("[%d] %lu\n",i,times[i]);
     return 0;
 }
