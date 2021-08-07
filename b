@@ -123,7 +123,7 @@ case $cmd in
 		;;
 
 	mkapps)
-		scons -j$(nproc)
+		scons -j$(nproc) || exit 1
 
 		# build ycsbclient for host
 		export CARGO_TARGET_DIR=`readlink -f build/rust`
