@@ -14,7 +14,7 @@
 #include <smemcpy.h>
 #include <signal.h>
 
-#define COUNT   SYSCALL_REPEAT
+#define COUNT   1000
 
 static cycle_t times[COUNT];
 

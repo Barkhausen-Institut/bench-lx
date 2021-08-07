@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define WARMUP 	5
-#define COUNT	100
+#define WARMUP 	100
+#define COUNT	1000
 
 static cycle_t times[COUNT];
 
