@@ -2,6 +2,7 @@
 #include <sstream>
 #include <string>
 
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>
@@ -16,6 +17,7 @@
 #include "leveldb/write_batch.h"
 
 #include "cycles.h"
+#include "sysctrace.h"
 
 #include "ops.h"
 
@@ -63,125 +65,120 @@ static bool from_bytes(uint8_t *package_buffer, size_t package_size, Package *pk
     return true;
 }
 
-int main(int argc, char** argv)
-{
-    if(argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <file>\n";
+int main(int argc, char** argv) {
+    if(argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <ip> <port> <file>\n";
         return 1;
     }
 
-    int sfd = socket(AF_INET, SOCK_STREAM, 0);
-    if(sfd == -1) {
-        perror("socket creation failed");
+    int cfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(cfd == -1) {
+        perror("control socket creation failed");
         return 1;
     }
+
+    int port = strtoul(argv[2], NULL, 10);
 
     struct sockaddr_in serv_addr;
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(1337);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-
-    if(bind(sfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
-        perror("bind");
-        return 1;
-    }
-    if(listen(sfd, 1) == -1) {
-        perror("listen");
+    serv_addr.sin_port = htons(port);
+    if(inet_aton(argv[1], &serv_addr.sin_addr) == -1) {
+        perror("parsing IP address failed");
         return 1;
     }
 
-    struct sockaddr_in cli_addr;
-    socklen_t cli_len = sizeof(cli_addr);
-    int cfd = accept(sfd, (struct sockaddr *)&cli_addr, &cli_len);
-    if(cfd < 0) {
-        perror("accept");
+    if(connect(cfd, reinterpret_cast<struct sockaddr*>(&serv_addr), sizeof(serv_addr)) == -1) {
+        perror("connect failed");
         return 1;
     }
-
-// #if defined(__kachel__)
-//     __m3_sysc_trace(true, 16384);
-// #endif
 
     uint64_t recv_timing = 0;
     uint64_t op_timing = 0;
     uint64_t opcounter = 0;
 
-    Executor *exec = Executor::create(argv[1]);
+    Executor *exec = Executor::create(argv[3]);
 
-    cycle_t start = get_cycles();
+    bool run = true;
+    while(run) {
+        syscreset(getpid());
+        exec->reset_stats();
+        recv_timing = 0;
+        op_timing = 0;
+        opcounter = 0;
 
-    while(1) {
-        // Receiving a package is a two step process. First we receive a u32, which carries the
-        // number of bytes the following package is big. We then wait until we received all those
-        // bytes. After that the package is parsed and send to the database.
-        cycle_t recv_start = get_cycles();
-        // First receive package size header
-        union {
-            uint32_t header_word;
-            uint8_t header_bytes[4];
-        };
-        for(size_t i = 0; i < sizeof(header_bytes); ) {
-            ssize_t res = recv(cfd, header_bytes + i, sizeof(header_bytes) - i, 0);
-            i += static_cast<size_t>(res);
-        }
+        cycle_t start = get_cycles();
 
-        uint32_t package_size = be32toh(header_word);
-        if(package_size > sizeof(package_buffer)) {
-            std::cerr << "Invalid package header length " << package_size << "\n";
-            continue;
-        }
-
-        // Receive the next package from the socket
-        for(size_t i = 0; i < package_size; ) {
-            ssize_t res = recv(cfd, package_buffer + i, package_size - i, 0);
-            i += static_cast<size_t>(res);
-        }
-
-        recv_timing += get_cycles() - recv_start;
-
-        // There is an edge case where the package size is 6, If thats the case, check if we got the
-        // end flag from the client. In that case its time to stop the benchmark.
-        if(package_size == 6 && memcmp(package_buffer, "ENDNOW", 6) == 0)
-            break;
-
-        cycle_t op_start = get_cycles();
-        Package pkg;
-        if(from_bytes(package_buffer, package_size, &pkg)) {
-            if((opcounter % 100) == 0)
-                std::cout << "Op=" << pkg.op << " @ " << opcounter << std::endl;
-
-            exec->execute(pkg);
-            opcounter += 1;
-
-            if((opcounter % 16) == 0) {
-                uint8_t b = 0;
-                if(send(cfd, &b, 1, MSG_DONTWAIT) == -1)
-                    perror("send");
+        while(1) {
+            // Receiving a package is a two step process. First we receive a u32, which carries the
+            // number of bytes the following package is big. We then wait until we received all those
+            // bytes. After that the package is parsed and send to the database.
+            cycle_t recv_start = get_cycles();
+            // First receive package size header
+            union {
+                uint32_t header_word;
+                uint8_t header_bytes[4];
+            };
+            for(size_t i = 0; i < sizeof(header_bytes); ) {
+                ssize_t res = recv(cfd, header_bytes + i, sizeof(header_bytes) - i, 0);
+                i += static_cast<size_t>(res);
             }
 
-            op_timing += get_cycles() - op_start;
+            uint32_t package_size = be32toh(header_word);
+            if(package_size > sizeof(package_buffer)) {
+                std::cerr << "Invalid package header length " << package_size << "\n";
+                return 1;
+            }
+
+            // Receive the next package from the socket
+            for(size_t i = 0; i < package_size; ) {
+                ssize_t res = recv(cfd, package_buffer + i, package_size - i, 0);
+                i += static_cast<size_t>(res);
+            }
+
+            recv_timing += get_cycles() - recv_start;
+
+            // There is an edge case where the package size is 6, If thats the case, check if we got the
+            // end flag from the client. In that case its time to stop the benchmark.
+            if(package_size == 6 && memcmp(package_buffer, "ENDNOW", 6) == 0) {
+                run = false;
+                break;
+            }
+            if(package_size == 6 && memcmp(package_buffer, "ENDRUN", 6) == 0)
+                break;
+
+            cycle_t op_start = get_cycles();
+            Package pkg;
+            if(from_bytes(package_buffer, package_size, &pkg)) {
+                if((opcounter % 100) == 0)
+                    std::cout << "Op=" << (int)pkg.op << " @ " << opcounter << std::endl;
+
+                exec->execute(pkg);
+                opcounter += 1;
+
+                // TODO no ACKs here because it always gets stuck after some time. wtf!?
+                // if((opcounter % 16) == 0) {
+                //     uint8_t b = 0;
+                //     if(send(cfd, &b, 1, MSG_DONTWAIT) == -1)
+                //         perror("send");
+                // }
+
+                op_timing += get_cycles() - op_start;
+            }
         }
+
+        cycle_t end = get_cycles();
+        std::cout << "Execution took " << (end - start) << " cycles" << std::endl;
     }
 
-    cycle_t end = get_cycles();
-
     close(cfd);
-    close(sfd);
-
-    // give the client some time to print its results
-    for(volatile int i = 0; i < 100000; ++i)
-        ;
 
     std::cout << "Server Side:\n";
-    std::cout << "     avg recv time: " << (recv_timing / opcounter) << "ns\n";
-    std::cout << "     avg op time  : " << (op_timing / opcounter) << "ns\n";
+    std::cout << "     avg recv time: " << (recv_timing / opcounter) << " cycles\n";
+    std::cout << "     avg op time  : " << (op_timing / opcounter) << " cycles\n";
     exec->print_stats(opcounter);
 
-    std::cout << "Execution took " << (end - start) << " cycles\n";
-// #if defined(__kachel__)
-//     __m3_sysc_trace(false, 0);
-// #endif
+    sysctrace();
 
     return 0;
 }

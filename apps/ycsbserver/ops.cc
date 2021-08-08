@@ -35,21 +35,32 @@ LevelDBExecutor::~LevelDBExecutor() {
     delete _db;
 }
 
+void LevelDBExecutor::reset_stats() {
+    _n_insert = 0;
+    _n_read = 0;
+    _n_scan = 0;
+    _n_update = 0;
+    _t_insert = 0;
+    _t_read = 0;
+    _t_scan = 0;
+    _t_update = 0;
+}
+
 void LevelDBExecutor::print_stats(size_t num_ops) {
     uint64_t avg;
     std::cout << "    Key Value Database Timings for " << num_ops << " operations:\n";
 
     avg = _n_insert > 0 ? _t_insert / _n_insert : 0;
-    std::cout << "        Insert: " << _t_insert << "ns,\t avg_time: " << avg << "ns\n",
+    std::cout << "        Insert: " << _t_insert << " cycles,\t avg_time: " << avg << " cycles\n",
 
     avg = _n_read > 0 ? _t_read / _n_read : 0;
-    std::cout << "        Read:   " << _t_read << "ns,\t avg_time: " << avg << "ns\n";
+    std::cout << "        Read:   " << _t_read << " cycles,\t avg_time: " << avg << " cycles\n";
 
     avg = _n_update > 0 ? _t_update / _n_update : 0;
-    std::cout << "        Update: " << _t_update << "ns,\t avg_time: " << avg << "ns\n";
+    std::cout << "        Update: " << _t_update << " cycles,\t avg_time: " << avg << " cycles\n";
 
     avg = _n_scan > 0 ? _t_scan / _n_scan : 0;
-    std::cout << "        Scan:   " << _t_scan << "ns,\t avg_time: " << avg << "ns\n";
+    std::cout << "        Scan:   " << _t_scan << " cycles,\t avg_time: " << avg << " cycles\n";
 }
 
 void LevelDBExecutor::execute(Package &pkg) {

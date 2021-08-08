@@ -29,6 +29,7 @@ public:
 
     virtual ~Executor() {}
     virtual void execute(Package &pkg) = 0;
+    virtual void reset_stats() = 0;
     virtual void print_stats(size_t num_ops) = 0;
 };
 
@@ -38,6 +39,7 @@ public:
     ~LevelDBExecutor();
 
     virtual void execute(Package &pkg) override;
+    virtual void reset_stats() override;
     virtual void print_stats(size_t num_ops) override;
 
 private:
