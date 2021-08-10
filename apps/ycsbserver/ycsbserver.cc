@@ -188,15 +188,28 @@ int main(int argc, char** argv) {
         wl_pos += package_size;
 
         cycle_t recv_start = get_cycles();
-        sendto(cfd, wl_buffer, package_size, MSG_DONTWAIT,
-            (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+        if(sendto(cfd, wl_buffer, package_size, 0,
+            (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
+            perror("send request failed");
+            return 1;
+        }
         recv_timing += get_cycles() - recv_start;
 
         uint64_t op_start = get_cycles();
         if((opcounter % 100) == 0)
             std::cout << "Op=" << (int)pkg.op << " @ " << opcounter << "\n";
 
-        exec->execute(pkg);
+        size_t res_bytes = exec->execute(pkg);
+        while(res_bytes > 0) {
+            size_t amount = res_bytes < 1024 ? res_bytes : 1024;
+            if(sendto(cfd, wl_buffer, amount, 0,
+                (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
+                perror("send response failed");
+                return 1;
+            }
+            res_bytes -= amount;
+        }
+
         opcounter += 1;
 
         op_timing += get_cycles() - op_start;
