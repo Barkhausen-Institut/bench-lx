@@ -4,7 +4,7 @@
 
 typedef unsigned long cycle_t;
 
-#define BUFFER_SIZE         8192
+#define BUFFER_SIZE         4096
 #define SYSCALL_REPEAT      2000
 #define MICROBENCH_REPEAT   32
 #define FSBENCH_REPEAT      4   // low variation
