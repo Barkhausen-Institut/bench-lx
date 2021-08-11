@@ -1,15 +1,9 @@
 #![feature(with_options)]
 
-use std::net::TcpListener;
-use std::io::{BufReader, Read, Write};
-
+use std::io::BufReader;
+use std::net::UdpSocket;
 
 mod importer;
-
-// make the linker happy. maybe it's because we're using the riscv64-*-gnu toolchain instead of
-// riscv64-*-musl? we can't use *-musl, because std is not available and building it fails m(
-#[no_mangle]
-pub extern "C" fn __res_init() -> i32 { 0 }
 
 fn print_help() {
     println!(
@@ -17,10 +11,10 @@ fn print_help() {
 ---- ycsb workload sender for M³'s key value store benchmark ----
 
 USAGE:
-standalone_client <file> <ip> <port> <acks> <repeats>
+standalone_client <file> <local_ip> <local_port> <remote_ip> <remote_port> <repeats>
 
 Example:
-ycsb_standalone_client workload.wl 127.0.0.2 1337 true 4
+ycsb_standalone_client workload.wl 127.0.0.2 1337 127.0.0.1 1338 4
 
 <file> : Specifies the workloadfile thats being used. Must be generated via the ycsb_parser tool
 <IP>   : Destination IP,
@@ -33,51 +27,37 @@ ycsb_standalone_client workload.wl 127.0.0.2 1337 true 4
 fn main() {
     // Parse arguments
     let args = std::env::args().map(|a| a.to_string()).collect::<Vec<_>>();
-    if args.len() != 6 {
+    if args.len() != 7 {
         print_help();
         return;
     }
 
-    let acks = args[4].parse::<bool>().expect("parsing ACK failed");
-    let repeats = args[5].parse::<u32>().expect("parsing repeats failed");
+    let _repeats = args[6].parse::<u32>().expect("parsing repeats failed");
 
-    let ep = format!("{}:{}", args[2], args[3]);
-    let listener = TcpListener::bind(ep).expect("bind failed");
+    let local_ep = format!("{}:{}", args[2], args[3]);
+    let remote_ep = format!("{}:{}", args[4], args[5]);
+    let socket = UdpSocket::bind(local_ep).expect("bind failed");
+
+    println!("Waiting for client...\n");
+    socket.recv_from(&mut [0u8; 1]).expect("receive failed");
 
     loop {
-        println!("waiting for TCP connection on {}:{}", args[2], args[3]);
+        // Get file
+        let workload_file = std::fs::File::open(&args[1]).expect("Could not open file");
+        let mut workload = BufReader::new(workload_file);
 
-        // accept connections and process them serially
-        let (mut socket, addr) = listener.accept().expect("accept failed");
-        println!("accepted connection from {}", addr);
+        // Now send requests until the workload file is empty
+        let num_requests = importer::WorkloadHeader::load_from_file(&mut workload).number_of_operations;
 
-        for r in 0..repeats {
-            // Get file
-            let workload_file = std::fs::File::open(&args[1]).expect("Could not open file");
-            let mut workload = BufReader::new(workload_file);
-
-            // Now send requests until the workload file is empty
-            let num_requests = importer::WorkloadHeader::load_from_file(&mut workload).number_of_operations;
-
-            for idx in 0..num_requests {
-                let new_req = importer::Package::load_as_bytes(&mut workload);
-                let len = (new_req.len() as u32).to_be_bytes();
-                socket.write(&len).unwrap();
-                let written = socket.write(&new_req).expect("Failed to send request");
-                assert!(written == new_req.len(), "Did not send whole request");
-
-                if acks && (idx + 1) % 16 == 0 {
-                    socket.read(&mut [0u8; 1]).expect("receive failed");
-                }
-            }
-
-            if r + 1 < repeats {
-                socket.write(&(6 as u32).to_be_bytes()).unwrap();
-                socket.write(b"ENDRUN").unwrap();
+        for _ in 0..num_requests {
+            let mut new_req = &importer::Package::load_as_bytes(&mut workload)[..];
+            println!("Sending {} byte via UDP to {}", new_req.len(), remote_ep);
+            while !new_req.is_empty() {
+                let written = socket.send_to(&new_req, remote_ep.clone()).expect("sent failed");
+                new_req = &new_req[written..];
             }
         }
 
-        socket.write(&(6 as u32).to_be_bytes()).unwrap();
-        socket.write(b"ENDNOW").unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
     }
 }
