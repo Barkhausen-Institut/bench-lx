@@ -27,15 +27,15 @@ if int(verbose) == 0:
     baseenv['LINKCOMSTR'] = "LD $TARGET"
     baseenv['ARCOMSTR'] = "AR $TARGET"
 
-baseenv.Append(
+# create envs for xtensa-linux and host
+env = baseenv.Clone()
+env.Append(
     BUILDDIR = Dir(builddir),
     BINDIR = Dir(builddir + '/bin'),
     FSDIR = Dir('rootfs/bench'),
     ARCH = arch
 )
 
-# create envs for xtensa-linux and host
-env = baseenv.Clone()
 ccprefix = builddir + '/buildroot/host/usr/bin/' + arch + '-linux'
 env.Append(
     CPPPATH = ['#include'],
@@ -69,3 +69,5 @@ env.LxLibrary = LxLibrary
 # build everything
 env.SConscript('apps/SConscript', 'env', variant_dir = builddir + '/apps', duplicate = 0)
 env.SConscript('libs/SConscript', 'env', variant_dir = builddir + '/libs', duplicate = 0)
+
+baseenv.SConscript('tools/SConscript', 'baseenv', variant_dir = builddir + '/tools', duplicate = 0)

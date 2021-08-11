@@ -1,0 +1,2 @@
+Import('baseenv')
+baseenv.Program('latcli.c')
