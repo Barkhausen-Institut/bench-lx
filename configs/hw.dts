@@ -56,6 +56,7 @@
         };
         plic0: interrupt-controller@c000000 {
             #interrupt-cells = <1>;
+            #address-cells = <1>;
             compatible = "sifive,plic-1.0.0";
             reg = <0x0 0xc000000 0x0 0x4000000>;
             riscv,ndev = <53>;
@@ -69,19 +70,18 @@
             compatible = "sifive,uart0";
         };
         axi_ethernet_eth_buf: ethernet@f4000000 {
-            axififo-connected = <&axi_fifo>;
+            axistream-connected = <&axi_eth_dma>;
             clock-frequency = <80000000>;
             compatible = "xlnx,axi-ethernet-1.00.a";
             device_type = "network";
             mac-address = [00 0A 35 03 02 02];
             interrupt-parent = <&plic0>;
-            interrupts = <2>;
+            interrupts = <3>;
             reg = <0x00000000 0xf4000000 0x00000000 0x40000>;
-            xlnx,fifo = <1>;
-            xlnx,phy-type = <0x3>;
+            phy-mode = "rgmii-rxid";
             xlnx,phyaddr = <0x0>;
             xlnx,rxcsum = <0x0>;
-            xlnx,rxmem = <0x8000>;
+            xlnx,rxmem = <2048>;
             xlnx,txcsum = <0x0>;
             phy-handle = <&phy0>;
             mdio {
@@ -93,10 +93,10 @@
                 };
             };
         };
-        axi_fifo: axi-fifo@f4040000 {
-            interrupt-parent = < &plic0 >;
-            interrupts = <4>;
-            reg = <0x00000000 0xf4040000 0x00000000 0x40000>;
+        axi_eth_dma: axi-eth-dma@f4040000 {
+            interrupt-parent = <&plic0>;
+            interrupts = <4 5>;
+            reg = <0x00000000 0xf4040000 0x00000000 0x80>;
         };
     };
 };
