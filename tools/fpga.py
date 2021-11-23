@@ -86,14 +86,19 @@ def main():
     args = parser.parse_args()
 
     # connect to FPGA
-    fpga_inst = fpga_top.FPGA_TOP(args.fpga)
+    fpga_inst = fpga_top.FPGA_TOP(args.fpga, args.reset)
     pms = [fpga_inst.pms[0]]
-    if args.reset:
-        fpga_inst.eth_rf.system_reset()
 
     # stop all PEs
     for pe in pms:
         pe.stop()
+
+    # disable NoC ARQ for program upload
+    for pe in fpga_inst.pms:
+        pe.nocarq.set_arq_enable(0)
+    fpga_inst.eth_rf.nocarq.set_arq_enable(0)
+    fpga_inst.dram1.nocarq.set_arq_enable(0)
+    fpga_inst.dram2.nocarq.set_arq_enable(0)
 
     # load programs onto PEs
     for i, peargs in enumerate(args.pe[0:len(pms)], 0):
@@ -108,6 +113,13 @@ def main():
         write_str(fpga_inst.dram1, args.bench, BENCH_CMD_ADDR, BENCH_CMD_SIZE)
     else:
         write_str(fpga_inst.dram1, '', BENCH_CMD_ADDR, BENCH_CMD_SIZE)
+
+    # enable NoC ARQ when cores are running
+    for pe in fpga_inst.pms:
+        pe.nocarq.set_arq_enable(1)
+        pe.nocarq.set_arq_timeout(200)    #reduce timeout
+    fpga_inst.dram1.nocarq.set_arq_enable(1)
+    fpga_inst.dram2.nocarq.set_arq_enable(1)
 
     # start PEs
     for pe in pms:
