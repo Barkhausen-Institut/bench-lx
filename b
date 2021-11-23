@@ -19,7 +19,7 @@ LX_CORES=${LX_CORES:-1}
 LX_BUILDDIR="build/$LX_ARCH"
 export LX_ARCH LX_PLATFORM LX_BUILDDIR LX_CORES
 
-mkdir -p $LX_BUILDDIR/{linux,buildroot,riscv-pk,disks}
+mkdir -p $LX_BUILDDIR/{linux,buildroot,riscv-pk,disks} run
 
 cmd=$1
 shift
