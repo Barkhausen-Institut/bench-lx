@@ -1,6 +1,6 @@
 #!/bin/bash
 
-hwssh=bitest
+hwssh=localhost
 tty=/dev/ttyUSB1
 
 kernel=$LX_BUILDDIR/riscv-pk/$LX_PLATFORM/bbl
