@@ -40,6 +40,23 @@ case $cmd in
 		./platforms/$LX_PLATFORM $cmd
 		;;
 
+	mkapps)
+		scons -j$(nproc) || exit 1
+
+		# build ycsbclient for host
+		export CARGO_TARGET_DIR=`readlink -f build/rust`
+		export XBUILD_SYSROOT_PATH=$CARGO_TARGET_DIR/sysroot
+		cargo build --release --color=always || exit 1
+
+		# in case we want to build it for riscv:
+		# export RUST_TARGET=riscv64gc-unknown-linux-gnu
+		# export RUST_TARGET_PATH=`readlink -f tools`
+		# export CARGO_TARGET_DIR=`readlink -f build/rust`
+		# export XBUILD_SYSROOT_PATH=$CARGO_TARGET_DIR/sysroot
+		# cargo build --target $RUST_TARGET --release --color=always || exit 1
+
+		;&	# fall through; run mkbr as well to ensure that the rootfs is up to date
+
 	mkbr)
 		if [ ! -f $LX_BUILDDIR/buildroot/.config ]; then
 			cp configs/config-buildroot-$LX_ARCH $LX_BUILDDIR/buildroot/.config
@@ -120,22 +137,6 @@ case $cmd in
 			--target-list=riscv64-softmmu,x86_64-softmmu \
 			--enable-trace-backends=simple \
 			&& make -j$(nproc)
-		;;
-
-	mkapps)
-		scons -j$(nproc) || exit 1
-
-		# build ycsbclient for host
-		export CARGO_TARGET_DIR=`readlink -f build/rust`
-		export XBUILD_SYSROOT_PATH=$CARGO_TARGET_DIR/sysroot
-		cargo build --release --color=always || exit 1
-
-		# in case we want to build it for riscv:
-		# export RUST_TARGET=riscv64gc-unknown-linux-gnu
-		# export RUST_TARGET_PATH=`readlink -f tools`
-		# export CARGO_TARGET_DIR=`readlink -f build/rust`
-		# export XBUILD_SYSROOT_PATH=$CARGO_TARGET_DIR/sysroot
-		# cargo build --target $RUST_TARGET --release --color=always || exit 1
 		;;
 
 	elf=*)
