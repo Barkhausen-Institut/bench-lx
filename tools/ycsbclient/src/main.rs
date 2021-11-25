@@ -1,63 +1,108 @@
-#![feature(with_options)]
-
-use std::io::BufReader;
-use std::net::UdpSocket;
+use std::io::{Read, Write, BufReader};
+use std::net::{UdpSocket, TcpStream};
 
 mod importer;
 
-fn print_help() {
-    println!(
-        "
----- ycsb workload sender for M³'s key value store benchmark ----
+const VERBOSE: bool = false;
 
-USAGE:
-standalone_client <file> <local_ip> <local_port> <remote_ip> <remote_port> <repeats>
+fn usage(args: &[String]) {
+    println!("Usage: {} tcp <remote_ip> <remote_port> <workload> <repeats>", args[0]);
+    println!("Usage: {} udp <local_ip> <local_port>", args[0]);
+    std::process::exit(1);
+}
 
-Example:
-ycsb_standalone_client workload.wl 127.0.0.2 1337 127.0.0.1 1338 4
+fn udp_receiver(local_ep: &str) {
+    let socket = UdpSocket::bind(local_ep).expect("bind failed");
 
-<file> : Specifies the workloadfile thats being used. Must be generated via the ycsb_parser tool
-<IP>   : Destination IP,
-<PORT> : Destination port
-<acks> : whether to expect ACKs from the other side
-"
-    );
+    let mut buf = vec![0u8; 1024];
+    loop {
+        let (amount, _) = socket.recv_from(&mut buf).expect("Receive failed");
+        if VERBOSE {
+            println!("Received {} bytes.", amount);
+        }
+    }
+}
+
+fn tcp_sender(remote_ep: &str, wl: &str, repeats: u32) {
+    // Connect to server
+    let mut socket = TcpStream::connect(remote_ep)
+    .expect("Could not create TCP socket");
+
+    for _ in 0..repeats {
+        // open file
+        let workload_file = std::fs::File::open(wl).expect("Could not open file");
+
+        // Load workload info for the benchmark
+        let mut workload_buffer = BufReader::new(workload_file);
+        let workload_header = importer::WorkloadHeader::load_from_file(&mut workload_buffer);
+
+        for _ in 0..workload_header.number_of_operations {
+            let operation = importer::Package::load_as_bytes(&mut workload_buffer);
+            debug_assert!(importer::Package::from_bytes(&operation).is_ok());
+
+            if VERBOSE {
+                println!("Sending operation...");
+            }
+
+            socket
+                .write(&(operation.len() as u32).to_be_bytes())
+                .expect("send failed");
+            socket.write(&operation).expect("send failed");
+
+            if VERBOSE {
+                println!("Receiving response...");
+            }
+
+            let mut resp_bytes = [0u8; 8];
+            socket
+                .read(&mut resp_bytes)
+                .expect("receive response header failed");
+            let resp_len = u64::from_be_bytes(resp_bytes);
+
+            if VERBOSE {
+                println!("Expecting {} byte response.", resp_len);
+            }
+
+            let mut response = vec![0u8; resp_len as usize];
+            let mut rem = resp_len as usize;
+            while rem > 0 {
+                let amount = socket
+                    .read(&mut response[resp_len as usize - rem..])
+                    .expect("receive response failed");
+                rem -= amount;
+            }
+
+            if VERBOSE {
+                println!("Got response.");
+            }
+        }
+
+        let end_msg = b"ENDNOW";
+        socket.write(&(end_msg.len() as u32).to_be_bytes()).unwrap();
+        socket.write(end_msg).unwrap();
+    }
 }
 
 fn main() {
     // Parse arguments
     let args = std::env::args().map(|a| a.to_string()).collect::<Vec<_>>();
-    if args.len() != 7 {
-        print_help();
-        return;
-    }
 
-    let _repeats = args[6].parse::<u32>().expect("parsing repeats failed");
-
-    let local_ep = format!("{}:{}", args[2], args[3]);
-    let remote_ep = format!("{}:{}", args[4], args[5]);
-    let socket = UdpSocket::bind(local_ep).expect("bind failed");
-
-    println!("Waiting for client...\n");
-    socket.recv_from(&mut [0u8; 1]).expect("receive failed");
-
-    loop {
-        // Get file
-        let workload_file = std::fs::File::open(&args[1]).expect("Could not open file");
-        let mut workload = BufReader::new(workload_file);
-
-        // Now send requests until the workload file is empty
-        let num_requests = importer::WorkloadHeader::load_from_file(&mut workload).number_of_operations;
-
-        for _ in 0..num_requests {
-            let mut new_req = &importer::Package::load_as_bytes(&mut workload)[..];
-            println!("Sending {} byte via UDP to {}", new_req.len(), remote_ep);
-            while !new_req.is_empty() {
-                let written = socket.send_to(&new_req, remote_ep.clone()).expect("sent failed");
-                new_req = &new_req[written..];
-            }
+    if args[1] == "udp" {
+        if args.len() != 4 {
+            usage(&args);
         }
 
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        let local_ep = format!("{}:{}", args[2], args[3]);
+        udp_receiver(&local_ep);
+    }
+    else {
+        if args.len() != 6 {
+            usage(&args);
+        }
+
+        let remote_ep = format!("{}:{}", args[2], args[3]);
+        let repeats = args[5].parse::<u32>().expect("Failed to parse repeats");
+        tcp_sender(&remote_ep, &args[4], repeats);
     }
 }
+
