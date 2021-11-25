@@ -1,7 +1,7 @@
 #!/bin/bash
 
 hwssh=bitest
-tty=/dev/ttyUSB2
+tty=/dev/ttyUSB1
 
 kernel=$LX_BUILDDIR/riscv-pk/$LX_PLATFORM/bbl
 initrd=$LX_BUILDDIR/buildroot/images/rootfs.cpio
