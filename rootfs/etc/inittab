@@ -31,8 +31,8 @@ null::sysinit:/bin/ln -sf /proc/self/fd/2 /dev/stderr
 ::sysinit:sysctl -w net.ipv6.conf.default.disable_ipv6=1
 ::sysinit:sysctl -w net.ipv6.conf.lo.disable_ipv6=1
 # static IP setup
-::sysinit:ifconfig eth0 192.168.42.242 netmask 255.255.255.0 up
-::sysinit:route add default gw 192.168.42.1 eth0
+::sysinit:ifconfig eth0 192.168.41.11 netmask 255.255.255.0 up
+::sysinit:route add default gw 192.168.41.1 eth0
 # run benchmarks, if requested
 ::sysinit:/etc/init.d/S50bench
 
