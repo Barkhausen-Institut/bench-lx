@@ -10,6 +10,11 @@ if [ -z $LX_PLATFORM ]; then
 	echo "Defaulting to LX_PLATFORM=$LX_PLATFORM"
 fi
 
+if [ -z $LX_HW_SSH ]; then
+	LX_HW_SSH=bitest
+	echo "Defaulting to LX_HW_SSH=$LX_HW_SSH"
+fi
+
 if [ "$LX_PLATFORM" = "gem5" ] && [ ! -d "$GEM5_DIR" ]; then
 	echo "Please set GEM5_DIR to the path of the gem5 directory" >&2
 	exit 1

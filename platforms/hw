@@ -1,6 +1,6 @@
 #!/bin/bash
 
-hwssh=localhost
+hwssh=$LX_HW_SSH
 tty=/dev/ttyUSB1
 
 kernel=$LX_BUILDDIR/riscv-pk/$LX_PLATFORM/bbl
