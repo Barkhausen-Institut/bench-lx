@@ -7,7 +7,7 @@ kernel=$LX_BUILDDIR/riscv-pk/$LX_PLATFORM/bbl
 initrd=$LX_BUILDDIR/buildroot/images/rootfs.cpio
 
 files="$kernel $initrd"
-args="--fpga 1 --pe bbl --initrd rootfs.cpio --serial $tty"
+args="--fpga 1 --reset --pe bbl --initrd rootfs.cpio --serial $tty"
 
 runsh="run/run.sh"
 echo -n > $runsh
