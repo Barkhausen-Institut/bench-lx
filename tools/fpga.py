@@ -87,7 +87,7 @@ def main():
 
     # connect to FPGA
     fpga_inst = fpga_top.FPGA_TOP(args.fpga, args.reset)
-    pms = [fpga_inst.pms[0]]
+    pms = [fpga_inst.pms[6]]
 
     # stop all PEs
     for pe in pms:
