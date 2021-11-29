@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <errno.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,16 +17,35 @@
 
 #define BUF_SIZE 500
 
-#define COUNT   20
+#define COUNT   100
 #define WARMUP  5
 
 static cycle_t times[COUNT];
 
+static int send_recv(int sfd) {
+    char data[1] = {0xFF};
+
+    if (write(sfd, data, sizeof(data)) != sizeof(data)) {
+        fprintf(stderr, "partial/failed write\n");
+        exit(1);
+    }
+
+    ssize_t nread = read(sfd, data, sizeof(data));
+    if (nread == -1) {
+        // ignore timeouts
+        if(errno = EAGAIN || errno == EWOULDBLOCK)
+            return 0;
+        perror("read");
+        exit(1);
+    }
+
+    return 1;
+}
+
 int main(int argc, char **argv) {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
-    int sfd, s;
-    ssize_t nread;
+    int sfd;
 
     if (argc != 3) {
         fprintf(stderr, "Usage: %s <host> <port>\n", argv[0]);
@@ -40,7 +60,7 @@ int main(int argc, char **argv) {
     hints.ai_flags = 0;
     hints.ai_protocol = 0;          /* Any protocol */
 
-    s = getaddrinfo(argv[1], argv[2], &hints, &result);
+    int s = getaddrinfo(argv[1], argv[2], &hints, &result);
     if (s != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
         exit(EXIT_FAILURE);
@@ -70,32 +90,29 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
+    // set timeout to 30ms
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 30 * 1000;
+    setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
     /* Send remaining command-line arguments as separate
       datagrams, and read responses from server. */
 
-    char data[1] = {0xFF};
+    for(int i = 0; i < WARMUP; ++i)
+        send_recv(sfd);
 
-    for(int i = 0; i < WARMUP + COUNT; ++i) {
+    size_t num = 0;
+    while(num < COUNT) {
          cycle_t start = prof_start(0x1234);
 
-        if (write(sfd, data, sizeof(data)) != sizeof(data)) {
-            fprintf(stderr, "partial/failed write\n");
-            exit(EXIT_FAILURE);
+         if(send_recv(sfd)) {
+            cycle_t end = prof_stop(0x1234);
+            times[num++] = end - start;
         }
-
-        nread = read(sfd, data, sizeof(data));
-        if (nread == -1) {
-            perror("read");
-            exit(EXIT_FAILURE);
-        }
-        cycle_t end = prof_stop(0x1234);
-        if(i >= WARMUP)
-            times[i - WARMUP] = end - start;
-
-        // printf("Received %zd bytes\n", nread);
     }
 
-    cycle_t average = avg(times, COUNT);
-    printf("%lu %lu\n", average, stddev(times, COUNT, average));
+    cycle_t average = avg(times, num);
+    printf("%lu %lu\n", average, stddev(times, num, average));
     return 0;
 }
