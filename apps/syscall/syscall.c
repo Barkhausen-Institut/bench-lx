@@ -12,13 +12,18 @@ int main() {
 	for(int i = 0; i < WARMUP; ++i)
 		geteuid();
 
+	int total = 0;
 	for(int i = 0; i < COUNT; ++i) {
 		cycle_t start = get_cycles();
 		geteuid();
-		times[i] = get_cycles() - start;
+		cycle_t end = get_cycles();
+
+		cycle_t duration = end - start;
+		if(duration < 1000)
+			times[total++] = duration;
 	}
 
-    cycle_t average = avg(times, COUNT);
-    printf("%lu %lu\n", average, stddev(times, COUNT, average));
+    cycle_t average = avg(times, total);
+    printf("%lu %lu\n", average, stddev(times, total, average));
 	return 0;
 }
