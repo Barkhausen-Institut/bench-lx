@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        if (write(sfd, argv[j], len) != len) {
+        if (write(sfd, argv[j], len) != (ssize_t)len) {
             fprintf(stderr, "partial/failed write\n");
             exit(EXIT_FAILURE);
         }
