@@ -1,2 +1,0 @@
-Import('baseenv')
-baseenv.Program('latserv.c')

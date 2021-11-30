@@ -1,2 +1,0 @@
-Import('baseenv')
-baseenv.SConscript(baseenv.Glob('*/SConscript'), 'baseenv')

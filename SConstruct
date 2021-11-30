@@ -69,5 +69,3 @@ env.LxLibrary = LxLibrary
 # build everything
 env.SConscript('apps/SConscript', 'env', variant_dir = builddir + '/apps', duplicate = 0)
 env.SConscript('libs/SConscript', 'env', variant_dir = builddir + '/libs', duplicate = 0)
-
-baseenv.SConscript('tools/SConscript', 'baseenv', variant_dir = builddir + '/tools', duplicate = 0)
