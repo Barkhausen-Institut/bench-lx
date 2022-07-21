@@ -128,6 +128,7 @@ case $cmd in
 		../../qemu/configure \
 			--target-list=riscv64-softmmu,x86_64-softmmu \
 			--enable-trace-backends=simple \
+			--disable-werror \
 			&& make -j$(nproc)
 		;;
 
