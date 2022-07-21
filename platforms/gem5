@@ -21,8 +21,10 @@ run_gem5() {
 
     if [ "$LX_ARCH" = "riscv64" ]; then
         GEM5_ARCH=RISCV
+        BENCH_DEV=/dev/vdb1
     else
         GEM5_ARCH=X86
+        BENCH_DEV=/dev/sdb1
     fi
 
     GEM5_CPU=${GEM5_CPU:-DerivO3CPU}
@@ -36,13 +38,19 @@ run_gem5() {
     if [ "$GEM5_FLAGS" != "" ]; then
         echo -n " --debug-flags=$GEM5_FLAGS" >> $params
     fi
-    echo -n " $GEM5_DIR/configs/example/riscv/fs_linux.py --cpu-type $GEM5_CPU" >> $params
-    echo -n " --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ" >> $params
+    if [ "$LX_ARCH" = "riscv64" ]; then
+        echo -n " $GEM5_DIR/configs/example/riscv/fs_linux.py" >> $params
+        echo -n " --kernel $LX_BUILDDIR/riscv-pk/gem5/bbl" >> $params
+        echo -n " --command-line=\"earlycon=sbi console=ttyS0 root=/dev/vda1\" " >> $params
+    else
+        echo -n " $GEM5_DIR/configs/example/fs.py" >> $params
+        echo -n " --kernel $LX_BUILDDIR/linux/vmlinux" >> $params
+        echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
+    fi
+    echo -n " --cpu-type $GEM5_CPU --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ" >> $params
     echo -n " --caches --l2cache --l1d_size 32kB --l1i_size 32kB --l2_size 256kB" >> $params
     echo -n " --mem-size 512MB" >> $params
     echo -n " -n $LX_CORES" >> $params
-    echo -n " --kernel $LX_BUILDDIR/riscv-pk/gem5/bbl" >> $params
-    echo -n " --command-line=\"earlycon=sbi console=ttyS0 root=/dev/vda1\" " >> $params
     echo -n " --disk-image $LX_BUILDDIR/disks/root.img" >> $params
     echo -n " --disk-image $LX_BUILDDIR/disks/bench.img" >> $params
 
@@ -63,11 +71,11 @@ run_gem5() {
 
         # wait until the port is open
 
-        while [ "`grep 'system.platform.terminal: Listening for connections on port' $GEM5_OUT/logerr.txt`" = "" ]; do
+        while [ "`grep 'system.*: Listening for connections on port' $GEM5_OUT/logerr.txt`" = "" ]; do
             echo "Waiting for GEM5 to start..." 1>&2
             sleep 1
         done
-        port=`grep 'system.platform.terminal: Listening for connections on port' $GEM5_OUT/logerr.txt | awk '{ print $7 }'`
+        port=`grep 'system.*: Listening for connections on port' $GEM5_OUT/logerr.txt | awk '{ print $7 }'`
 
         gem5pid=`pgrep -P $!`
 
@@ -81,25 +89,25 @@ run_gem5() {
                 # just wait
                 sleep 1
             elif [ "$cmd" = "fsbench" ]; then
-                echo -e "\n/mount.sh\n"
+                echo -e "\nmount $BENCH_DEV /bench\n"
                 # better wait a bit
                 # Linux is quite fragile as it seems, if serial input comes too quickly
                 sleep 10
                 echo -e "/bench/fsbench.sh '$BENCH_CMD'"
             elif [ "$cmd" = "bench" ]; then
-                echo -e "\n/mount.sh\n"
+                echo -e "\nmount $BENCH_DEV /bench\n"
                 sleep 10
                 echo -e "/bench/bench.sh '$BENCH_CMD'"
             elif [ "$cmd" = "servertrace" ]; then
-                echo -e "\n/mount.sh"
+                echo -e "\nmount $BENCH_DEV /bench\n"
                 sleep 10
                 echo -e "/bench/servertrace.sh $BENCH_CMD"
             elif [ "$cmd" = "serverbench" ]; then
-                echo -e "\n/mount.sh"
+                echo -e "\nmount $BENCH_DEV /bench\n"
                 sleep 10
                 echo -e "/bench/serverbench.sh $BENCH_CMD"
             else
-                echo -e "\n/mount.sh\n/bench/microbench.sh"
+                echo -e "\nmount $BENCH_DEV /bench\n/bench/microbench.sh"
             fi
             # sleep "for ever"
             sleep 100000
