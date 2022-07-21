@@ -1,0 +1,2 @@
+Import('env')
+env.LxProgram(env, target = 'pingpong', source = 'pingpong.c')
