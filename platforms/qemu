@@ -1,6 +1,6 @@
 #!/bin/bash
 
-QEMU_FLAGS="-serial stdio -smp $LX_CORES -m 256M"
+QEMU_FLAGS="-smp $LX_CORES -m 256M -nographic"
 
 if [ $LX_ARCH = "x86_64" ]; then
     QEMU_FLAGS+=" -kernel $LX_BUILDDIR/linux/arch/x86/boot/bzImage"
