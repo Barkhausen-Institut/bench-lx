@@ -1,7 +1,8 @@
 #define _GNU_SOURCE
 
-#include <sys/wait.h>
+#include <sys/mman.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +17,7 @@
 #define COUNT 1000
 #define WARMUP 100
 
-static cycle_t times[COUNT];
+static cycle_t times[COUNT + WARMUP];
 
 int main() {
     cpu_set_t set;
@@ -48,6 +49,11 @@ int main() {
                 exit(1);
             }
 
+            if(mlockall(MCL_CURRENT | MCL_FUTURE) == -1) {
+                perror("mlockall");
+                exit(1);
+            }
+
             // the child reads from pipe1 and writes to pipe2
             close(pipe1[1]); // close write end
             close(pipe2[0]); // close read end
@@ -76,6 +82,11 @@ int main() {
                 exit(1);
             }
 
+            if(mlockall(MCL_CURRENT | MCL_FUTURE) == -1) {
+                perror("mlockall");
+                exit(1);
+            }
+
             // the parent writes to pipe1 and reads from pipe2
             close(pipe1[0]); // close read end
             close(pipe2[1]); // close write end
@@ -94,15 +105,21 @@ int main() {
                 }
 
                 cycle_t end = prof_stop(0x1234);
-                if(i >= WARMUP)
-                    times[i - WARMUP] = end - start;
+                times[i] = end - start;
             }
 
             close(pipe1[1]); // close write end
             close(pipe2[0]); // close read end
 
-            cycle_t average = avg(times, COUNT);
-            printf("%lu %lu\n", average, stddev(times, COUNT, average));
+            cycle_t cold_average = avg(times, COUNT + WARMUP);
+            printf("cold avg: %lu (+/- %lu) cycles\n",
+                cold_average, stddev(times, COUNT + WARMUP, cold_average));
+            cycle_t warm_average = avg(times + WARMUP, COUNT);
+            printf("warm avg: %lu (+/- %lu) cycles\n",
+                warm_average, stddev(times + WARMUP, COUNT, warm_average));
+
+            for(size_t i = 0; i < COUNT + WARMUP; ++i)
+                printf("%lu\n", times[i]);
 
             waitpid(pid, NULL, 0);
             break;
