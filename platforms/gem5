@@ -101,6 +101,14 @@ run_gem5() {
                 echo -e "\nmount $BENCH_DEV /bench\n"
                 sleep 10
                 echo -e "/bench/bench.sh '$BENCH_CMD'"
+            elif [ "$cmd" = "pingpong" ]; then
+                echo -e "\nmount $BENCH_DEV /bench\n"
+                sleep 10
+                echo -e "/bench/pingpong.sh $LX_CORES '$BENCH_CMD'"
+            elif [ "$cmd" = "memload" ]; then
+                echo -e "\nmount $BENCH_DEV /bench\n"
+                sleep 10
+                echo -e "/bench/memload.sh '$BENCH_CMD'"
             elif [ "$cmd" = "servertrace" ]; then
                 echo -e "\nmount $BENCH_DEV /bench\n"
                 sleep 10
@@ -159,7 +167,7 @@ case $1 in
         echo "Not supported"
         ;;
 
-    bench|fsbench|microbench|serverbench|servertrace)
+    bench|fsbench|microbench|serverbench|servertrace|pingpong|memload)
         run_gem5 $1 '^<===Benchmarks_done==='
         ;;
 esac
