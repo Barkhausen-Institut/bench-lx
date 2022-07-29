@@ -5,7 +5,7 @@ run_gem5() {
     wait=$2
 
     if [ "$cmd" = "warmup" ]; then
-        GEM5_OUT="run/boot-$LX_CORES"
+        GEM5_OUT="run/boot-$LX_ARCH-$LX_CORES"
         GEM5_CPU=TimingSimpleCPU
     else
         if [ ! -d "$GEM5_OUT" ]; then
@@ -14,7 +14,7 @@ run_gem5() {
         fi
 
         rm -f $GEM5_OUT/cpt.*
-        ln -sf `readlink -f run/boot-$LX_CORES/cpt.*` $GEM5_OUT
+        ln -sf `readlink -f run/boot-$LX_ARCH-$LX_CORES/cpt.*` $GEM5_OUT
     fi
     export M5_PATH=$GEM5_OUT
     mkdir -p $GEM5_OUT
@@ -30,6 +30,8 @@ run_gem5() {
     GEM5_CPU=${GEM5_CPU:-DerivO3CPU}
     GEM5_CPUFREQ=${GEM5_CPUFREQ:-1GHz}
     GEM5_MEMFREQ=${GEM5_MEMFREQ:-333MHz}
+    GEM5_L1=${GEM5_L1:-32}
+    GEM5_L2=${GEM5_L2:-512}
 
     params=`mktemp`
     echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log" >> $params
@@ -48,7 +50,8 @@ run_gem5() {
         echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
     fi
     echo -n " --cpu-type $GEM5_CPU --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ" >> $params
-    echo -n " --caches --l2cache --l1d_size 32kB --l1i_size 32kB --l2_size 256kB" >> $params
+    echo -n " --caches --l1d_size ${GEM5_L1}kB --l1i_size ${GEM5_L1}kB" >> $params
+    echo -n " --l2cache --l2_size ${GEM5_L2}kB" >> $params
     echo -n " --mem-size 512MB" >> $params
     echo -n " -n $LX_CORES" >> $params
     echo -n " --disk-image $LX_BUILDDIR/disks/root.img" >> $params
@@ -128,7 +131,7 @@ run_gem5() {
         if [ "$cmd" = "warmup" ]; then
             # wait until the checkpoint is written
             path=$GEM5_OUT/cpt.*/m5.cpt
-            while [ "`grep '^isa=' $path`" = "" ]; do
+            while [ "`grep '^curTick=' $path`" = "" ]; do
                 echo "Waiting for checkpoint..." 1>&2
                 sleep 1
                 path=$GEM5_OUT/cpt.*/m5.cpt
