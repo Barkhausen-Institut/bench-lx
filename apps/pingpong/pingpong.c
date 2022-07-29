@@ -18,10 +18,24 @@
 #define WARMUP 100
 
 static cycle_t times[COUNT + WARMUP];
+static char buffer[2048] __attribute__((aligned(4096)));
 
-int main() {
+int main(int argc, char **argv) {
     cpu_set_t set;
     CPU_ZERO(&set);
+
+    int core1 = 0;
+    int core2 = 1;
+    int runs = 1;
+    size_t msgsize = 1;
+    if(argc > 1)
+        core1 = atoi(argv[1]);
+    if(argc > 2)
+        core2 = atoi(argv[2]);
+    if(argc > 3)
+        runs = atoi(argv[3]);
+    if(argc > 4)
+        msgsize = strtoul(argv[4], NULL, 10);
 
     int pipe1[2], pipe2[2];
     int res = pipe(pipe1);
@@ -43,9 +57,15 @@ int main() {
 
         // child
         case 0: {
-            CPU_SET(1, &set);
+            CPU_SET(core1, &set);
             if(sched_setaffinity(getpid(), sizeof(set), &set) == -1) {
                 perror("sched_setaffinity");
+                exit(1);
+            }
+            struct sched_param param;
+            param.sched_priority = 50;
+            if(sched_setscheduler(getpid(), SCHED_FIFO, &param) == -1) {
+                perror("sched_setscheduler");
                 exit(1);
             }
 
@@ -58,15 +78,16 @@ int main() {
             close(pipe1[1]); // close write end
             close(pipe2[0]); // close read end
 
-            for(size_t i = 0; i < WARMUP + COUNT; ++i) {
-                unsigned char v;
-                if(read(pipe1[0], &v, sizeof(v)) != 1) {
-                    perror("read");
-                    exit(1);
-                }
-                if(write(pipe2[1], &v, sizeof(v)) != 1) {
-                    perror("write");
-                    exit(1);
+            for(int x = 0; x < runs; ++x) {
+                for(size_t i = 0; i < WARMUP + COUNT; ++i) {
+                    if(read(pipe1[0], buffer, msgsize) != (ssize_t)msgsize) {
+                        perror("read");
+                        exit(1);
+                    }
+                    if(write(pipe2[1], buffer, msgsize) != (ssize_t)msgsize) {
+                        perror("write");
+                        exit(1);
+                    }
                 }
             }
 
@@ -76,9 +97,15 @@ int main() {
         }
         // parent
         default: {
-            CPU_SET(0, &set);
+            CPU_SET(core2, &set);
             if(sched_setaffinity(getpid(), sizeof(set), &set) == -1) {
                 perror("sched_setaffinity");
+                exit(1);
+            }
+            struct sched_param param;
+            param.sched_priority = 50;
+            if(sched_setscheduler(getpid(), SCHED_FIFO, &param) == -1) {
+                perror("sched_setscheduler");
                 exit(1);
             }
 
@@ -91,21 +118,22 @@ int main() {
             close(pipe1[0]); // close read end
             close(pipe2[1]); // close write end
 
-            for(size_t i = 0; i < WARMUP + COUNT; ++i) {
-                unsigned char v = 0xFF;
-                cycle_t start = prof_start(0x1234);
+            for(int x = 0; x < runs; ++x) {
+                for(size_t i = 0; i < WARMUP + COUNT; ++i) {
+                    cycle_t start = prof_start(0x1234);
 
-                if(write(pipe1[1], &v, sizeof(v)) != 1) {
-                    perror("write");
-                    exit(1);
-                }
-                if(read(pipe2[0], &v, sizeof(v)) != 1) {
-                    perror("read");
-                    exit(1);
-                }
+                    if(write(pipe1[1], buffer, msgsize) != (ssize_t)msgsize) {
+                        perror("write");
+                        exit(1);
+                    }
+                    if(read(pipe2[0], buffer, msgsize) != (ssize_t)msgsize) {
+                        perror("read");
+                        exit(1);
+                    }
 
-                cycle_t end = prof_stop(0x1234);
-                times[i] = end - start;
+                    cycle_t end = prof_stop(0x1234);
+                    times[i] = end - start;
+                }
             }
 
             close(pipe1[1]); // close write end
