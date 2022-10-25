@@ -1,6 +1,8 @@
 #define _GNU_SOURCE
 
+#include <sys/ipc.h>
 #include <sys/mman.h>
+#include <sys/msg.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
@@ -18,7 +20,18 @@
 #define WARMUP 100
 
 static cycle_t times[COUNT + WARMUP];
-static char buffer[2048] __attribute__((aligned(4096)));
+
+#define CLIENT_MESSAGE 1
+#define SERVER_MESSAGE 2
+
+typedef struct Message {
+    long type;
+    char buffer[];
+} Message;
+
+int generate_key(const char* path) {
+    return ftok(path, 'X');
+}
 
 int main(int argc, char **argv) {
     cpu_set_t set;
@@ -37,17 +50,15 @@ int main(int argc, char **argv) {
     if(argc > 4)
         msgsize = strtoul(argv[4], NULL, 10);
 
-    int pipe1[2], pipe2[2];
-    int res = pipe(pipe1);
-    if(res == -1) {
-        perror("pipe");
-        return 1;
+    int mq;
+    key_t key = generate_key("pingpong");
+    if ((mq = msgget(key, IPC_CREAT | 0666)) == -1) {
+        perror("msgget");
+        exit(1);
     }
-    res = pipe(pipe2);
-    if(res == -1) {
-        perror("pipe");
-        return 1;
-    }
+
+    struct Message *message = malloc(sizeof(Message) + msgsize);
+    memset(message, 0, sizeof(Message) + msgsize);
 
     int pid;
     switch((pid = fork())) {
@@ -74,25 +85,20 @@ int main(int argc, char **argv) {
                 exit(1);
             }
 
-            // the child reads from pipe1 and writes to pipe2
-            close(pipe1[1]); // close write end
-            close(pipe2[0]); // close read end
-
             for(int x = 0; x < runs; ++x) {
                 for(size_t i = 0; i < WARMUP + COUNT; ++i) {
-                    if(read(pipe1[0], buffer, msgsize) != (ssize_t)msgsize) {
-                        perror("read");
+                    if (msgrcv(mq, message, msgsize, SERVER_MESSAGE, 0) < (ssize_t)msgsize) {
+                        perror("msgrcv");
                         exit(1);
                     }
-                    if(write(pipe2[1], buffer, msgsize) != (ssize_t)msgsize) {
-                        perror("write");
+
+                    message->type = CLIENT_MESSAGE;
+                    if (msgsnd(mq, message, msgsize, 0) == -1) {
+                        perror("msgsnd");
                         exit(1);
                     }
                 }
             }
-
-            close(pipe1[0]); // close read end
-            close(pipe2[1]); // close write end
             break;
         }
         // parent
@@ -114,20 +120,18 @@ int main(int argc, char **argv) {
                 exit(1);
             }
 
-            // the parent writes to pipe1 and reads from pipe2
-            close(pipe1[0]); // close read end
-            close(pipe2[1]); // close write end
-
             for(int x = 0; x < runs; ++x) {
                 for(size_t i = 0; i < WARMUP + COUNT; ++i) {
                     cycle_t start = prof_start(0x1234);
 
-                    if(write(pipe1[1], buffer, msgsize) != (ssize_t)msgsize) {
-                        perror("write");
+                    message->type = SERVER_MESSAGE;
+                    if (msgsnd(mq, message, msgsize, IPC_NOWAIT) == -1) {
+                        perror("msgsnd");
                         exit(1);
                     }
-                    if(read(pipe2[0], buffer, msgsize) != (ssize_t)msgsize) {
-                        perror("read");
+
+                    if (msgrcv(mq, message, msgsize, CLIENT_MESSAGE, 0) < (ssize_t)msgsize) {
+                        perror("msgrcv");
                         exit(1);
                     }
 
@@ -135,9 +139,6 @@ int main(int argc, char **argv) {
                     times[i] = end - start;
                 }
             }
-
-            close(pipe1[1]); // close write end
-            close(pipe2[0]); // close read end
 
             cycle_t cold_average = avg(times, COUNT + WARMUP);
             printf("cold avg: %lu (+/- %lu) cycles\n",
