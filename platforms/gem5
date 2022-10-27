@@ -43,11 +43,11 @@ run_gem5() {
     if [ "$LX_ARCH" = "riscv64" ]; then
         echo -n " $GEM5_DIR/configs/example/riscv/fs_linux.py" >> $params
         echo -n " --kernel $LX_BUILDDIR/riscv-pk/gem5/bbl" >> $params
-        echo -n " --command-line=\"earlycon=sbi console=ttyS0 root=/dev/vda1\" " >> $params
+        echo -n " --command-line=\"earlycon=sbi console=ttyS0 root=/dev/vda1 mitigations=off\" " >> $params
     else
         echo -n " $GEM5_DIR/configs/example/fs.py" >> $params
         echo -n " --kernel $LX_BUILDDIR/linux/vmlinux" >> $params
-        echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1\" " >> $params
+        echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda1 mitigations=off\" " >> $params
     fi
     echo -n " --cpu-type $GEM5_CPU --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ" >> $params
     echo -n " --caches --l1d_size ${GEM5_L1}kB --l1i_size ${GEM5_L1}kB" >> $params
