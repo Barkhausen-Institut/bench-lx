@@ -3,16 +3,16 @@
 	url = https://github.com/Nils-TUD/linux-bench.git
 [submodule "buildroot"]
 	path = buildroot
-	url = ../buildroot.git
+	url = https://github.com/Barkhausen-Institut/buildroot.git
 [submodule "qemu"]
 	path = qemu
 	url = https://github.com/qemu/qemu
 [submodule "riscv-pk"]
 	path = riscv-pk
-	url = ../riscv-pk.git
+	url = https://github.com/Barkhausen-Institut/riscv-pk.git
 [submodule "libs/leveldb"]
 	path = libs/leveldb
-	url = ../m3-leveldb.git
+	url = https://github.com/Barkhausen-Institut/m3-leveldb.git
 [submodule "gem5"]
 	path = gem5
 	url = https://github.com/Barkhausen-Institut/gem5-TCU.git
