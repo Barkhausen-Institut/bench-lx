@@ -57,14 +57,15 @@ case $cmd in
 
 		if [ "$LX_PLATFORM" = "gem5" ]; then
 			# create disk for root fs
-			rm -f $LX_BUILDDIR/disks/root.img
-			"$GEM5_DIR/util/gem5img.py" init $LX_BUILDDIR/disks/root.img 128
 			tmp=$(mktemp -d)
-			"$GEM5_DIR/util/gem5img.py" mount $LX_BUILDDIR/disks/root.img "$tmp"
 			cpioimg=$(readlink -f $LX_BUILDDIR/buildroot/images/rootfs.cpio)
-			( cd "$tmp" && cat "$cpioimg" | sudo cpio -id )
-			"$GEM5_DIR/util/gem5img.py" umount "$tmp"
-			rmdir "$tmp"
+			(
+                cd "$tmp" \
+                    && fakeroot cpio -id < "$cpioimg" \
+                    && fakeroot chown -R root:root .
+            )
+            fakeroot ./tools/diskimg.sh $LX_BUILDDIR/disks/root.img "$tmp" 128M
+			rm -rf "$tmp"
 		fi
 		;&	# fall through; build apps and as well
 
@@ -74,14 +75,7 @@ case $cmd in
 
 	mkbenchfs)
 		if [ "$LX_PLATFORM" = "gem5" ]; then
-			# create disk for bench fs
-			rm -f $LX_BUILDDIR/disks/bench.img
-			"$GEM5_DIR/util/gem5img.py" init $LX_BUILDDIR/disks/bench.img 128
-			tmp=$(mktemp -d)
-			"$GEM5_DIR/util/gem5img.py" mount $LX_BUILDDIR/disks/bench.img "$tmp"
-			sudo cp -r rootfs/bench/* "$tmp"
-			"$GEM5_DIR/util/gem5img.py" umount "$tmp"
-			rmdir "$tmp"
+            ./tools/diskimg.sh $LX_BUILDDIR/disks/bench.img "rootfs/bench" 128M
 		fi
 		;;
 
