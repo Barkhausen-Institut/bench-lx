@@ -60,12 +60,26 @@ run_gem5() {
     if [ "$GEM5_CP" != "" ]; then
         echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
     fi
-    if [ "$cmd" = "warmup" ]; then
-        echo -n " --checkpoint-at-end" >> $params
-    fi
 
     if [ "$cmd" = "run" ]; then
         xargs -a $params $GEM5_DIR/build/$GEM5_ARCH/gem5.opt | tee $GEM5_OUT/log.txt
+    elif [ "$cmd" = "warmup" ]; then
+        rm -rf $GEM5_OUT/cpt.*
+
+        # start gem5 in background
+        xargs -a $params $GEM5_DIR/build/$GEM5_ARCH/gem5.opt 2>$GEM5_OUT/logerr.txt > $GEM5_OUT/log.txt &
+        
+        gem5pid=`pgrep -P $!`
+
+        # wait until the checkpoint is written
+        path=$GEM5_OUT/cpt.*/m5.cpt
+        while [ "$(grep '^curTick=' $path 2>/dev/null)" = "" ]; do
+            sleep 1
+            path=$GEM5_OUT/cpt.*/m5.cpt
+        done
+
+        sleep 2
+        kill -INT $gem5pid
     else
         echo -n > $GEM5_OUT/logerr.txt
 
@@ -82,16 +96,20 @@ run_gem5() {
 
         gem5pid=`pgrep -P $!`
 
+        # without checkpoint, wait until we see the prompt until we try to execute something
+        if [ "$GEM5_CP" = "" ]; then
+            while [ "$(grep '^# ' $GEM5_OUT/system.*)" = "" ]; do
+                sleep 1
+            done
+        fi
+
         echo -n > $GEM5_OUT/res.tmp
 
         # now send the command via telnet to gem5
         echo "Connecting to serial line on port $port" 1>&2
         (
             echo -n $BASHPID > $GEM5_OUT/pid.txt
-            if [ "$cmd" = "warmup" ]; then
-                # just wait
-                sleep 1
-            elif [ "$cmd" = "fsbench" ]; then
+            if [ "$cmd" = "fsbench" ]; then
                 echo -e "\nmount $BENCH_DEV /bench\n"
                 # better wait a bit
                 # Linux is quite fragile as it seems, if serial input comes too quickly
@@ -129,26 +147,12 @@ run_gem5() {
             sleep 1
         done
 
-        if [ "$cmd" = "warmup" ]; then
-            sleep 10
-        fi
-
         kill -INT $gem5pid
         pkill -INT -P `cat $GEM5_OUT/pid.txt`
 
-        if [ "$cmd" = "warmup" ]; then
-            # wait until the checkpoint is written
-            path=$GEM5_OUT/cpt.*/m5.cpt
-            while [ "`grep '^curTick=' $path`" = "" ]; do
-                echo "Waiting for checkpoint..." 1>&2
-                sleep 1
-                path=$GEM5_OUT/cpt.*/m5.cpt
-            done
-        else
-            grep -v '^# ' $GEM5_OUT/res.tmp | \
-                awk '/>===Starting_benchmarks===/ {p=1}; p; /<===Benchmarks_done===/ {p=0}' | \
-                tail -n +2 | head -n -1 > $GEM5_OUT/res.txt
-        fi
+        grep -v '^# ' $GEM5_OUT/res.tmp | \
+            awk '/>===Starting_benchmarks===/ {p=1}; p; /<===Benchmarks_done===/ {p=0}' | \
+            tail -n +2 | head -n -1 > $GEM5_OUT/res.txt
 
         rm $GEM5_OUT/res.tmp
     fi

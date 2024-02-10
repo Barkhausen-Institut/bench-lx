@@ -49,6 +49,20 @@ case $cmd in
 		if [ ! -f $LX_BUILDDIR/buildroot/.config ]; then
 			cp configs/config-buildroot-$LX_ARCH $LX_BUILDDIR/buildroot/.config
 		fi
+		
+        if [ "$LX_PLATFORM" = "gem5" ]; then
+            # build m5 utility
+            if [ "$LX_ARCH" = "riscv64" ]; then
+                dir="riscv"
+            else
+                dir="x86"
+            fi
+            (
+                cd gem5/util/m5 \
+                    && scons "$dir.CROSS_COMPILE=$CROSS_COMPILE" build/$dir/out/m5 \
+            )
+            cp gem5/util/m5/build/$dir/out/m5 rootfs
+        fi
 
 		( cd buildroot && make O=../$LX_BUILDDIR/buildroot -j$(nproc) $* )
 		if [ $? -ne 0 ]; then
