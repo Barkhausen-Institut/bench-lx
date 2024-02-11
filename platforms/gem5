@@ -6,27 +6,26 @@ run_gem5() {
     if [ "$cmd" = "warmup" ]; then
         GEM5_OUT="run/boot-$LX_ARCH-$LX_CORES"
         GEM5_CPU=TimingSimpleCPU
+        rm -rf "$GEM5_OUT"/cpt.*
     else
         if [ ! -d "$GEM5_OUT" ]; then
             echo "Please specify the gem5 output directory via GEM5_OUT!" >&2
             exit 1
         fi
 
-        rm -f $GEM5_OUT/cpt.*
-        truncate --size=0 $GEM5_OUT/system.*
-        ln -sf `readlink -f run/boot-$LX_ARCH-$LX_CORES/cpt.*` $GEM5_OUT
+        rm -f "$GEM5_OUT"/cpt.*
+        rm -f "$GEM5_OUT"/system.*
+        ln -sf "$(readlink -f "run/boot-$LX_ARCH-$LX_CORES"/cpt.*)" "$GEM5_OUT"
     fi
     export M5_PATH=$GEM5_OUT
-    mkdir -p $GEM5_OUT
+    mkdir -p "$GEM5_OUT"
 
     if [ "$LX_ARCH" = "riscv64" ]; then
         GEM5_ARCH=RISCV
-        BENCH_DEV=/dev/vdb
     else
         GEM5_ARCH=X86
-        BENCH_DEV=/dev/sdb
     fi
-    
+
     # create new disk for the command to execute
     tmp=$(mktemp -d)
     echo "#!/bin/sh" > "$tmp/run.sh"
@@ -42,65 +41,68 @@ run_gem5() {
     GEM5_MEMFREQ=${GEM5_MEMFREQ:-333MHz}
     GEM5_L1=${GEM5_L1:-32}
     GEM5_L2=${GEM5_L2:-512}
+    GEM5_CP=${GEM5_CP:-}
 
-    params=`mktemp`
-    echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log" >> $params
-    # echo -n " --debug-start=22369202756649" >> $params
-    echo -n " --listener-mode=on" >> $params
-    if [ "$GEM5_FLAGS" != "" ]; then
-        echo -n " --debug-flags=$GEM5_FLAGS" >> $params
-    fi
-    if [ "$LX_ARCH" = "riscv64" ]; then
-        echo -n " $GEM5_DIR/configs/example/riscv/fs_linux.py" >> $params
-        echo -n " --kernel $LX_BUILDDIR/riscv-pk/gem5/bbl" >> $params
-        echo -n " --command-line=\"earlycon=sbi console=ttyS0 root=/dev/vda mitigations=off\" " >> $params
-    else
-        echo -n " $GEM5_DIR/configs/example/fs.py" >> $params
-        echo -n " --kernel $LX_BUILDDIR/linux/vmlinux" >> $params
-        echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda mitigations=off\" " >> $params
-    fi
-    echo -n " --cpu-type $GEM5_CPU --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ" >> $params
-    echo -n " --caches --l1d_size ${GEM5_L1}kB --l1i_size ${GEM5_L1}kB" >> $params
-    echo -n " --l2cache --l2_size ${GEM5_L2}kB" >> $params
-    echo -n " --mem-size 512MB" >> $params
-    echo -n " -n $LX_CORES" >> $params
-    echo -n " --disk-image $LX_BUILDDIR/disks/root.img" >> $params
-    echo -n " --disk-image $LX_BUILDDIR/disks/bench.img" >> $params
-    echo -n " --disk-image $LX_BUILDDIR/disks/run.img" >> $params
+    params=$(mktemp)
+    {
+        echo -n "--outdir=$GEM5_OUT --debug-file=gem5.log"
+        # echo -n " --debug-start=22369202756649"
+        echo -n " --listener-mode=on"
+        if [ "$GEM5_FLAGS" != "" ]; then
+            echo -n " --debug-flags=$GEM5_FLAGS"
+        fi
+        if [ "$LX_ARCH" = "riscv64" ]; then
+            echo -n " $GEM5_DIR/configs/example/riscv/fs_linux.py"
+            echo -n " --kernel $LX_BUILDDIR/riscv-pk/gem5/bbl"
+            echo -n " --command-line=\"earlycon=sbi console=ttyS0 root=/dev/vda mitigations=off\" "
+        else
+            echo -n " $GEM5_DIR/configs/example/fs.py"
+            echo -n " --kernel $LX_BUILDDIR/linux/vmlinux"
+            echo -n " --command-line=\"ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda mitigations=off\" "
+        fi
+        echo -n " --cpu-type $GEM5_CPU --cpu-clock=$GEM5_CPUFREQ --sys-clock=$GEM5_MEMFREQ"
+        echo -n " --caches --l1d_size ${GEM5_L1}kB --l1i_size ${GEM5_L1}kB"
+        echo -n " --l2cache --l2_size ${GEM5_L2}kB"
+        echo -n " --mem-size 512MB"
+        echo -n " -n $LX_CORES"
+        echo -n " --disk-image $LX_BUILDDIR/disks/root.img"
+        echo -n " --disk-image $LX_BUILDDIR/disks/bench.img"
+        echo -n " --disk-image $LX_BUILDDIR/disks/run.img"
 
-    if [ "$GEM5_CP" != "" ]; then
-        echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP" >> $params
-    fi
+        if [ "$GEM5_CP" != "" ]; then
+            echo -n " --restore-with-cpu $GEM5_CPU --checkpoint-restore=$GEM5_CP"
+        fi
+    } >> "$params"
 
     if [ "$cmd" = "run" ]; then
-        xargs -a $params $GEM5_DIR/build/$GEM5_ARCH/gem5.opt | tee $GEM5_OUT/log.txt
+        xargs -a "$params" "$GEM5_DIR/build/$GEM5_ARCH/gem5.opt" | tee "$GEM5_OUT/log.txt"
     elif [ "$cmd" = "warmup" ]; then
-        rm -rf $GEM5_OUT/cpt.*
+        rm -rf "$GEM5_OUT"/cpt.*
 
         # start gem5 in background
-        xargs -a $params $GEM5_DIR/build/$GEM5_ARCH/gem5.opt 2>$GEM5_OUT/logerr.txt > $GEM5_OUT/log.txt &
-        
-        gem5pid=`pgrep -P $!`
+        xargs -a "$params" "$GEM5_DIR/build/$GEM5_ARCH/gem5.opt" 2>"$GEM5_OUT/logerr.txt" > "$GEM5_OUT/log.txt" &
+
+        gem5pid=$(pgrep -P $!)
 
         # wait until the checkpoint is written
-        path=$GEM5_OUT/cpt.*/m5.cpt
-        while [ "$(grep '^curTick=' $path 2>/dev/null)" = "" ]; do
+        path=$(echo "$GEM5_OUT"/cpt.*/m5.cpt)
+        while [ "$(grep '^curTick=' "$path" 2>/dev/null)" = "" ]; do
             sleep 1
-            path=$GEM5_OUT/cpt.*/m5.cpt
+            path=$(echo "$GEM5_OUT"/cpt.*/m5.cpt)
         done
 
         sleep 2
-        kill -INT $gem5pid
+        kill -INT "$gem5pid"
     else
-        echo -n > $GEM5_OUT/logerr.txt
+        echo -n > "$GEM5_OUT/logerr.txt"
 
         # start gem5 in background
-        xargs -a $params $GEM5_DIR/build/$GEM5_ARCH/gem5.opt 2>$GEM5_OUT/logerr.txt > $GEM5_OUT/log.txt &
+        xargs -a "$params" "$GEM5_DIR/build/$GEM5_ARCH/gem5.opt" 2>"$GEM5_OUT/logerr.txt" > "$GEM5_OUT/log.txt" &
 
-        gem5pid=`pgrep -P $!`
+        gem5pid=$(pgrep -P $!)
 
         # wait until we see the "benchmarks done" in the log file
-        while [ "$(grep '^<===Benchmarks_done===' $GEM5_OUT/system.*)" = "" ]; do
+        while [ "$(grep '^<===Benchmarks_done===' "$GEM5_OUT"/system.*)" = "" ]; do
             sleep 1
         done
 
@@ -114,7 +116,7 @@ run_gem5() {
 
 case $1 in
     warmup|run|bench|fsbench|microbench|serverbench|servertrace|memload)
-        run_gem5 $1
+        run_gem5 "$1"
         ;;
     dbg)
         echo "Not supported"
