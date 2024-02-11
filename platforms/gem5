@@ -31,7 +31,7 @@ run_gem5() {
     echo "#!/bin/sh" > "$tmp/run.sh"
     chmod +x "$tmp/run.sh"
     if [ "$cmd" != "warmup" ] && [ "$cmd" != "run" ]; then
-        echo "/bench/$cmd.sh '$BENCH_CMD'" >> "$tmp/run.sh"
+        echo "/bench/$cmd.sh '$BENCH_CMD' $LX_CORES" >> "$tmp/run.sh"
     fi
     fakeroot ./tools/diskimg.sh "$LX_BUILDDIR/disks/run.img" "$tmp" 1M
     rm -rf "$tmp"
@@ -115,7 +115,7 @@ run_gem5() {
 }
 
 case $1 in
-    warmup|run|bench|fsbench|microbench|serverbench|servertrace|memload)
+    warmup|run|bench|fsbench|microbench|serverbench|servertrace|memload|pingpong)
         run_gem5 "$1"
         ;;
     dbg)
