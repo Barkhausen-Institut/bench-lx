@@ -14,7 +14,7 @@
 #include <sysctrace.h>
 #include <common.h>
 
-static volatile unsigned long long counter = 0;
+static volatile unsigned long long *counter;
 static volatile int run = 1;
 
 static void *counter_thread(void *arg) {
@@ -29,7 +29,7 @@ static void *counter_thread(void *arg) {
     }
 
     while(run)
-        counter++;
+        (*counter)++;
     return NULL;
 }
 
@@ -40,6 +40,19 @@ int main(int argc, char **argv) {
         user = atoi(argv[1]) == 1;
     if(argc > 2)
         runs = atoi(argv[2]);
+
+    int fd = open("/dev/mem", O_RDWR);
+    if(fd == -1) {
+        perror("open /dev/mem");
+        exit(1);
+    }
+    void *addr = mmap(NULL, 0x1000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0x30000);
+    if(addr == MAP_FAILED) {
+        perror("mmap /dev/mem");
+        exit(1);
+    }
+    counter = (unsigned long long*)addr;
+    *counter = 0;
 
     cpu_set_t set;
     CPU_ZERO(&set);
@@ -58,7 +71,7 @@ int main(int argc, char **argv) {
     for(int i = 0; i < runs; ++i) {
         if(user)
             gem5_debug(0xDEAD);
-        syscall(442, &counter, user);
+        syscall(442, counter, user);
         if(user)
             gem5_debug(0xBEEF);
     }
